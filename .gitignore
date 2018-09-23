@@ -31,3 +31,8 @@
 *.out
 *.app
 /.vs/Djinn/v15
+/Bazaar/x64/Debug
+/Djinn/x64/Debug
+/DjinnTest/x64/Debug
+/packages
+/x64/Debug

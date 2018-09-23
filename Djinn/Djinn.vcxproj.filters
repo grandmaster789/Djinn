@@ -1,6 +1,108 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="core\engine.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\log_category.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\log_message.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\log_sink.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\logger.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\system.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="util\exception_windows.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="util\string_util.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="util\typemap.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies.cpp" />
+    <ClCompile Include="app\application.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="core\engine.inl">
+      <Filter>core</Filter>
+    </None>
+    <None Include="core\log_message.inl">
+      <Filter>core</Filter>
+    </None>
+    <None Include="core\log_sink.inl">
+      <Filter>core</Filter>
+    </None>
+    <None Include="core\system.inl">
+      <Filter>core</Filter>
+    </None>
+    <None Include="util\algorithm.inl">
+      <Filter>util</Filter>
+    </None>
+    <None Include="util\string_util.inl">
+      <Filter>util</Filter>
+    </None>
+    <None Include="util\typemap.inl">
+      <Filter>util</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="core">
+      <UniqueIdentifier>{6e7df5a4-081e-4067-92ab-5dbb432ff951}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="util">
+      <UniqueIdentifier>{f0938842-cde4-4f20-b341-f3d631831dd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="app">
+      <UniqueIdentifier>{1816d285-c2a0-44ae-ab2f-ea007e1cf6dc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="core\engine.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\log_category.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\log_message.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\log_sink.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\logger.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\system.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="util\algorithm.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="util\exception_windows.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="util\string_util.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="util\typemap.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="dependencies.h" />
+    <ClInclude Include="preprocessor.h" />
+    <ClInclude Include="app\application.h">
+      <Filter>app</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
