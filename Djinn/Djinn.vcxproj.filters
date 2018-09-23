@@ -104,5 +104,8 @@
     <ClInclude Include="app\application.h">
       <Filter>app</Filter>
     </ClInclude>
+    <ClInclude Include="util\win_utils.h">
+      <Filter>util</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
