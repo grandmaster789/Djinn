@@ -32,6 +32,9 @@
     <ClCompile Include="app\application.cpp">
       <Filter>app</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\renderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -66,6 +69,9 @@
     </Filter>
     <Filter Include="app">
       <UniqueIdentifier>{1816d285-c2a0-44ae-ab2f-ea007e1cf6dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="renderer">
+      <UniqueIdentifier>{7523aae1-64f9-4378-9ce4-f0358d7b662b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -106,6 +112,9 @@
     </ClInclude>
     <ClInclude Include="util\win_utils.h">
       <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\renderer.h">
+      <Filter>renderer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

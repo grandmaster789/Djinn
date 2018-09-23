@@ -1,5 +1,6 @@
 #include "core/engine.h"
 #include "app/application.h"
+#include "renderer/renderer.h"
 #include <iostream>
 
 class Bazaar :
@@ -16,11 +17,6 @@ public:
     }
 
     void update() override {
-        ++i;
-        std::cout << ".";
-
-        if (i > 10'000)
-            m_Engine->stop();
     }
 
     void shutdown() override {
@@ -29,14 +25,13 @@ public:
 
     void unittest() override {
     }
-
-private:
-    int i = 0;
 };
 
 int main() {
-    auto& engine = djinn::Engine::instance();
+    using namespace djinn;
+    auto& engine = Engine::instance();
 
+    engine.enable<Renderer>();
     engine.setApplication<Bazaar>();
     engine.run();
 }

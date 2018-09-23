@@ -9,7 +9,7 @@
 #include <GLFW/glfw3.h>
 
 // The C++ interface for Vulkan, SPIRV and shaderC
-//#include <vulkan/vulkan.hpp> // this is already included by GLFW
+#include <vulkan/vulkan.hpp> // GLFW includes the C interface, I want the CPP interface
 //#include <vulkan/spirv.hpp>
 //#include <shaderc/shaderc.hpp>
 

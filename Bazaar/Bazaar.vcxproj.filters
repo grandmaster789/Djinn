@@ -5,5 +5,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Bazaar.cfg" />
+    <None Include="djinn.cfg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="djinn.log" />
   </ItemGroup>
 </Project>

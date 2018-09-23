@@ -18,7 +18,7 @@ namespace djinn::core {
              using SerializeFn   = std::function<nlohmann::json()>;
              using DeserializeFn = std::function<void(const nlohmann::json&)>;
              
-    		std::string   m_VariableName;  // just for debugging
+    	 	 std::string   m_VariableName;  // just for debugging
              SerializeFn   m_SerializeFn;   // runtime -> JSON
              DeserializeFn m_DeserializeFn; // JSON -> runtime
     	};
@@ -42,12 +42,12 @@ namespace djinn::core {
     	virtual void update();
     	virtual void shutdown();
     
-         virtual void unittest() = 0;
+        virtual void unittest() = 0;
     
     	const std::string&  getName()         const;
     	const Dependencies& getDependencies() const;
     	const Settings&     getSettings()     const;
-         bool                isInitialized()   const;
+        bool                isInitialized()   const;
     
     protected:
     	void addDependency(const std::string& systemName);
