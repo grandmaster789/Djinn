@@ -13,6 +13,6 @@ namespace djinn::app {
         virtual void update()   = 0;
         virtual void shutdown() = 0;
     
-        virtual void unittest() = 0;
+		void unittest() override; // no real way to enable unit test for applications (yet)
     };
 }

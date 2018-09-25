@@ -17,15 +17,21 @@ namespace djinn {
 
         void unittest() override;
 
+		const vk::Instance& getVKInstance() const;
+
     private:
+		struct GLFWwindowDeleter { void operator()(GLFWwindow* handle); };
+
+		using WindowHandle = std::unique_ptr<GLFWwindow, GLFWwindowDeleter>;
+
         struct {
             int m_Width = 800;
             int m_Height = 600;
         } m_WindowSettings;
 
-        struct GLFWwindowDeleter { void operator()(GLFWwindow* handle); };
-
         // [NOTE] currently designed for just one (1) window
-        std::unique_ptr<GLFWwindow, GLFWwindowDeleter> m_Window; 
+        WindowHandle m_Window; 
+
+		vk::UniqueInstance m_VKInstance;
     };
 }

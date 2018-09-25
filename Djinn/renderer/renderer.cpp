@@ -28,7 +28,9 @@ namespace djinn {
             )
         );
 
-        
+		vk::InstanceCreateInfo info;
+		
+		m_VKInstance = vk::createInstanceUnique(info);
     }
 
     void Renderer::update() {
@@ -44,4 +46,8 @@ namespace djinn {
 
     void Renderer::unittest() {
     }
+
+	const vk::Instance& Renderer::getVKInstance() const {
+		return m_VKInstance.get();
+	}
 }
