@@ -22,9 +22,6 @@ public:
     void shutdown() override {
         System::shutdown();
     }
-
-    void unittest() override {
-    }
 };
 
 int main() {

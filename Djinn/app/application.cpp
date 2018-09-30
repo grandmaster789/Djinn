@@ -5,4 +5,7 @@ namespace djinn::app {
         System(name)
     {
     }
+
+	void Application::unittest() {
+	}
 }
