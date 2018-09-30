@@ -88,11 +88,15 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>.;..;..\ThirdParty\include;$(VULKAN_SDK)\include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(VULKAN_SDK)\Third-Party\Bin</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -137,6 +141,8 @@
     <ClCompile Include="dependencies.cpp" />
     <ClCompile Include="renderer\monitor.cpp" />
     <ClCompile Include="renderer\renderer.cpp" />
+    <ClCompile Include="renderer\window.cpp" />
+    <ClCompile Include="renderer\window_hints.cpp" />
     <ClCompile Include="util\exception_windows.cpp" />
     <ClCompile Include="util\string_util.cpp" />
     <ClCompile Include="util\typemap.cpp" />
@@ -168,6 +174,8 @@
     <ClInclude Include="preprocessor.h" />
     <ClInclude Include="renderer\monitor.h" />
     <ClInclude Include="renderer\renderer.h" />
+    <ClInclude Include="renderer\window.h" />
+    <ClInclude Include="renderer\window_hints.h" />
     <ClInclude Include="util\algorithm.h" />
     <ClInclude Include="util\exception_windows.h" />
     <ClInclude Include="util\flat_map.h" />

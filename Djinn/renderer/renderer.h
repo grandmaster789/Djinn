@@ -3,11 +3,17 @@
 #include "dependencies.h"
 #include "core/system.h"
 #include "core/mediator.h"
+
 #include "monitor.h"
 
 #include <memory>
 
 namespace djinn {
+    namespace renderer {
+        class Window;
+        class WindowHints;
+    }
+
     class Renderer :
         public core::System,
         public MessageHandler<renderer::Monitor::OnConnected>,
@@ -16,16 +22,18 @@ namespace djinn {
     private:
         struct MonitorDeleter;
 
+        using  Monitor     = renderer::Monitor;
+        using  MonitorPtr  = std::unique_ptr<Monitor, MonitorDeleter>;
+        using  MonitorList = std::vector<MonitorPtr>;
+
+        struct MonitorDeleter { void operator()(Monitor* m); };
+
+        using WindowHints = renderer::WindowHints;
+        using Window      = renderer::Window;
+        using WindowPtr   = std::unique_ptr<Window>;
+        using WindowList  = std::vector<WindowPtr>;
+
     public:
-        using Monitor     = renderer::Monitor;
-        using MonitorPtr  = std::unique_ptr<Monitor, MonitorDeleter>;
-        using MonitorList = std::vector<MonitorPtr>;
-
-        //using WindowHints = renderer::WindowHints;
-        //using Window      = renderer::Window;
-        //using WindowPtr   = std::unique_ptr<Window>;
-        //using WindowList  = std::vector<WindowPtr>;
-
         Renderer();
 
         void init()     override;
@@ -43,7 +51,17 @@ namespace djinn {
         void operator()(const Monitor::OnConnected& o);
         void operator()(const Monitor::OnDisconnected& o);
 
+        // ----- Windows -----
+              Window* getPrimaryWindow();
+        const Window* getPrimaryWindow() const;
+
+        const WindowList& getWindowList() const;
+
     private:
+        Window* createWindow(const std::string& title, int width, int height);	// window on primary monitor
+        Window* createWindow(const std::string& title, const Monitor* m);		// borderless fullscreen on the specified monitor
+        Window* createWindow(const std::string& title, const Monitor* m, int width, int height); // fullscreen at the specified monitor with the specified resolution
+
         struct {
             int m_Width       = 800;
             int m_Height      = 600;
@@ -51,8 +69,9 @@ namespace djinn {
             bool m_Borderless = false;
         } m_WindowSettings;
 
-        struct MonitorDeleter { void operator()(Monitor* m); };
+        bool m_UseValidation = false;
 
         MonitorList m_Monitors;
+        WindowList m_Windows;
     };
 }

@@ -1,6 +1,8 @@
 #include "renderer.h"
 #include "core/engine.h"
 #include "core/mediator.h"
+#include "window.h"
+#include "window_hints.h"
 
 namespace {
     void glfw_monitor_callback(GLFWmonitor* handle, int evt) {
@@ -27,8 +29,12 @@ namespace djinn {
     Renderer::Renderer() :
         System("Renderer")
     {
-        registerSetting("width", &m_WindowSettings.m_Width);
-        registerSetting("height", &m_WindowSettings.m_Height);
+        registerSetting("width",      &m_WindowSettings.m_Width);
+        registerSetting("height",     &m_WindowSettings.m_Height);
+        registerSetting("fullscreen", &m_WindowSettings.m_Fullscreen);
+        registerSetting("borderless", &m_WindowSettings.m_Borderless);
+
+        registerSetting("vk_validation", &m_UseValidation);
     }
 
     void Renderer::init() {
@@ -60,16 +66,79 @@ namespace djinn {
                 requiredExtensions.push_back(ext[i]);
         }
 
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        gLogDebug
+            << "Creating main window: "
+            << m_WindowSettings.m_Width
+            << "x"
+            << m_WindowSettings.m_Height
+            << " fullscreen: "
+            << m_WindowSettings.m_Fullscreen
+            << " borderless: "
+            << m_WindowSettings.m_Borderless;
 
+        renderer::WindowHints hints;
+
+        hints.m_Resizable   = false; // TODO - resizing windows has some implications about recreating swapbuffer chains etc
+        hints.m_Visible     = true;
+        hints.m_Decorated   = true;
+        hints.m_Focused     = true;
+        hints.m_AutoIconify = true;
+        hints.m_Floating    = true; // always-on-top enabled
+
+        hints.apply();
+
+        // different ways to create a window:
+        // 1) fullscreen            (implies switching video mode, requires target monitor)
+        // 2) borderless fullscreen (ignores width/height, requires target monitor)
+        // 3) borderless windowed 
+        // 4) bordered windowed
+        if (m_WindowSettings.m_Fullscreen) {
+            if (m_WindowSettings.m_Borderless)
+                createWindow("Djinn", getPrimaryMonitor());
+            else
+                createWindow(
+                    "Djinn",
+                    getPrimaryMonitor(),
+                    m_WindowSettings.m_Width,
+                    m_WindowSettings.m_Height
+                );
+        }
+        else {
+            if (m_WindowSettings.m_Borderless) {
+                hints.m_Decorated = false;
+                hints.apply();
+            }
+
+            createWindow(
+                "Djinn", 
+                m_WindowSettings.m_Width,
+                m_WindowSettings.m_Height
+            );
+        }
     }
 
     void Renderer::update() {
+        if (m_Windows.empty())
+            m_Engine->stop();
 
+        auto it = m_Windows.begin();
+
+        for (; it != m_Windows.end();) {
+            if ((*it)->shouldClose())
+                it = m_Windows.erase(it);
+            else {
+                // ~~ present surface here
+                ++it;
+            }
+        }
+
+        glfwPollEvents();
     }
 
     void Renderer::shutdown() {
         System::shutdown();
+
+        m_Windows.clear();
     }
 
     void Renderer::unittest() {
@@ -96,6 +165,80 @@ namespace djinn {
         });
 
         m_Monitors.erase(it);
+    }
+
+    Renderer::Window* Renderer::getPrimaryWindow() {
+        return m_Windows.front().get();
+    }
+
+    const Renderer::Window* Renderer::getPrimaryWindow() const {
+        return m_Windows.front().get();
+    }
+
+    const Renderer::WindowList& Renderer::getWindowList() const {
+        return m_Windows;
+    }
+
+    Renderer::Window* Renderer::createWindow(
+        const std::string& title,
+        int width,
+        int height
+    ) {
+        // windowed mode (both bordered and borderless)
+        return m_Windows.emplace_back(
+            std::make_unique<Window>(
+                glfwCreateWindow(
+                    width, 
+                    height, 
+                    title.c_str(), 
+                    nullptr, 
+                    nullptr
+                ),
+                title
+            )
+        ).get();
+    }
+
+    Renderer::Window* Renderer::createWindow(
+        const std::string& title,
+        const Monitor* m
+    ) {
+        auto mode = m->getCurrentVideoMode();
+
+        // fullscreen borderless
+        return m_Windows.emplace_back(
+            std::make_unique<Window>(
+                glfwCreateWindow(
+                    mode.width,
+                    mode.height,
+                    title.c_str(),
+                    m->getHandle(),
+                    nullptr
+                ),
+                title
+            )
+        ).get();
+    }
+
+    Renderer::Window* Renderer::createWindow(
+        const std::string& title,
+        const Monitor* m,
+        int width,
+        int height
+    ) {
+        // fullscreen
+        return m_Windows.emplace_back(
+            std::make_unique<Window>(
+                glfwCreateWindow(
+                    width,
+                    height,
+                    title.c_str(),
+                    m->getHandle(),
+                    nullptr
+                ),
+                title
+            )
+        ).get();
     }
 
     void Renderer::detectMonitors() {
