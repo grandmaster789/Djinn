@@ -44,6 +44,12 @@
     <ClCompile Include="renderer\window_hints.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
+    <ClCompile Include="input\keyboard.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="input\input.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -90,6 +96,9 @@
     </Filter>
     <Filter Include="renderer">
       <UniqueIdentifier>{7523aae1-64f9-4378-9ce4-f0358d7b662b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="input">
+      <UniqueIdentifier>{fb76ab57-588f-42d1-b0a0-ca32bcdb7d93}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -148,6 +157,12 @@
     </ClInclude>
     <ClInclude Include="renderer\window_hints.h">
       <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="input\input.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="input\keyboard.h">
+      <Filter>input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

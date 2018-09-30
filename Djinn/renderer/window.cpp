@@ -1,6 +1,7 @@
 #include "window.h"
 #include "renderer.h"
 #include "monitor.h"
+#include "input/keyboard.h"
 
 // ----- GLFW window callbacks -----
 namespace {
@@ -74,6 +75,8 @@ namespace djinn::renderer {
         m_Title(title)
     {
         setGLFWcallbacks();
+
+        m_Keyboard = std::make_unique<Keyboard>(this);
     }
 
     Window::~Window() {
@@ -82,9 +85,9 @@ namespace djinn::renderer {
     }
 
     Window::Window(Window&& w):
-        m_Handle (w.m_Handle),
-        m_Title  (std::move(w.m_Title)),
-        m_Context(w.m_Context)
+        m_Handle  (w.m_Handle),
+        m_Title   (std::move(w.m_Title)),
+        m_Keyboard(std::move(w.m_Keyboard))
     {
         w.m_Handle = nullptr;
     }
@@ -95,7 +98,6 @@ namespace djinn::renderer {
 
         m_Handle  = w.m_Handle;
         m_Title   = w.m_Title;
-        m_Context = w.m_Context;
 
         w.m_Handle = nullptr;
 
@@ -178,6 +180,24 @@ namespace djinn::renderer {
     const Monitor* Window::getMonitor() const {
         return detail::fetch(glfwGetWindowMonitor(m_Handle));
     }
+
+    Window::Keyboard* Window::getKeyboard() {
+        return m_Keyboard.get();
+    }
+
+    const Window::Keyboard* Window::getKeyboard() const {
+        return m_Keyboard.get();
+    }
+    
+    /*
+    Window::Mouse* Window::getMouse() {
+        return m_Mouse.get();
+    }
+
+    const Window::Mouse* Window::getMouse() const {
+        return m_Mouse.get();
+    }
+    */
     
     bool Window::isFocused() const {
         return (glfwGetWindowAttrib(m_Handle, GLFW_FOCUSED) != 0);

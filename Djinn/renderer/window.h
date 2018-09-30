@@ -2,9 +2,15 @@
 
 #include "dependencies.h"
 #include <string>
+#include <memory>
 
 namespace djinn {
     class Renderer;
+}
+
+namespace djinn::input {
+    class Keyboard;
+    class Mouse;
 }
 
 namespace djinn::renderer {
@@ -12,6 +18,9 @@ namespace djinn::renderer {
 
     class Window {
     public:
+        using Keyboard = input::Keyboard;
+        using Mouse    = input::Mouse;
+
         struct Frame {
             int m_Left;
             int m_Top;
@@ -47,7 +56,11 @@ namespace djinn::renderer {
         std::pair<int, int> getSize()     const; // (width, height) client area size in screen coords
         Frame               getFrame()    const; // includes decorations, if any
 
-        const Monitor* getMonitor() const;
+        const Monitor*  getMonitor()  const;
+              Keyboard* getKeyboard();
+        const Keyboard* getKeyboard() const;
+              Mouse*    getMouse();
+        const Mouse*    getMouse()    const;
 
         // ----- Attribute queries -----
         bool isFocused()   const;
@@ -95,6 +108,7 @@ namespace djinn::renderer {
 
         std::string m_Title;
 
-        Renderer* m_Context; // this may be unnecessary
+        std::unique_ptr<Keyboard> m_Keyboard;
+        //std::unique_ptr<Mouse> m_Mouse;
     };
 }

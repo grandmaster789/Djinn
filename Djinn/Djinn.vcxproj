@@ -139,6 +139,8 @@
     <ClCompile Include="core\log_sink.cpp" />
     <ClCompile Include="core\system.cpp" />
     <ClCompile Include="dependencies.cpp" />
+    <ClCompile Include="input\input.cpp" />
+    <ClCompile Include="input\keyboard.cpp" />
     <ClCompile Include="renderer\monitor.cpp" />
     <ClCompile Include="renderer\renderer.cpp" />
     <ClCompile Include="renderer\window.cpp" />
@@ -171,6 +173,8 @@
     <ClInclude Include="core\mediator_queue.h" />
     <ClInclude Include="core\system.h" />
     <ClInclude Include="dependencies.h" />
+    <ClInclude Include="input\input.h" />
+    <ClInclude Include="input\keyboard.h" />
     <ClInclude Include="preprocessor.h" />
     <ClInclude Include="renderer\monitor.h" />
     <ClInclude Include="renderer\renderer.h" />
