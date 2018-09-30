@@ -41,12 +41,24 @@ namespace djinn::util {
     }
     
     template <typename tContainer, typename tCompareFn>
-    typename tContainer::const_iterator find_if(const tContainer& c, tCompareFn predicateFn) {
+    typename tContainer::const_iterator find_if(const tContainer& c, tCompareFn&& predicateFn) {
         using std::find_if;
         using std::begin;
         using std::end;
     
         return find_if(begin(c), end(c), predicateFn);
+    }
+
+    template <typename tSortedContainer, typename tElement>
+    typename tSortedContainer::const_iterator binary_find(
+        const tSortedContainer& c,
+        const tElement& value
+    ) {
+        using std::lower_bound;
+        using std::begin;
+        using std::end;
+
+        return lower_bound(begin(c), end(c), value);
     }
     
     template <typename tContainer, typename tElement>

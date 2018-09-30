@@ -87,7 +87,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>.;..;..\ThirdParty\include;$(VULKAN_SDK)\include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(VULKAN_SDK)\Third-Party\Bin</AdditionalLibraryDirectories>
@@ -117,7 +117,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>.;..;..\ThirdParty\include;$(VULKAN_SDK)\include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -135,6 +135,7 @@
     <ClCompile Include="core\log_sink.cpp" />
     <ClCompile Include="core\system.cpp" />
     <ClCompile Include="dependencies.cpp" />
+    <ClCompile Include="renderer\monitor.cpp" />
     <ClCompile Include="renderer\renderer.cpp" />
     <ClCompile Include="util\exception_windows.cpp" />
     <ClCompile Include="util\string_util.cpp" />
@@ -144,9 +145,12 @@
     <None Include="core\engine.inl" />
     <None Include="core\log_message.inl" />
     <None Include="core\log_sink.inl" />
+    <None Include="core\mediator.inl" />
+    <None Include="core\mediator_queue.inl" />
     <None Include="core\system.inl" />
     <None Include="packages.config" />
     <None Include="util\algorithm.inl" />
+    <None Include="util\flat_map.inl" />
     <None Include="util\string_util.inl" />
     <None Include="util\typemap.inl" />
   </ItemGroup>
@@ -157,15 +161,18 @@
     <ClInclude Include="core\log_category.h" />
     <ClInclude Include="core\log_message.h" />
     <ClInclude Include="core\log_sink.h" />
+    <ClInclude Include="core\mediator.h" />
+    <ClInclude Include="core\mediator_queue.h" />
     <ClInclude Include="core\system.h" />
     <ClInclude Include="dependencies.h" />
     <ClInclude Include="preprocessor.h" />
+    <ClInclude Include="renderer\monitor.h" />
     <ClInclude Include="renderer\renderer.h" />
     <ClInclude Include="util\algorithm.h" />
     <ClInclude Include="util\exception_windows.h" />
+    <ClInclude Include="util\flat_map.h" />
     <ClInclude Include="util\string_util.h" />
     <ClInclude Include="util\typemap.h" />
-    <ClInclude Include="util\win_utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

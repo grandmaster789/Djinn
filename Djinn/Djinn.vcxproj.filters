@@ -35,6 +35,9 @@
     <ClCompile Include="renderer\renderer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\monitor.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -57,6 +60,15 @@
       <Filter>util</Filter>
     </None>
     <None Include="util\typemap.inl">
+      <Filter>util</Filter>
+    </None>
+    <None Include="core\mediator_queue.inl">
+      <Filter>core</Filter>
+    </None>
+    <None Include="core\mediator.inl">
+      <Filter>core</Filter>
+    </None>
+    <None Include="util\flat_map.inl">
       <Filter>util</Filter>
     </None>
   </ItemGroup>
@@ -110,11 +122,20 @@
     <ClInclude Include="app\application.h">
       <Filter>app</Filter>
     </ClInclude>
-    <ClInclude Include="util\win_utils.h">
-      <Filter>util</Filter>
-    </ClInclude>
     <ClInclude Include="renderer\renderer.h">
       <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\monitor.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="core\mediator_queue.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\mediator.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="util\flat_map.h">
+      <Filter>util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

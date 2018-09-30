@@ -31,9 +31,22 @@ namespace djinn::util {
     template <typename tContainer, typename tCompareFn>
     typename tContainer::const_iterator find_if(
         const tContainer& c, 
-        tCompareFn        predicateFn
+        tCompareFn&&      predicateFn
     );
     
+    // sorted container variations
+    template <typename tSortedContainer, typename tElement>
+    typename tSortedContainer::const_iterator binary_find(
+        const tSortedContainer& c,
+        const tElement& value
+    );
+
+    template <typename tSortedContainer, typename tCompareFn>
+    typename tSortedContainer::const_iterator binary_find(
+        const tSortedContainer& c,
+        tCompareFn&&            predicateFn
+    );
+
     template <typename tContainer, typename tElement>
     void erase(
         tContainer&     c, 

@@ -2,52 +2,11 @@
 #include "CppUnitTest.h"
 
 #include "util/string_util.h"
+#include "../indicator.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-namespace {
-    struct Indicator {
-        Indicator() = default; // -> m_Val == 1
-
-        Indicator(const Indicator& ):
-            m_Val(2)
-        {
-        }
-
-        Indicator& operator = (const Indicator& ) {
-            m_Val = 3;
-            return *this;
-        }
-
-        Indicator(Indicator&& i) noexcept:
-            m_Val(4)
-        {
-            i.m_Val = 5;
-        }
-
-        Indicator& operator = (Indicator&& i) noexcept {
-            m_Val = 6;
-            i.m_Val = 5;
-            return *this;
-        }
-
-        bool isDefaultConstructed() const noexcept { return m_Val == 1; }
-        bool isCopyConstructed()    const noexcept { return m_Val == 2; }
-        bool isCopyAssigned()       const noexcept { return m_Val == 3; }
-        bool isMoveConstructed()    const noexcept { return m_Val == 4; }
-        bool isMovedFrom()          const noexcept { return m_Val == 5; }
-        bool isMoveAssigned()       const noexcept { return m_Val == 6; }
-        
-        int m_Val = 1;
-    };
-
-    std::ostream& operator << (std::ostream& os, const Indicator& i) {
-        os << i.m_Val;
-        return os;
-    }
-}
-
-namespace DjinnTest{
+namespace DjinnTest {
     TEST_CLASS(StringUtil) {
     public:
         TEST_METHOD(stringify) {
