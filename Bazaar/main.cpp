@@ -6,6 +6,8 @@
 #include "input/keyboard.h"
 #include <iostream>
 
+#include "util/variant.h"
+
 using namespace djinn;
 
 class Bazaar :
@@ -43,7 +45,6 @@ public:
 };
 
 int main() {
-    
     auto& engine = Engine::instance();
 
     engine.enable<Renderer>();

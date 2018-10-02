@@ -83,6 +83,9 @@
     <None Include="util\flat_map.inl">
       <Filter>util</Filter>
     </None>
+    <None Include="util\variant.inl">
+      <Filter>util</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
@@ -163,6 +166,9 @@
     </ClInclude>
     <ClInclude Include="input\keyboard.h">
       <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="util\variant.h">
+      <Filter>util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

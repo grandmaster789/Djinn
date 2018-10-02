@@ -170,6 +170,7 @@
     <ClCompile Include="template.cpp" />
     <ClCompile Include="util\flat_map.cpp" />
     <ClCompile Include="util\string_util.cpp" />
+    <ClCompile Include="util\variant.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Djinn\Djinn.vcxproj">

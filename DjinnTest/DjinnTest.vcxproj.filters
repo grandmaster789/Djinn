@@ -14,6 +14,9 @@
       <Filter>util</Filter>
     </ClCompile>
     <ClCompile Include="indicator.cpp" />
+    <ClCompile Include="util\variant.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

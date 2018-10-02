@@ -62,6 +62,8 @@ namespace djinn {
         Window* createWindow(const std::string& title, const Monitor* m);		// borderless fullscreen on the specified monitor
         Window* createWindow(const std::string& title, const Monitor* m, int width, int height); // fullscreen at the specified monitor with the specified resolution
 
+        void createVkInstance(); // might throw vk::SystemError
+
         struct {
             int m_Width       = 800;
             int m_Height      = 600;
@@ -73,5 +75,7 @@ namespace djinn {
 
         MonitorList m_Monitors;
         WindowList m_Windows;
+
+        vk::UniqueInstance m_VKInstance;
     };
 }
