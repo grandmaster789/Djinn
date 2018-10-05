@@ -207,7 +207,20 @@ namespace djinn {
             );
         }
 
+		// center the primary window
+		{
+			auto currentMode = getPrimaryMonitor()->getCurrentVideoMode();
+			auto winSize = getPrimaryWindow()->getSize();
+
+			getPrimaryWindow()->setPosition(
+				(currentMode.width - winSize.first) / 2,
+				(currentMode.height - winSize.second) / 2
+			);
+		}
+
         createVkInstance();
+		setupVkDebugCallback();
+		setupVkPhysicalDevice();
     }
 
     void Renderer::update() {
@@ -220,7 +233,7 @@ namespace djinn {
             if ((*it)->shouldClose())
                 it = m_Windows.erase(it);
             else {
-                // ~~ present surface here
+                // ~~ present surface here ?
                 ++it;
             }
         }
@@ -374,7 +387,7 @@ namespace djinn {
         }
 
         // check that the required extensions/layers are actually available
-        auto layers = enumerateInstanceLayerProperties();
+        auto layers     = enumerateInstanceLayerProperties();
         auto extensions = enumerateInstanceExtensionProperties();
 
         for (const auto& ext : requiredExtensions)
@@ -403,6 +416,39 @@ namespace djinn {
 
         m_VKInstance = createInstanceUnique(info);
     }
+
+	void Renderer::setupVkDebugCallback() {
+		if (m_UseValidation) {
+			vk::DebugReportCallbackCreateInfoEXT info;
+
+			info.flags =
+				vk::DebugReportFlagBitsEXT::eError |
+				vk::DebugReportFlagBitsEXT::eWarning |
+				vk::DebugReportFlagBitsEXT::eInformation |
+				vk::DebugReportFlagBitsEXT::ePerformanceWarning |
+				vk::DebugReportFlagBitsEXT::eDebug;
+
+			info.pfnCallback = &report_to_log;
+
+			m_VkDebugCallback = m_VKInstance->createDebugReportCallbackEXTUnique(info);
+		}
+	}
+
+	void Renderer::setupVkPhysicalDevice() {
+		auto all_devices = m_VKInstance->enumeratePhysicalDevices();
+
+		auto props = all_devices.front().enumerateDeviceExtensionProperties();
+
+		// just pick the first available device
+		// TODO - implement some kind of scoring system to select the best available
+		//        AND/OR provide methods for multi-GPU usage
+
+		gLogDebug << "Physical Device [0]: " << all_devices.front().getProperties().deviceName;
+
+		for (const auto& prop : props) {
+			gLogDebug << "\t" << prop.extensionName;
+		}
+	}
 
     void Renderer::detectMonitors() {
         m_Monitors.clear();

@@ -45,7 +45,8 @@ public:
 };
 
 int main() {
-    auto& engine = Engine::instance();
+
+	auto& engine = Engine::instance();
 
     engine.enable<Renderer>();
     engine.enable<Input>();

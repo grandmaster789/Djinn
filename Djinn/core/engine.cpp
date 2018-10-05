@@ -230,7 +230,7 @@ namespace djinn {
             else
                 out << m_ApplicationSettings.dump(4);
 
-            m_Application->m_Engine = nullptr; // and we're done
+			m_Application.reset(); // and we're done
         }
     }
 
