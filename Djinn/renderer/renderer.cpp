@@ -3,6 +3,7 @@
 #include "core/mediator.h"
 #include "window.h"
 #include "window_hints.h"
+#include <iterator>
 
 // ----- GLFW monitor callback -----
 namespace {
@@ -435,19 +436,57 @@ namespace djinn {
 	}
 
 	void Renderer::setupVkPhysicalDevice() {
-		auto all_devices = m_VKInstance->enumeratePhysicalDevices();
-
-		auto props = all_devices.front().enumerateDeviceExtensionProperties();
+		auto all_physical_devices = m_VKInstance->enumeratePhysicalDevices();
 
 		// just pick the first available device
 		// TODO - implement some kind of scoring system to select the best available
 		//        AND/OR provide methods for multi-GPU usage
 
-		gLogDebug << "Physical Device [0]: " << all_devices.front().getProperties().deviceName;
+		/*
+		gLogDebug << "Physical Device [0]: " << all_physical_devices.front().getProperties().deviceName;
 
 		for (const auto& prop : props) {
 			gLogDebug << "\t" << prop.extensionName;
 		}
+		*/
+
+		if (all_physical_devices.empty())
+			throw std::runtime_error("No Vulkan devices available");
+
+		auto selected_gpu = all_physical_devices.front();
+		gLog << "Selecting phyiscal device: " << selected_gpu.getProperties().deviceName;
+
+		auto queueFamilyProperties = selected_gpu.getQueueFamilyProperties();
+
+		// get the first queue that supports graphics
+		auto it = util::find_if(
+			queueFamilyProperties, 
+			[](const auto& qfp) {
+				return qfp.queueFlags & vk::QueueFlagBits::eGraphics;
+			}
+		);
+
+		auto queueFamilyIndex = std::distance(
+			queueFamilyProperties.cbegin(),
+			it
+		);
+
+		float queuePriority = 0.0f;
+
+		vk::DeviceQueueCreateInfo queue_info;
+		queue_info
+			.setFlags({})
+			.setQueueFamilyIndex(static_cast<uint32_t>(queueFamilyIndex))
+			.setQueueCount(1)
+			.setPQueuePriorities(&queuePriority);
+
+		vk::DeviceCreateInfo device_info;
+		device_info
+			.setFlags({})
+			.setQueueCreateInfoCount(1)
+			.setPQueueCreateInfos(&queue_info);
+
+		m_Device = selected_gpu.createDeviceUnique(device_info);
 	}
 
     void Renderer::detectMonitors() {

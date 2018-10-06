@@ -79,6 +79,8 @@ namespace djinn {
         WindowList m_Windows;
 
         vk::UniqueInstance               m_VKInstance;
+		vk::UniqueDevice                 m_Device;
 		vk::UniqueDebugReportCallbackEXT m_VkDebugCallback;
+
     };
 }

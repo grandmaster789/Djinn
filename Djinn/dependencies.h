@@ -13,6 +13,8 @@
 //#include <vulkan/spirv.hpp>
 //#include <shaderc/shaderc.hpp>
 
+// ~~ make sure to link with vulkan-1.lib in the application project...
+
 // GLM optimized floating point linear algebra
 // 
 #if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS
