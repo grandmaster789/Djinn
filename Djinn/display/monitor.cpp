@@ -3,7 +3,7 @@
 #include <ostream>
 #include <cassert>
 
-namespace djinn::renderer {
+namespace djinn::display {
     Monitor::Monitor(GLFWmonitor* handle):
         m_Handle(handle)
     {

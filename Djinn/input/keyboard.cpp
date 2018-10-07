@@ -1,5 +1,5 @@
 #include "keyboard.h"
-#include "renderer/window.h"
+#include "display/window.h"
 #include "core/mediator.h"
 #include "core/logger.h"
 
@@ -19,7 +19,7 @@ namespace {
         int action,
         int modifiers
     ) {
-        using djinn::renderer::Window;
+        using djinn::display::Window;
         using djinn::input::Keyboard;
         using djinn::broadcast;
 

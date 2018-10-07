@@ -20,7 +20,7 @@ namespace {
         );
     }
 }
-namespace djinn::renderer {
+namespace djinn::display {
     void WindowHints::apply() {
         // [NOTE] I don't believe it's possible to verify the version numbers beforehand. 
             //        Not entirely sure though

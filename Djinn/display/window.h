@@ -5,7 +5,7 @@
 #include <memory>
 
 namespace djinn {
-    class Renderer;
+    class Display;
 }
 
 namespace djinn::input {
@@ -13,11 +13,13 @@ namespace djinn::input {
     class Mouse;
 }
 
-namespace djinn::renderer {
+namespace djinn::display {
     class Monitor;
 
     class Window {
     public:
+        friend class Display;
+
         using Keyboard = input::Keyboard;
         using Mouse    = input::Mouse;
 
@@ -104,7 +106,14 @@ namespace djinn::renderer {
     private:
         void setGLFWcallbacks();
 
+        void initVkSurface(vk::Instance instance, const vk::PhysicalDevice& gpu);
+
         GLFWwindow* m_Handle = nullptr;
+
+        vk::UniqueSurfaceKHR              m_Surface;
+        vk::SurfaceCapabilitiesKHR        m_SurfaceCaps;
+        std::vector<vk::SurfaceFormatKHR> m_AvailableSurfaceFormats;
+        vk::SurfaceFormatKHR              m_SurfaceFormat;
 
         std::string m_Title;
 

@@ -23,6 +23,11 @@ namespace djinn::util {
     template <typename...Ts>
     OverloadSet(Ts...) -> OverloadSet<Ts...>;
 
+    /*
+        Note that the lambda signatures for match() should follow multimethod
+        conventions, not sequenced(accumulate-like).
+        (see unit tests for samples)
+    */
     template <typename...Lambdas>
     auto match(Lambdas&&... lambdas);
 }

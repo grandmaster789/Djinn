@@ -10,7 +10,7 @@ namespace djinn {
     class Renderer;
 }
 
-namespace djinn::renderer {
+namespace djinn::display {
     class Monitor {
     public:
         friend class Renderer;

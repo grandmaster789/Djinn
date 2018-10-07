@@ -35,20 +35,23 @@
     <ClCompile Include="renderer\renderer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\monitor.cpp">
-      <Filter>renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\window.cpp">
-      <Filter>renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\window_hints.cpp">
-      <Filter>renderer</Filter>
-    </ClCompile>
     <ClCompile Include="input\keyboard.cpp">
       <Filter>input</Filter>
     </ClCompile>
     <ClCompile Include="input\input.cpp">
       <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="display\monitor.cpp">
+      <Filter>display</Filter>
+    </ClCompile>
+    <ClCompile Include="display\window.cpp">
+      <Filter>display</Filter>
+    </ClCompile>
+    <ClCompile Include="display\window_hints.cpp">
+      <Filter>display</Filter>
+    </ClCompile>
+    <ClCompile Include="display\display.cpp">
+      <Filter>display</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -103,6 +106,9 @@
     <Filter Include="input">
       <UniqueIdentifier>{fb76ab57-588f-42d1-b0a0-ca32bcdb7d93}</UniqueIdentifier>
     </Filter>
+    <Filter Include="display">
+      <UniqueIdentifier>{0c2a96fd-e93d-4f40-9723-0ce8fec61df4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\engine.h">
@@ -143,9 +149,6 @@
     <ClInclude Include="renderer\renderer.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\monitor.h">
-      <Filter>renderer</Filter>
-    </ClInclude>
     <ClInclude Include="core\mediator_queue.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -155,12 +158,6 @@
     <ClInclude Include="util\flat_map.h">
       <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\window.h">
-      <Filter>renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\window_hints.h">
-      <Filter>renderer</Filter>
-    </ClInclude>
     <ClInclude Include="input\input.h">
       <Filter>input</Filter>
     </ClInclude>
@@ -169,6 +166,18 @@
     </ClInclude>
     <ClInclude Include="util\variant.h">
       <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="display\display.h">
+      <Filter>display</Filter>
+    </ClInclude>
+    <ClInclude Include="display\monitor.h">
+      <Filter>display</Filter>
+    </ClInclude>
+    <ClInclude Include="display\window.h">
+      <Filter>display</Filter>
+    </ClInclude>
+    <ClInclude Include="display\window_hints.h">
+      <Filter>display</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,12 +1,12 @@
 #include "window.h"
-#include "renderer.h"
+#include "display.h"
 #include "monitor.h"
 #include "input/keyboard.h"
 
 // ----- GLFW window callbacks -----
 namespace {
     using djinn::broadcast;
-    using djinn::renderer::Window;
+    using djinn::display::Window;
 
     void windowCloseCallback(GLFWwindow* handle) {
         Window* w = static_cast<Window*>(glfwGetWindowUserPointer(handle));
@@ -69,7 +69,7 @@ namespace {
     }
 }
 
-namespace djinn::renderer {
+namespace djinn::display {
     Window::Window(GLFWwindow* handle, const std::string& title):
         m_Handle(handle),
         m_Title(title)
@@ -236,5 +236,23 @@ namespace djinn::renderer {
         glfwSetWindowSizeCallback   (m_Handle, &windowResizeCallback);
 
         broadcast(OnCreated{ this });
+    }
+
+    void Window::initVkSurface(vk::Instance instance, const vk::PhysicalDevice& gpu) {
+        VkSurfaceKHR surface;
+        glfwCreateWindowSurface(instance, m_Handle, nullptr, &surface);
+
+        m_Surface.reset(surface);
+
+        m_AvailableSurfaceFormats = gpu.getSurfaceFormatsKHR(m_Surface.get());
+        m_SurfaceCaps             = gpu.getSurfaceCapabilitiesKHR(m_Surface.get());
+
+        // fallback to 32-bits BGRA, sRGB colorspace
+        m_SurfaceFormat.format     = vk::Format::eB8G8R8A8Unorm;
+        m_SurfaceFormat.colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear;
+
+        // default to the first one available as reported by the GPU
+        if (m_AvailableSurfaceFormats.front().format != vk::Format::eUndefined)
+            m_SurfaceFormat = m_AvailableSurfaceFormats.front();
     }
 }

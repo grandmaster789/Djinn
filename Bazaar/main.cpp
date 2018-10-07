@@ -1,7 +1,7 @@
 #include "core/engine.h"
 #include "app/application.h"
-#include "renderer/renderer.h"
-#include "renderer/window.h"
+#include "display/display.h"
+#include "display/window.h"
 #include "input/input.h"
 #include "input/keyboard.h"
 #include <iostream>
@@ -48,7 +48,7 @@ int main() {
 
 	auto& engine = Engine::instance();
 
-    engine.enable<Renderer>();
+    engine.enable<Display>();
     engine.enable<Input>();
 
     engine.setApplication<Bazaar>();

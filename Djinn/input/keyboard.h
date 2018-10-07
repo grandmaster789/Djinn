@@ -3,7 +3,7 @@
 #include "dependencies.h"
 #include <array>
 
-namespace djinn::renderer {
+namespace djinn::display {
     class Window;
 }
 
@@ -13,7 +13,7 @@ namespace djinn::input {
     */
     class Keyboard {
     public:
-        using Window = renderer::Window;
+        using Window = display::Window;
 
         Keyboard(Window* w);
 

@@ -7,15 +7,15 @@
 // http://www.glfw.org/docs/latest/window_guide.html#window_hints_values
 
 namespace djinn {
-    class Renderer;
+    class Display;
 }
 
-namespace djinn::renderer {
+namespace djinn::display {
     class Monitor;
 
     class WindowHints {
     private:
-        friend class Renderer;
+        friend class Display;
 
         WindowHints() = default;
 
