@@ -63,9 +63,8 @@ namespace djinn {
         void createVkInstance(); // might throw vk::SystemError
         void setupVkDebugCallback();
         void selectVkPhysicalDevice();
-        void createVkSurface();
-        void createVkQueueIndices();
-        void createVkDevice();
+		void setupVkQueues();
+		void setupVkDevice();
         
         struct {
             int m_Width = 800;
@@ -79,12 +78,28 @@ namespace djinn {
         MonitorList m_Monitors;
         WindowPtr m_Window;
 
+		std::vector<const char*> m_RequiredDeviceExtensions;
+		std::vector<const char*> m_RequiredInstanceExtensions;
+		std::vector<const char*> m_RequiredInstanceLayers;
+
         vk::UniqueInstance               m_VkInstance;
         vk::PhysicalDevice               m_PhysicalDevice;
         vk::UniqueDevice                 m_Device;        
         vk::UniqueDebugReportCallbackEXT m_VkDebugCallback;
 
         vk::SampleCountFlagBits m_MaxSampleCount;
+		vk::QueueFlags          m_SupportedQueues;
 
+		static constexpr const uint32_t IDX_NOT_FOUND = std::numeric_limits<uint32_t>::max();
+
+		uint32_t m_GraphicsFamilyIdx = IDX_NOT_FOUND;
+		uint32_t m_PresentFamilyIdx  = IDX_NOT_FOUND;
+		uint32_t m_ComputeFamilyIdx  = IDX_NOT_FOUND;
+		uint32_t m_TransferFamilyIdx = IDX_NOT_FOUND;
+
+		vk::Queue m_GraphicsQueue;
+		vk::Queue m_PresentQueue;
+		vk::Queue m_ComputeQueue;
+		vk::Queue m_TransferQueue;
     };
 }

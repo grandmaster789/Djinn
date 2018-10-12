@@ -64,6 +64,9 @@ namespace djinn::display {
               Mouse*    getMouse();
         const Mouse*    getMouse()    const;
 
+		      vk::SurfaceKHR& getSurface();
+		const vk::SurfaceKHR& getSurface() const;
+
         // ----- Attribute queries -----
         bool isFocused()   const;
         bool isIconified() const;
@@ -110,7 +113,8 @@ namespace djinn::display {
 
         GLFWwindow* m_Handle = nullptr;
 
-        vk::UniqueSurfaceKHR              m_Surface;
+		vk::Instance                      m_VkInstance;
+        vk::SurfaceKHR                    m_Surface; // glfwCreateSurface doesn't play well with the Unique variant
         vk::SurfaceCapabilitiesKHR        m_SurfaceCaps;
         std::vector<vk::SurfaceFormatKHR> m_AvailableSurfaceFormats;
         vk::SurfaceFormatKHR              m_SurfaceFormat;

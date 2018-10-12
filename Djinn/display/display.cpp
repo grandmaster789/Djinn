@@ -165,17 +165,6 @@ namespace djinn {
             << "Primary monitor: "
             << *m_Monitors.front();
 
-        {
-            uint32_t count = 0;
-            auto ext = glfwGetRequiredInstanceExtensions(&count);
-
-            std::vector<const char*> requiredExtensions;
-            std::vector<const char*> requiredLayers;
-
-            for (uint32_t i = 0; i < count; ++i)
-                requiredExtensions.push_back(ext[i]);
-        }
-
         gLogDebug
             << "Creating main window: "
             << m_WindowSettings.m_Width
@@ -239,8 +228,9 @@ namespace djinn {
 
         createVkInstance();
         setupVkDebugCallback();
-        
-        
+		selectVkPhysicalDevice();
+		setupVkQueues();
+		setupVkDevice();
     }
 
     void Display::update() {
@@ -263,7 +253,10 @@ namespace djinn {
 
     void Display::shutdown() {
         System::shutdown();
-        
+
+		if (m_Device)
+			m_Device->waitIdle();
+
         m_Window.reset();
     }
 
@@ -375,31 +368,28 @@ namespace djinn {
         using vk::InstanceCreateInfo;
         using vk::createInstanceUnique;
 
-        vector<const char*> requiredLayers;
-        vector<const char*> requiredExtensions;
-
         uint32_t count = 0;
         auto raw_list = glfwGetRequiredInstanceExtensions(&count);
         for (uint32_t i = 0; i < count; ++i)
-            requiredExtensions.push_back(raw_list[i]);
+            m_RequiredInstanceExtensions.push_back(raw_list[i]);
 
 
         if (m_UseValidation) {
-            requiredLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+            m_RequiredInstanceLayers.push_back("VK_LAYER_LUNARG_standard_validation");
 
-            requiredExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-            requiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+            m_RequiredInstanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+			m_RequiredInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }
 
         // check that the required extensions/layers are actually available
         auto layers = enumerateInstanceLayerProperties();
         auto extensions = enumerateInstanceExtensionProperties();
 
-        for (const auto& ext : requiredExtensions)
+        for (const auto& ext : m_RequiredInstanceExtensions)
             if (!isExtensionAvailable(ext, extensions))
                 throw runtime_error(string("Instance extension unavailable: ") + string(ext));
 
-        for (const auto& layer : requiredLayers)
+        for (const auto& layer : m_RequiredInstanceLayers)
             if (!isLayerAvailable(layer, layers))
                 throw runtime_error(string("Instance layer unavailable: ") + string(layer));
 
@@ -413,11 +403,11 @@ namespace djinn {
 
         InstanceCreateInfo info;
         info
-            .setPApplicationInfo(&appInfo)
-            .setEnabledLayerCount((uint32_t)requiredLayers.size())
-            .setPpEnabledLayerNames(requiredLayers.data())
-            .setEnabledExtensionCount((uint32_t)requiredExtensions.size())
-            .setPpEnabledExtensionNames(requiredExtensions.data());
+            .setPApplicationInfo       (&appInfo)
+            .setEnabledLayerCount      ((uint32_t)m_RequiredInstanceLayers.size())
+            .setPpEnabledLayerNames    (m_RequiredInstanceLayers.data())
+            .setEnabledExtensionCount  ((uint32_t)m_RequiredInstanceExtensions.size())
+            .setPpEnabledExtensionNames(m_RequiredInstanceExtensions.data());
 
         m_VkInstance = createInstanceUnique(info);
     }
@@ -461,19 +451,155 @@ namespace djinn {
         gLog << "Selecting phyiscal device: " << m_PhysicalDevice.getProperties().deviceName;
 
         m_MaxSampleCount = findMaxSampleCount(m_PhysicalDevice.getProperties());
+
+		// now that we have a physical device, create a surface 
+		// for the window
+		m_Window->initVkSurface(m_VkInstance.get(), m_PhysicalDevice);
     }
 
-    void Display::createVkSurface() {
-        m_Window->initVkSurface(m_VkInstance.get(), m_PhysicalDevice);
-        
-    }
+	void Display::setupVkQueues() {
+		auto deviceQueueFamilies = m_PhysicalDevice.getQueueFamilyProperties();
 
-    void Display::createVkQueueIndices() {
-    }
+		// [TODO] figure out some way to determine sets of candidates
+		//        and then determining the best one
+		for (uint32_t i = 0; i < deviceQueueFamilies.size(); ++i) {
+			const auto& prop = deviceQueueFamilies[i];
 
-    void Display::createVkDevice() {
-    }
-    
+			if (
+				(m_GraphicsFamilyIdx == IDX_NOT_FOUND) &&
+			    (prop.queueFlags & vk::QueueFlagBits::eGraphics) 
+			) {
+				m_GraphicsFamilyIdx = i;
+				m_SupportedQueues |= vk::QueueFlagBits::eGraphics;
+			}
+
+			if (m_PresentFamilyIdx == IDX_NOT_FOUND) {
+				auto has_present_support = m_PhysicalDevice.getSurfaceSupportKHR(i, m_Window->getSurface());
+
+				if (
+					(prop.queueCount > 0) &&
+					(has_present_support)
+				)
+					m_PresentFamilyIdx = i;
+			}
+
+			if (
+				(m_ComputeFamilyIdx == IDX_NOT_FOUND) &&
+				(prop.queueFlags & vk::QueueFlagBits::eCompute)
+			) {
+				m_ComputeFamilyIdx = i;
+				m_SupportedQueues |= vk::QueueFlagBits::eCompute;
+			}
+
+			if (
+				(m_TransferFamilyIdx == IDX_NOT_FOUND) &&
+				(prop.queueFlags & vk::QueueFlagBits::eTransfer)
+			) {
+				m_TransferFamilyIdx = i;
+				m_SupportedQueues |= vk::QueueFlagBits::eTransfer;
+			}
+
+			if (
+				(m_GraphicsFamilyIdx != IDX_NOT_FOUND) &&
+				(m_PresentFamilyIdx  != IDX_NOT_FOUND) &&
+				(m_ComputeFamilyIdx  != IDX_NOT_FOUND) &&
+				(m_TransferFamilyIdx != IDX_NOT_FOUND)
+			)
+				break;
+		}
+
+		if (m_GraphicsFamilyIdx == -1)
+			throw std::runtime_error("No graphics enabled vulkan queue was found");
+	}
+
+	void Display::setupVkDevice() {
+		std::vector<vk::DeviceQueueCreateInfo> queueInfos;
+		float defaultQueuePriority = 0.0f;
+
+		if (m_SupportedQueues & vk::QueueFlagBits::eGraphics) {
+			vk::DeviceQueueCreateInfo info;
+
+			info.queueFamilyIndex = m_GraphicsFamilyIdx;
+			info.queueCount       = 1;
+			info.pQueuePriorities = &defaultQueuePriority;
+
+			queueInfos.push_back(std::move(info));
+		}
+		
+		if (
+			(m_SupportedQueues & vk::QueueFlagBits::eCompute) &&
+			(m_ComputeFamilyIdx != m_GraphicsFamilyIdx)
+		) { 
+			vk::DeviceQueueCreateInfo info;
+
+			info.queueFamilyIndex = m_ComputeFamilyIdx;
+			info.queueCount       = 1;
+			info.pQueuePriorities = &defaultQueuePriority;
+
+			queueInfos.push_back(std::move(info));
+		}
+
+		if (
+			(m_SupportedQueues & vk::QueueFlagBits::eTransfer) &&
+			(m_TransferFamilyIdx != m_GraphicsFamilyIdx) &&
+			(m_TransferFamilyIdx != m_ComputeFamilyIdx)
+		) {
+			vk::DeviceQueueCreateInfo info;
+
+			info.queueFamilyIndex = m_TransferFamilyIdx;
+			info.queueCount       = 1;
+			info.pQueuePriorities = &defaultQueuePriority;
+
+			queueInfos.push_back(std::move(info));
+		}
+
+		vk::PhysicalDeviceFeatures requiredFeatures;
+		vk::PhysicalDeviceFeatures availableFeatures = m_PhysicalDevice.getFeatures();
+
+		requiredFeatures.fillModeNonSolid                     = VK_TRUE;
+		requiredFeatures.fragmentStoresAndAtomics             = VK_TRUE;
+		requiredFeatures.samplerAnisotropy                    = VK_TRUE;
+		requiredFeatures.sampleRateShading                    = VK_TRUE;
+		requiredFeatures.shaderClipDistance                   = VK_TRUE;
+		requiredFeatures.shaderCullDistance                   = VK_TRUE;
+		requiredFeatures.shaderStorageImageExtendedFormats    = VK_TRUE;
+		requiredFeatures.shaderStorageImageWriteWithoutFormat = VK_TRUE;
+
+		     if (availableFeatures.textureCompressionBC)       requiredFeatures.textureCompressionBC       = VK_TRUE;
+		else if (availableFeatures.textureCompressionASTC_LDR) requiredFeatures.textureCompressionASTC_LDR = VK_TRUE;
+		else if (availableFeatures.textureCompressionETC2)     requiredFeatures.textureCompressionETC2     = VK_TRUE;
+		
+		if (availableFeatures.tessellationShader)
+			requiredFeatures.tessellationShader = VK_TRUE;
+		else
+			gLogError << "Physical device does not support tesselation shaders";
+
+		if (availableFeatures.geometryShader)
+			requiredFeatures.geometryShader = VK_TRUE;
+		else
+			gLogError << "Physical device does not support geometry shader";
+
+		m_RequiredDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+		vk::DeviceCreateInfo info;
+
+		info
+			.setPEnabledFeatures       (&requiredFeatures)
+			.setPpEnabledLayerNames    (m_RequiredInstanceLayers.data())
+			.setEnabledLayerCount      ((uint32_t)m_RequiredInstanceLayers.size())
+			.setPpEnabledExtensionNames(m_RequiredDeviceExtensions.data())
+			.setEnabledExtensionCount  ((uint32_t)m_RequiredDeviceExtensions.size())
+			.setPQueueCreateInfos      (queueInfos.data())
+			.setQueueCreateInfoCount   ((uint32_t)queueInfos.size());
+
+		m_Device = m_PhysicalDevice.createDeviceUnique(info);
+
+		m_GraphicsQueue = m_Device->getQueue(m_GraphicsFamilyIdx, 0);
+		m_PresentQueue  = m_Device->getQueue(m_PresentFamilyIdx, 0);
+		m_ComputeQueue  = m_Device->getQueue(m_ComputeFamilyIdx, 0);
+		m_TransferQueue = m_Device->getQueue(m_TransferFamilyIdx, 0);
+	}
+
     void Display::detectMonitors() {
         m_Monitors.clear();
         int count = 0;

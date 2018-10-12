@@ -80,6 +80,9 @@ namespace djinn::display {
     }
 
     Window::~Window() {
+		if (m_Surface && m_VkInstance)
+			m_VkInstance.destroySurfaceKHR(m_Surface);
+
         if (m_Handle)
             glfwDestroyWindow(m_Handle);
     }
@@ -242,10 +245,11 @@ namespace djinn::display {
         VkSurfaceKHR surface;
         glfwCreateWindowSurface(instance, m_Handle, nullptr, &surface);
 
-        m_Surface.reset(surface);
+		m_VkInstance = instance; // keep it around in order to clean up the surface
+        m_Surface = surface;
 
-        m_AvailableSurfaceFormats = gpu.getSurfaceFormatsKHR(m_Surface.get());
-        m_SurfaceCaps             = gpu.getSurfaceCapabilitiesKHR(m_Surface.get());
+        m_AvailableSurfaceFormats = gpu.getSurfaceFormatsKHR(m_Surface);
+        m_SurfaceCaps             = gpu.getSurfaceCapabilitiesKHR(m_Surface);
 
         // fallback to 32-bits BGRA, sRGB colorspace
         m_SurfaceFormat.format     = vk::Format::eB8G8R8A8Unorm;
@@ -255,4 +259,12 @@ namespace djinn::display {
         if (m_AvailableSurfaceFormats.front().format != vk::Format::eUndefined)
             m_SurfaceFormat = m_AvailableSurfaceFormats.front();
     }
+
+	vk::SurfaceKHR& Window::getSurface() {
+		return m_Surface;
+	}
+
+	const vk::SurfaceKHR& Window::getSurface() const {
+		return m_Surface;
+	}
 }
