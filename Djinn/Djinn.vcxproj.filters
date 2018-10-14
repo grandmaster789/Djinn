@@ -53,8 +53,8 @@
     <ClCompile Include="display\display.cpp">
       <Filter>display</Filter>
     </ClCompile>
-    <ClCompile Include="display\swapchain.cpp">
-      <Filter>display</Filter>
+    <ClCompile Include="renderer\swapchain.cpp">
+      <Filter>renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -182,8 +182,8 @@
     <ClInclude Include="display\window_hints.h">
       <Filter>display</Filter>
     </ClInclude>
-    <ClInclude Include="display\swapchain.h">
-      <Filter>display</Filter>
+    <ClInclude Include="renderer\swapchain.h">
+      <Filter>renderer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

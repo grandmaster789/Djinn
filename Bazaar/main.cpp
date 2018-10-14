@@ -2,6 +2,7 @@
 #include "app/application.h"
 #include "display/display.h"
 #include "display/window.h"
+#include "renderer/renderer.h"
 #include "input/input.h"
 #include "input/keyboard.h"
 #include <iostream>
@@ -50,6 +51,7 @@ int main() {
 
     engine.enable<Display>();
     engine.enable<Input>();
+    engine.enable<Renderer>();
 
     engine.setApplication<Bazaar>();
 

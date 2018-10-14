@@ -599,8 +599,6 @@ namespace djinn {
 		m_PresentQueue  = m_VkDevice->getQueue(m_PresentFamilyIdx,  0);
 		m_ComputeQueue  = m_VkDevice->getQueue(m_ComputeFamilyIdx,  0);
 		m_TransferQueue = m_VkDevice->getQueue(m_TransferFamilyIdx, 0);
-
-        m_Window->initVkSwapchain(this);
 	}
 
     void Display::detectMonitors() {
@@ -661,5 +659,21 @@ namespace djinn {
     
     uint32_t Display::getTransferFamilyIdx() const {
         return m_TransferFamilyIdx;
+    }
+
+    vk::Queue Display::getGraphicsQueue() const {
+        return m_GraphicsQueue;
+    }
+
+    vk::Queue Display::getPresentQueue()  const {
+        return m_PresentQueue;
+    }
+
+    vk::Queue Display::getComputeQueue()  const {
+        return m_ComputeQueue;
+    }
+
+    vk::Queue Display::getTransferQueue() const {
+        return m_TransferQueue;
     }
 }

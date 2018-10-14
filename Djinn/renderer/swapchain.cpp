@@ -1,12 +1,14 @@
 #include "swapchain.h"
-#include "window.h"
-#include "display.h"
+#include "renderer.h"
+#include "display/window.h"
+#include "display/display.h"
 #include "util/algorithm.h"
 
-namespace djinn::display {
+namespace djinn::renderer {
     Swapchain::Swapchain(
-        const Window&  window,
-              Display* display
+        const Window&   window,
+              Display*  display,
+              Renderer* render
     ) {
         const auto& gpu = display->getVkPhysicalDevice();
         auto device     = display->getVkDevice();
@@ -79,8 +81,8 @@ namespace djinn::display {
                 info.imageUsage |= vk::ImageUsageFlagBits::eTransferDst;
 
             // ~~ if the window had some old swapchain, transfer it
-            if (window.getSwapchain().getHandle())
-                info.setOldSwapchain(window.getSwapchain().getHandle());
+            if (auto oldChain = render->getSwapchain())
+                info.setOldSwapchain(oldChain->getHandle());
 
             // ~~ figure out if we should use concurrent sharing
             std::vector<uint32_t> queueFamilies;

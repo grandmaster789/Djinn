@@ -1,7 +1,6 @@
 #pragma once
 
 #include "dependencies.h"
-#include "swapchain.h"
 #include <string>
 #include <memory>
 
@@ -70,7 +69,6 @@ namespace djinn::display {
 		const vk::SurfaceKHR&             getSurface()       const;
         const vk::SurfaceCapabilitiesKHR& getSurfaceCaps()   const;
         const vk::SurfaceFormatKHR&       getSurfaceFormat() const;
-        const Swapchain&                  getSwapchain()     const;
 
         // ----- Attribute queries -----
         bool isFocused()   const;
@@ -115,7 +113,6 @@ namespace djinn::display {
         void setGLFWcallbacks();
 
         void initVkSurface(Display* display);
-        void initVkSwapchain(Display* display);
 
         GLFWwindow* m_Handle = nullptr;
 
@@ -124,7 +121,6 @@ namespace djinn::display {
         vk::SurfaceCapabilitiesKHR        m_SurfaceCaps;
         std::vector<vk::SurfaceFormatKHR> m_AvailableSurfaceFormats;
         vk::SurfaceFormatKHR              m_SurfaceFormat;
-        Swapchain                         m_Swapchain;
 
         std::string m_Title;
 

@@ -70,6 +70,11 @@ namespace djinn {
         uint32_t getComputeFamilyIdx()  const;
         uint32_t getTransferFamilyIdx() const;
         
+        vk::Queue getGraphicsQueue() const;
+        vk::Queue getPresentQueue()  const;
+        vk::Queue getComputeQueue()  const;
+        vk::Queue getTransferQueue() const;
+
     private:
         void createWindow(const std::string& title, int width, int height);	// window on primary monitor
         void createWindow(const std::string& title, const Monitor* m);		// borderless fullscreen on the specified monitor

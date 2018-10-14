@@ -263,11 +263,7 @@ namespace djinn::display {
             m_SurfaceFormat = m_AvailableSurfaceFormats.front();
     }
 
-    void Window::initVkSwapchain(Display* display) {
-        m_Swapchain = Swapchain(*this, display);
-    }
-
-	vk::SurfaceKHR& Window::getSurface() {
+    vk::SurfaceKHR& Window::getSurface() {
 		return m_Surface;
 	}
 
@@ -281,9 +277,5 @@ namespace djinn::display {
 
     const vk::SurfaceFormatKHR& Window::getSurfaceFormat() const {
         return m_SurfaceFormat;
-    }
-
-    const Swapchain& Window::getSwapchain() const {
-        return m_Swapchain;
     }
 }
