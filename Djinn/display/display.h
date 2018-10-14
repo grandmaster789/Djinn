@@ -14,6 +14,11 @@ namespace djinn {
         class WindowHints;
     }
 
+    /*
+        For simplicity, this only describes a single window.
+        Multi-window could be a thing, but until it's needed it'll only
+        be a lot of complication.
+    */
     class Display :
         public core::System,
         public MessageHandler<display::Monitor::OnConnected>,
@@ -55,6 +60,16 @@ namespace djinn {
               Window* getWindow();
         const Window* getWindow() const;
 
+        // ----- Vulkan support -----
+              vk::Instance        getVkInstance()       const;
+        const vk::PhysicalDevice& getVkPhysicalDevice() const;
+              vk::Device          getVkDevice()         const;
+
+        uint32_t getGraphicsFamilyIdx() const;
+        uint32_t getPresentFamilyIdx()  const;
+        uint32_t getComputeFamilyIdx()  const;
+        uint32_t getTransferFamilyIdx() const;
+        
     private:
         void createWindow(const std::string& title, int width, int height);	// window on primary monitor
         void createWindow(const std::string& title, const Monitor* m);		// borderless fullscreen on the specified monitor
@@ -83,8 +98,8 @@ namespace djinn {
 		std::vector<const char*> m_RequiredInstanceLayers;
 
         vk::UniqueInstance               m_VkInstance;
-        vk::PhysicalDevice               m_PhysicalDevice;
-        vk::UniqueDevice                 m_Device;        
+        vk::PhysicalDevice               m_VkPhysicalDevice;
+        vk::UniqueDevice                 m_VkDevice;        
         vk::UniqueDebugReportCallbackEXT m_VkDebugCallback;
 
         vk::SampleCountFlagBits m_MaxSampleCount;

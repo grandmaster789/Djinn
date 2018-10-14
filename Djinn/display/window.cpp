@@ -241,7 +241,10 @@ namespace djinn::display {
         broadcast(OnCreated{ this });
     }
 
-    void Window::initVkSurface(vk::Instance instance, const vk::PhysicalDevice& gpu) {
+    void Window::initVkSurface(Display* display) {
+        auto instance = display->getVkInstance();
+        auto gpu      = display->getVkPhysicalDevice();
+
         VkSurfaceKHR surface;
         glfwCreateWindowSurface(instance, m_Handle, nullptr, &surface);
 
@@ -260,6 +263,10 @@ namespace djinn::display {
             m_SurfaceFormat = m_AvailableSurfaceFormats.front();
     }
 
+    void Window::initVkSwapchain(Display* display) {
+        m_Swapchain = Swapchain(*this, display);
+    }
+
 	vk::SurfaceKHR& Window::getSurface() {
 		return m_Surface;
 	}
@@ -267,4 +274,16 @@ namespace djinn::display {
 	const vk::SurfaceKHR& Window::getSurface() const {
 		return m_Surface;
 	}
+
+    const vk::SurfaceCapabilitiesKHR& Window::getSurfaceCaps() const {
+        return m_SurfaceCaps;
+    }
+
+    const vk::SurfaceFormatKHR& Window::getSurfaceFormat() const {
+        return m_SurfaceFormat;
+    }
+
+    const Swapchain& Window::getSwapchain() const {
+        return m_Swapchain;
+    }
 }

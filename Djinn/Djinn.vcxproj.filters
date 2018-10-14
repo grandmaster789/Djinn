@@ -53,6 +53,9 @@
     <ClCompile Include="display\display.cpp">
       <Filter>display</Filter>
     </ClCompile>
+    <ClCompile Include="display\swapchain.cpp">
+      <Filter>display</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -177,6 +180,9 @@
       <Filter>display</Filter>
     </ClInclude>
     <ClInclude Include="display\window_hints.h">
+      <Filter>display</Filter>
+    </ClInclude>
+    <ClInclude Include="display\swapchain.h">
       <Filter>display</Filter>
     </ClInclude>
   </ItemGroup>

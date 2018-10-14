@@ -43,6 +43,13 @@ namespace djinn::util {
     
     template <typename...tArgs>
     std::string stringify(tArgs&&...args);
+
+    // insert a 'separator' character every 'column_width' characters
+    std::string columnize(
+        const std::string& source_string, 
+        const int          column_width  = 80, 
+        const char         separator     = '\n'
+    );
 }
 
 #include "string_util.inl"

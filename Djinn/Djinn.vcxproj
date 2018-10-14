@@ -141,6 +141,7 @@
     <ClCompile Include="dependencies.cpp" />
     <ClCompile Include="display\display.cpp" />
     <ClCompile Include="display\monitor.cpp" />
+    <ClCompile Include="display\swapchain.cpp" />
     <ClCompile Include="display\window.cpp" />
     <ClCompile Include="display\window_hints.cpp" />
     <ClCompile Include="input\input.cpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="dependencies.h" />
     <ClInclude Include="display\display.h" />
     <ClInclude Include="display\monitor.h" />
+    <ClInclude Include="display\swapchain.h" />
     <ClInclude Include="display\window.h" />
     <ClInclude Include="display\window_hints.h" />
     <ClInclude Include="input\input.h" />

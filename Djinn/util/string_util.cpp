@@ -200,4 +200,26 @@ namespace djinn::util {
     
         return result;
     }
+
+    std::string columnize(
+        const std::string& source_string, 
+        const int          column_width, 
+        const char         separator
+    ) {
+        std::string result;
+        result.reserve(source_string.size() + source_string.size() / column_width);
+
+        int cursor = 0;
+
+        for (const auto& character : source_string) {
+            result.push_back(character);
+
+            if (cursor > column_width) {
+                cursor = 0;
+                result.push_back(separator);
+            }
+        }
+
+        return result;
+    }
 }

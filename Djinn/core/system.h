@@ -12,6 +12,7 @@ namespace djinn {
 }
 
 namespace djinn::core {
+    // mwh.. considering renaming 'System' to 'EngineModule' or something
     class System {
     private:
     	struct VariableEntry {
@@ -42,7 +43,7 @@ namespace djinn::core {
     	virtual void update();
     	virtual void shutdown();
     
-        virtual void unittest() = 0;
+        virtual void unittest() = 0; // ehhh... really considering getting rid of this
     
     	const std::string&  getName()         const;
     	const Dependencies& getDependencies() const;

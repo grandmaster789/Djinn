@@ -5,99 +5,116 @@
 
 namespace djinn::util {
     template <typename C, typename T>
-    bool contains(const C& c, const T& value) {
+    bool contains(const C& container, const T& value) {
     	using std::find;
     	using std::begin;
     	using std::end;
     
-    	return (find(begin(c), end(c), value) != end(c));
+    	return find(begin(container), end(container), value) != end(container);
     }
     
     template <typename C, typename Fn>
-    bool contains_if(const C& c, Fn predicateFn) {
+    bool contains_if(const C& container, Fn predicateFn) {
         using std::find_if;
         using std::begin;
         using std::end;
     
-        return (find_if(begin(c), end(c),  predicateFn) != end(c));
+        return find_if(begin(container), end(container),  predicateFn) != end(container);
     }
     
     template <typename C>
-    bool contains_all(const C& a, const C& b) {
-        for (const auto& value : b)
-            if (!contains(a, value))
+    bool contains_all(const C& container_a, const C& container_b) {
+        for (const auto& value : container_b)
+            if (!contains(container_a, value))
                 return false;
     
         return true;
     }
     
-    template <typename tContainer, typename tElement>
-    typename tContainer::const_iterator find(const tContainer& c, const tElement& value) {
+    template <typename C, typename E>
+    typename C::const_iterator find(const C& container, const E& value) {
         using std::find;
         using std::begin;
         using std::end;
     
-        return find(begin(c), end(c), value);
+        return find(begin(container), end(container), value);
     }
     
-    template <typename tContainer, typename tCompareFn>
-    typename tContainer::const_iterator find_if(const tContainer& c, tCompareFn&& predicateFn) {
+    template <typename C, typename P>
+    typename C::const_iterator find_if(const C& container, P&& predicateFn) {
         using std::find_if;
         using std::begin;
         using std::end;
     
-        return find_if(begin(c), end(c), predicateFn);
+        return find_if(begin(container), end(container), predicateFn);
     }
 
-    template <typename tSortedContainer, typename tElement>
-    typename tSortedContainer::const_iterator binary_find(
-        const tSortedContainer& c,
-        const tElement& value
+    template <typename C, typename E>
+    typename C::const_iterator binary_find(
+        const C& container,
+        const E& value
     ) {
         using std::lower_bound;
         using std::begin;
         using std::end;
 
-        return lower_bound(begin(c), end(c), value);
+        return lower_bound(begin(container), end(container), value);
+    }
+
+    template <
+        typename C, 
+        typename E,
+        typename P
+    >
+    typename C::const_iterator binary_find(
+        const C& container,
+        const E& value,
+        P&&      predicateFn
+    ) {
+        using std::lower_bound;
+        using std::begin;
+        using std::end;
+
+        return lower_bound(begin(container), end(container), value, predicateFn);
     }
     
-    template <typename tContainer, typename tElement>
-    void erase(tContainer& c, const tElement& value) {
-        auto it = find(c, value);
+    template <typename C, typename E>
+    void erase(C& container, const E& value) {
+        auto it = find(container, value);
     
-        if (it != std::end(c))
-            c.erase(it);
+        if (it != std::end(container))
+            container.erase(it);
     }
     
-    template <typename tContainer, typename tCompareFn>
-    void erase_if(tContainer& c, tCompareFn predicateFn) {
-        auto it = find_if(c, predicateFn);
+    template <typename C, typename P>
+    void erase_if(C& container, P predicateFn) {
+        auto it = find_if(container, predicateFn);
     
-        if (it != std::end(c))
-            c.erase(it);
+        if (it != std::end(container))
+            container.erase(it);
     }
     
-    template <typename tContainer>
-    void sort(tContainer& c) {
+    template <typename C>
+    void sort(C& container) {
         using namespace std;
         
         sort(
-            begin(c), 
-            end(c)
+            begin(container),
+            end(container)
         );
     }
     
-    template <typename tContainer>
-    void unique(tContainer& c) {
+    template <typename C>
+    void unique(C& container) {
         using namespace std;
     
-        sort(c);
+        sort(container);
         
         auto it = unique(
-            begin(c), 
-            end(c)
+            begin(container),
+            end(container)
         );
     
-        c.erase(it, end(c));
+        container.erase(it, end(container));
     }
 }

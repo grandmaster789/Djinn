@@ -70,7 +70,7 @@ namespace djinn::display {
         void registerMonitor(Monitor* m) {
             assert(m != nullptr);
             assert(!g_MonitorMapping.contains(m->getHandle()));
-            g_MonitorMapping.assign_or_insert(m->getHandle(), m);
+            g_MonitorMapping.assign(m->getHandle(), m);
         }
 
         void unregisterMonitor(Monitor* m) {

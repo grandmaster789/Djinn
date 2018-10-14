@@ -34,7 +34,7 @@ namespace djinn::util {
     }
 
     template <typename K, typename V>
-    void FlatMap<K, V>::assign_or_insert(const K& key, const V& value) {
+    void FlatMap<K, V>::assign(const K& key, const V& value) {
         using namespace std;
 
         // [NOTE] could make an util::algorithm version of lower_bound
@@ -68,7 +68,7 @@ namespace djinn::util {
     }
 
     template <typename K, typename V>
-    void FlatMap<K, V>::assign_or_insert(const K& key, V&& value) {
+    void FlatMap<K, V>::assign(const K& key, V&& value) {
         using namespace std;
 
         // [NOTE] could make an util::algorithm version of lower_bound
@@ -99,6 +99,77 @@ namespace djinn::util {
         // lower_bound reached the end
         m_Keys.push_back(key);
         m_Values.push_back(std::forward<V>(value));
+    }
+
+    template <typename K, typename V>
+    bool FlatMap<K, V>::insert(const K& key, const V& value) {
+        using namespace std;
+
+        // [NOTE] could make an util::algorithm version of lower_bound
+        auto lower = lower_bound(
+            begin(m_Keys),
+            end(m_Keys),
+            key
+        );
+
+        if (lower != end(m_Keys)) {
+            // lower_bound found some location that is either
+            // 1) where the exact key was found
+            //   or
+            // 2) the insertion point where it should be
+            //
+            auto index = distance(begin(m_Keys), lower);
+
+            if (*lower == key)
+                return false;
+            else {
+                m_Keys.insert(lower, key);
+                m_Values.insert(begin(m_Values) + index, value);
+                
+                return true;
+            }
+        }
+
+        // lower_bound reached the end
+        m_Keys.push_back(key);
+        m_Values.push_back(value);
+
+        return true;
+    }
+
+    template <typename K, typename V>
+    bool FlatMap<K, V>::insert(const K& key, V&& value) {
+        using namespace std;
+
+        // [NOTE] could make an util::algorithm version of lower_bound
+        auto lower = lower_bound(
+            begin(m_Keys),
+            end(m_Keys),
+            key
+        );
+
+        if (lower != end(m_Keys)) {
+            // lower_bound found some location that is either
+            // 1) where the exact key was found
+            //   or
+            // 2) the insertion point where it should be
+            //
+            auto index = distance(begin(m_Keys), lower);
+
+            if (*lower == key)
+                return false;
+            else {
+                m_Keys.insert(lower, key);
+                m_Values.insert(begin(m_Values) + index, std::forward<V>(value));
+                return true;
+            }
+        }
+
+        // lower_bound reached the end
+        m_Keys.push_back(key);
+        m_Values.push_back(std::forward<V>(value));
+
+        return true;
     }
 
     template <typename K, typename V>

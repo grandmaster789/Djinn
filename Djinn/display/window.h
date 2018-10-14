@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dependencies.h"
+#include "swapchain.h"
 #include <string>
 #include <memory>
 
@@ -16,6 +17,7 @@ namespace djinn::input {
 namespace djinn::display {
     class Monitor;
 
+    // TODO ~ recreate surface+swapchain upon resizing
     class Window {
     public:
         friend class Display;
@@ -64,8 +66,11 @@ namespace djinn::display {
               Mouse*    getMouse();
         const Mouse*    getMouse()    const;
 
-		      vk::SurfaceKHR& getSurface();
-		const vk::SurfaceKHR& getSurface() const;
+		      vk::SurfaceKHR&             getSurface();
+		const vk::SurfaceKHR&             getSurface()       const;
+        const vk::SurfaceCapabilitiesKHR& getSurfaceCaps()   const;
+        const vk::SurfaceFormatKHR&       getSurfaceFormat() const;
+        const Swapchain&                  getSwapchain()     const;
 
         // ----- Attribute queries -----
         bool isFocused()   const;
@@ -109,7 +114,8 @@ namespace djinn::display {
     private:
         void setGLFWcallbacks();
 
-        void initVkSurface(vk::Instance instance, const vk::PhysicalDevice& gpu);
+        void initVkSurface(Display* display);
+        void initVkSwapchain(Display* display);
 
         GLFWwindow* m_Handle = nullptr;
 
@@ -118,10 +124,13 @@ namespace djinn::display {
         vk::SurfaceCapabilitiesKHR        m_SurfaceCaps;
         std::vector<vk::SurfaceFormatKHR> m_AvailableSurfaceFormats;
         vk::SurfaceFormatKHR              m_SurfaceFormat;
+        Swapchain                         m_Swapchain;
 
         std::string m_Title;
 
         std::unique_ptr<Keyboard> m_Keyboard;
         //std::unique_ptr<Mouse> m_Mouse;
+
+        
     };
 }

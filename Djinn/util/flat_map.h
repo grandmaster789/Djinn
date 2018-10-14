@@ -28,8 +28,11 @@ namespace djinn::util {
         const V* operator[](const K& k) const; // will return nullptr if not found
         std::pair<K, V> at(int index) const; // will throw if index is out of bounds
         
-        void assign_or_insert(const K& key, const V&  value);
-        void assign_or_insert(const K& key,       V&& value);
+                      void assign(const K& key, const V&  value);
+                      void assign(const K& key,       V&& value);
+        [[nodiscard]] bool insert(const K& key, const V&  value); // returns false if this would overwrite an entry
+        [[nodiscard]] bool insert(const K& key,       V&& value); // returns false if this would overwrite an entry
+
         bool contains(const K& key) const;
         void erase(const K& key);
         void clear();
@@ -42,7 +45,7 @@ namespace djinn::util {
         void foreach(KeyValueCallback&& callback);
 
     private:
-        std::vector<Key> m_Keys;
+        std::vector<Key>   m_Keys;
         std::vector<Value> m_Values;
     };
 

@@ -254,8 +254,8 @@ namespace djinn {
     void Display::shutdown() {
         System::shutdown();
 
-		if (m_Device)
-			m_Device->waitIdle();
+		if (m_VkDevice)
+			m_VkDevice->waitIdle();
 
         m_Window.reset();
     }
@@ -447,18 +447,18 @@ namespace djinn {
         if (all_physical_devices.empty())
             throw std::runtime_error("No Vulkan devices available");
 
-        m_PhysicalDevice = all_physical_devices.front();
-        gLog << "Selecting phyiscal device: " << m_PhysicalDevice.getProperties().deviceName;
+        m_VkPhysicalDevice = all_physical_devices.front();
+        gLog << "Selecting phyiscal device: " << m_VkPhysicalDevice.getProperties().deviceName;
 
-        m_MaxSampleCount = findMaxSampleCount(m_PhysicalDevice.getProperties());
+        m_MaxSampleCount = findMaxSampleCount(m_VkPhysicalDevice.getProperties());
 
 		// now that we have a physical device, create a surface 
 		// for the window
-		m_Window->initVkSurface(m_VkInstance.get(), m_PhysicalDevice);
+		m_Window->initVkSurface(this);
     }
 
 	void Display::setupVkQueues() {
-		auto deviceQueueFamilies = m_PhysicalDevice.getQueueFamilyProperties();
+		auto deviceQueueFamilies = m_VkPhysicalDevice.getQueueFamilyProperties();
 
 		// [TODO] figure out some way to determine sets of candidates
 		//        and then determining the best one
@@ -474,7 +474,7 @@ namespace djinn {
 			}
 
 			if (m_PresentFamilyIdx == IDX_NOT_FOUND) {
-				auto has_present_support = m_PhysicalDevice.getSurfaceSupportKHR(i, m_Window->getSurface());
+				auto has_present_support = m_VkPhysicalDevice.getSurfaceSupportKHR(i, m_Window->getSurface());
 
 				if (
 					(prop.queueCount > 0) &&
@@ -554,7 +554,7 @@ namespace djinn {
 		}
 
 		vk::PhysicalDeviceFeatures requiredFeatures;
-		vk::PhysicalDeviceFeatures availableFeatures = m_PhysicalDevice.getFeatures();
+		vk::PhysicalDeviceFeatures availableFeatures = m_VkPhysicalDevice.getFeatures();
 
 		requiredFeatures.fillModeNonSolid                     = VK_TRUE;
 		requiredFeatures.fragmentStoresAndAtomics             = VK_TRUE;
@@ -579,6 +579,7 @@ namespace djinn {
 		else
 			gLogError << "Physical device does not support geometry shader";
 
+        // make sure the device has swapchain support
 		m_RequiredDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
 		vk::DeviceCreateInfo info;
@@ -592,12 +593,14 @@ namespace djinn {
 			.setPQueueCreateInfos      (queueInfos.data())
 			.setQueueCreateInfoCount   ((uint32_t)queueInfos.size());
 
-		m_Device = m_PhysicalDevice.createDeviceUnique(info);
+		m_VkDevice = m_VkPhysicalDevice.createDeviceUnique(info);
 
-		m_GraphicsQueue = m_Device->getQueue(m_GraphicsFamilyIdx, 0);
-		m_PresentQueue  = m_Device->getQueue(m_PresentFamilyIdx, 0);
-		m_ComputeQueue  = m_Device->getQueue(m_ComputeFamilyIdx, 0);
-		m_TransferQueue = m_Device->getQueue(m_TransferFamilyIdx, 0);
+		m_GraphicsQueue = m_VkDevice->getQueue(m_GraphicsFamilyIdx, 0);
+		m_PresentQueue  = m_VkDevice->getQueue(m_PresentFamilyIdx,  0);
+		m_ComputeQueue  = m_VkDevice->getQueue(m_ComputeFamilyIdx,  0);
+		m_TransferQueue = m_VkDevice->getQueue(m_TransferFamilyIdx, 0);
+
+        m_Window->initVkSwapchain(this);
 	}
 
     void Display::detectMonitors() {
@@ -630,5 +633,33 @@ namespace djinn {
     void Display::MonitorDeleter::operator()(Monitor* m) {
         display::detail::unregisterMonitor(m);
         delete m;
+    }
+
+    vk::Instance Display::getVkInstance() const {
+        return m_VkInstance.get();
+    }
+
+    const vk::PhysicalDevice& Display::getVkPhysicalDevice() const {
+        return m_VkPhysicalDevice;
+    }
+
+    vk::Device Display::getVkDevice() const {
+        return m_VkDevice.get();
+    }
+
+    uint32_t Display::getGraphicsFamilyIdx() const {
+        return m_GraphicsFamilyIdx;
+    }
+
+    uint32_t Display::getPresentFamilyIdx()  const {
+        return m_PresentFamilyIdx;
+    }
+
+    uint32_t Display::getComputeFamilyIdx()  const {
+        return m_ComputeFamilyIdx;
+    }
+    
+    uint32_t Display::getTransferFamilyIdx() const {
+        return m_TransferFamilyIdx;
     }
 }
