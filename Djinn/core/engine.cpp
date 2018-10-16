@@ -48,8 +48,29 @@ namespace djinn {
             if (m_UninitializedSystems > 0) {
                 static int s_prev_count = std::numeric_limits<int>::max();
 
-                if (s_prev_count == m_UninitializedSystems)
-                    throw std::runtime_error("Unable to make progress initializing systems; probably a cyclic dependency was introduced");
+				if (s_prev_count == m_UninitializedSystems) {
+					std::stringstream sstr;
+					sstr << "\n";
+					int missing = 0;
+
+					// check for systems that are completely missing
+					for (const auto& s : m_Systems) {
+						if (!s->isInitialized()) {
+							for (const auto& dep : s->getDependencies()) {
+								if (!find(dep)) {
+									sstr << "\t" << s->getName() << ": Missing dependency [" << dep << "]\n";
+									++missing;
+								}
+							}
+						}
+					}
+
+					if (missing > 0)
+						gLogError << sstr.str();
+
+					// even if nothing is missing, we could have a cyclic dependency between subsystems
+					throw std::runtime_error("Unable to make progress initializing systems"); 
+				}
 
                 s_prev_count = m_UninitializedSystems;
                 init_systems();                
@@ -272,4 +293,12 @@ namespace djinn {
             glfwTerminate();
         }
     }
+
+	core::System* Engine::find(const std::string& name) const {
+		for (const auto& ptr : m_Systems)
+			if (ptr->getName() == name)
+				return ptr.get();
+
+		return nullptr;
+	}
 }

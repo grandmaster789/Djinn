@@ -4,6 +4,7 @@ namespace djinn {
     Input::Input():
         System("Input")
     {
+		addDependency("Display");
     }
 
     void Input::init() {

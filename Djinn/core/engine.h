@@ -54,6 +54,8 @@ namespace djinn {
         void init_application();
         void shutdown_application();
 
+		core::System* find(const std::string& name) const;
+
         SystemList     m_Systems;
         util::TypeMap  m_SystemMap;
         ApplicationPtr m_Application;

@@ -46,7 +46,6 @@ public:
 };
 
 int main() {
-
 	auto& engine = Engine::instance();
 
     engine.enable<Display>();
