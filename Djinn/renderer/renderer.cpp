@@ -14,6 +14,10 @@ namespace djinn {
 
         auto display = m_Engine->get<Display>();
 
+        m_Instance       = display->getVkInstance();
+        m_PhysicalDevice = display->getVkPhysicalDevice();
+        m_Device         = display->getVkDevice();
+
         m_Swapchain = std::make_unique<Swapchain>(*display->getWindow(), display, this);
 
         createFences();

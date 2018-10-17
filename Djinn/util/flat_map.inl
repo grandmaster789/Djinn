@@ -7,6 +7,25 @@
 
 namespace djinn::util {
     template <typename K, typename V>
+    V* FlatMap<K, V>::operator[](const K& k) {
+        // [NOTE] could make an util::algorithm version of lower_bound
+        using namespace std;
+
+        auto it = lower_bound(
+            begin(m_Keys),
+            end(m_Keys),
+            k
+        );
+
+        if (it == end(m_Keys))
+            return nullptr;
+        else {
+            auto index = distance(begin(m_Keys), it);
+            return &m_Values[index];
+        }
+    }
+
+    template <typename K, typename V>
     const V* FlatMap<K, V>::operator[](const K& k) const {
         // [NOTE] could make an util::algorithm version of lower_bound
         using namespace std;

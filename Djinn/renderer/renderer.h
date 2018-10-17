@@ -35,6 +35,12 @@ namespace djinn {
 
         std::unique_ptr<Swapchain> m_Swapchain; // unique_ptr might not be the most suitable (but it's not horrible either)
 
+        // non-owning handles to the instance+physical+logical device
+        vk::Instance            m_Instance;
+        vk::PhysicalDevice      m_PhysicalDevice;
+        vk::Device              m_Device;
+
+        // owning resources
         vk::UniqueFence         m_SwapchainImageFence;
         vk::UniqueSemaphore     m_Semaphore;
         vk::UniqueCommandPool   m_CommandPool;

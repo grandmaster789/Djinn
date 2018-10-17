@@ -25,8 +25,9 @@ namespace djinn::util {
         
         FlatMap() = default;
 
-        const V* operator[](const K& k) const; // will return nullptr if not found
-        std::pair<K, V> at(int index) const; // will throw if index is out of bounds
+              V* operator[](const K& k);        // will return nullptr if not found (!)
+        const V* operator[](const K& k)  const; // will return nullptr if not found
+        std::pair<K, V> at(int index)    const; // will throw if index is out of bounds
         
                       void assign(const K& key, const V&  value);
                       void assign(const K& key,       V&& value);
