@@ -32,9 +32,6 @@
     <ClCompile Include="app\application.cpp">
       <Filter>app</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\renderer.cpp">
-      <Filter>renderer</Filter>
-    </ClCompile>
     <ClCompile Include="input\keyboard.cpp">
       <Filter>input</Filter>
     </ClCompile>
@@ -54,6 +51,12 @@
       <Filter>display</Filter>
     </ClCompile>
     <ClCompile Include="renderer\swapchain.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\render_manager.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\texture.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
   </ItemGroup>
@@ -149,9 +152,6 @@
     <ClInclude Include="app\application.h">
       <Filter>app</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\renderer.h">
-      <Filter>renderer</Filter>
-    </ClInclude>
     <ClInclude Include="core\mediator_queue.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -183,6 +183,15 @@
       <Filter>display</Filter>
     </ClInclude>
     <ClInclude Include="renderer\swapchain.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\render_manager.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\framebuffers.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\texture.h">
       <Filter>renderer</Filter>
     </ClInclude>
   </ItemGroup>

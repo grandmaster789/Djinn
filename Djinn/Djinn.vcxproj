@@ -146,8 +146,9 @@
     <ClCompile Include="display\window_hints.cpp" />
     <ClCompile Include="input\input.cpp" />
     <ClCompile Include="input\keyboard.cpp" />
-    <ClCompile Include="renderer\renderer.cpp" />
+    <ClCompile Include="renderer\render_manager.cpp" />
     <ClCompile Include="renderer\swapchain.cpp" />
+    <ClCompile Include="renderer\texture.cpp" />
     <ClCompile Include="util\exception_windows.cpp" />
     <ClCompile Include="util\string_util.cpp" />
     <ClCompile Include="util\typemap.cpp" />
@@ -184,8 +185,10 @@
     <ClInclude Include="input\input.h" />
     <ClInclude Include="input\keyboard.h" />
     <ClInclude Include="preprocessor.h" />
-    <ClInclude Include="renderer\renderer.h" />
+    <ClInclude Include="renderer\framebuffers.h" />
+    <ClInclude Include="renderer\render_manager.h" />
     <ClInclude Include="renderer\swapchain.h" />
+    <ClInclude Include="renderer\texture.h" />
     <ClInclude Include="util\algorithm.h" />
     <ClInclude Include="util\exception_windows.h" />
     <ClInclude Include="util\flat_map.h" />

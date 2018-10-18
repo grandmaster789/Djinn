@@ -1,14 +1,14 @@
 #include "swapchain.h"
-#include "renderer.h"
+#include "render_manager.h"
 #include "display/window.h"
 #include "display/display.h"
 #include "util/algorithm.h"
 
 namespace djinn::renderer {
     Swapchain::Swapchain(
-        const Window&   window,
-              Display*  display,
-              Renderer* render
+        const Window&        window,
+              Display*       display,
+		      RenderManager* manager
     ) {
         const auto& gpu = display->getVkPhysicalDevice();
         auto device     = display->getVkDevice();
@@ -81,7 +81,7 @@ namespace djinn::renderer {
                 info.imageUsage |= vk::ImageUsageFlagBits::eTransferDst;
 
             // ~~ if the window had some old swapchain, transfer it
-            if (auto oldChain = render->getSwapchain())
+            if (auto oldChain = manager->getSwapchain())
                 info.setOldSwapchain(oldChain->getHandle());
 
             // ~~ figure out if we should use concurrent sharing

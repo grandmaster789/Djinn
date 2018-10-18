@@ -5,7 +5,7 @@
 
 namespace djinn {
     class Display;
-    class Renderer;
+    class RenderManager;
 }
 
 namespace djinn::display {
@@ -20,9 +20,9 @@ namespace djinn::renderer {
 
         Swapchain() = default;
         Swapchain( 
-            const Window&   window,  // mostly for access to the Surface, its caps etc
-                  Display*  display, // for access to the (physical and logical) devices, and family queue indices
-                  Renderer* render   // just for accessing the previous swapchain, if any
+            const Window&        window,  // mostly for access to the Surface, its caps etc
+                  Display*       display, // for access to the (physical and logical) devices, and family queue indices
+				  RenderManager* manager  // just for accessing the previous swapchain, if any
         );
 
         vk::SwapchainKHR getHandle() const;

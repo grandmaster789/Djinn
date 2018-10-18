@@ -1,15 +1,15 @@
-#include "renderer.h"
+#include "render_manager.h"
 #include "core/engine.h"
 #include "display/display.h"
 
 namespace djinn {
-    Renderer::Renderer():
-        System("Renderer")
+	RenderManager::RenderManager():
+        System("RenderManager")
     {
         addDependency("Display");
     }
 
-    void Renderer::init() {
+    void RenderManager::init() {
         System::init();
 
         auto display = m_Engine->get<Display>();
@@ -25,10 +25,10 @@ namespace djinn {
         createPipelineCache();
     }
 
-    void Renderer::update() {
+    void RenderManager::update() {
     }
 
-    void Renderer::shutdown() {
+    void RenderManager::shutdown() {
         System::shutdown();
 
         auto display = m_Engine->get<Display>();
@@ -43,14 +43,14 @@ namespace djinn {
         m_Swapchain.reset();
     }
 
-    void Renderer::unittest() {
+    void RenderManager::unittest() {
     }
 
-    Renderer::Swapchain* Renderer::getSwapchain() const {
+	RenderManager::Swapchain* RenderManager::getSwapchain() const {
         return m_Swapchain.get();
     }
 
-    void Renderer::createFences() {
+    void RenderManager::createFences() {
         auto display = m_Engine->get<Display>();
         auto device  = display->getVkDevice();
 
@@ -58,7 +58,7 @@ namespace djinn {
         m_Semaphore           = device.createSemaphoreUnique(vk::SemaphoreCreateInfo());
     }
 
-    void Renderer::createCommandPool() {
+    void RenderManager::createCommandPool() {
         auto display           = m_Engine->get<Display>();
         auto device            = display->getVkDevice();
         auto graphicsFamilyIdx = display->getGraphicsFamilyIdx();
@@ -76,7 +76,7 @@ namespace djinn {
         // ~~~~~~~~~~~~~~~~~~~~ TBA command buffer init !
     }
 
-    void Renderer::createPipelineCache() {
+    void RenderManager::createPipelineCache() {
         auto display = m_Engine->get<Display>();
         auto device  = display->getVkDevice();
 

@@ -12,13 +12,13 @@ namespace djinn {
     //
     // interface for a vulkan graphics queue
     //
-    class Renderer:
+    class RenderManager:
         public core::System
     {
     public:
         using Swapchain = renderer::Swapchain;
 
-        Renderer();
+		RenderManager();
 
         virtual void init() override;
         virtual void update() override;
