@@ -59,6 +59,12 @@
     <ClCompile Include="renderer\texture.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\buffer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\command_buffer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -192,6 +198,12 @@
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\texture.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\buffer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\command_buffer.h">
       <Filter>renderer</Filter>
     </ClInclude>
   </ItemGroup>

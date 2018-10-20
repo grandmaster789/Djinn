@@ -28,6 +28,8 @@ namespace djinn {
 
         Swapchain* getSwapchain() const;
 
+		vk::CommandPool getCommandPool() const;
+
     private:
         void createFences();
         void createCommandPool();

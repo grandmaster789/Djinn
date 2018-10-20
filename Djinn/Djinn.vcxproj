@@ -146,6 +146,8 @@
     <ClCompile Include="display\window_hints.cpp" />
     <ClCompile Include="input\input.cpp" />
     <ClCompile Include="input\keyboard.cpp" />
+    <ClCompile Include="renderer\buffer.cpp" />
+    <ClCompile Include="renderer\command_buffer.cpp" />
     <ClCompile Include="renderer\render_manager.cpp" />
     <ClCompile Include="renderer\swapchain.cpp" />
     <ClCompile Include="renderer\texture.cpp" />
@@ -185,6 +187,8 @@
     <ClInclude Include="input\input.h" />
     <ClInclude Include="input\keyboard.h" />
     <ClInclude Include="preprocessor.h" />
+    <ClInclude Include="renderer\buffer.h" />
+    <ClInclude Include="renderer\command_buffer.h" />
     <ClInclude Include="renderer\framebuffers.h" />
     <ClInclude Include="renderer\render_manager.h" />
     <ClInclude Include="renderer\swapchain.h" />

@@ -82,4 +82,8 @@ namespace djinn {
 
         m_PipelineCache = device.createPipelineCacheUnique(vk::PipelineCacheCreateInfo());
     }
+
+	vk::CommandPool RenderManager::getCommandPool() const {
+		return *m_CommandPool;
+	}
 }
