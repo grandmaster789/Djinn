@@ -1,19 +1,39 @@
 #include "core/engine.h"
 #include "app/application.h"
 #include "display/display.h"
-#include "display/window.h"
-#include "renderer/render_manager.h"
 #include "input/input.h"
-#include "input/keyboard.h"
 #include <iostream>
 
-#include "util/variant.h"
+#include "util/enum.h"
 
 using namespace djinn;
 
+enum class FooBar {
+    aaa,
+    bbb,
+    ccc,
+    ddd,
+    eee,
+    fff
+};
+
+using FooBarIterator = util::EnumIterator<FooBar, FooBar::aaa, FooBar::fff>;
+
+std::ostream& operator << (std::ostream& os, const FooBar& fb) {
+    switch (fb) {
+    case FooBar::aaa: os << "aaa"; break;
+    case FooBar::bbb: os << "bbb"; break;
+    case FooBar::ccc: os << "ccc"; break;
+    case FooBar::ddd: os << "ddd"; break;
+    case FooBar::eee: os << "eee"; break;
+    case FooBar::fff: os << "fff"; break;
+    }
+
+    return os;
+}
+
 class Bazaar :
-    public app::Application,
-    public MessageHandler<input::Keyboard::OnKeyPress>
+    public app::Application
 {
 public:
     Bazaar():
@@ -26,31 +46,26 @@ public:
     }
 
     void update() override {
+        static int count = 0;
+        
+        if (++count > 10'000)
+            m_Engine->stop();
     }
 
     void shutdown() override {
         System::shutdown();
     }
-
-    void operator()(const input::Keyboard::OnKeyPress& kp) {
-        switch (kp.m_Key) {
-        case GLFW_KEY_ESCAPE:
-            m_Engine->stop();
-            break;
-
-        default:
-            gLog << "Key pressed: " << kp.m_Key;
-            break;
-        }
-    }
 };
 
 int main() {
+    for (const auto& val : FooBarIterator()) {
+        std::cout << val << "\n";
+    }
+
 	auto& engine = Engine::instance();
 
     engine.enable<Display>();
     engine.enable<Input>();
-    engine.enable<RenderManager>();
 
     engine.setApplication<Bazaar>();
 

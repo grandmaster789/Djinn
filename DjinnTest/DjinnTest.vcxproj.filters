@@ -17,6 +17,9 @@
     <ClCompile Include="util\variant.cpp">
       <Filter>util</Filter>
     </ClCompile>
+    <ClCompile Include="util\enum.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

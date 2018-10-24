@@ -168,6 +168,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="template.cpp" />
+    <ClCompile Include="util\enum.cpp" />
     <ClCompile Include="util\flat_map.cpp" />
     <ClCompile Include="util\string_util.cpp" />
     <ClCompile Include="util\variant.cpp" />

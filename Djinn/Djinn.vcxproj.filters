@@ -32,38 +32,11 @@
     <ClCompile Include="app\application.cpp">
       <Filter>app</Filter>
     </ClCompile>
-    <ClCompile Include="input\keyboard.cpp">
-      <Filter>input</Filter>
-    </ClCompile>
     <ClCompile Include="input\input.cpp">
       <Filter>input</Filter>
     </ClCompile>
-    <ClCompile Include="display\monitor.cpp">
-      <Filter>display</Filter>
-    </ClCompile>
-    <ClCompile Include="display\window.cpp">
-      <Filter>display</Filter>
-    </ClCompile>
-    <ClCompile Include="display\window_hints.cpp">
-      <Filter>display</Filter>
-    </ClCompile>
     <ClCompile Include="display\display.cpp">
       <Filter>display</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\swapchain.cpp">
-      <Filter>renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\render_manager.cpp">
-      <Filter>renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\texture.cpp">
-      <Filter>renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\buffer.cpp">
-      <Filter>renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\command_buffer.cpp">
-      <Filter>renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -99,6 +72,9 @@
       <Filter>util</Filter>
     </None>
     <None Include="util\variant.inl">
+      <Filter>util</Filter>
+    </None>
+    <None Include="util\enum.inl">
       <Filter>util</Filter>
     </None>
   </ItemGroup>
@@ -170,41 +146,14 @@
     <ClInclude Include="input\input.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="input\keyboard.h">
-      <Filter>input</Filter>
-    </ClInclude>
     <ClInclude Include="util\variant.h">
       <Filter>util</Filter>
     </ClInclude>
     <ClInclude Include="display\display.h">
       <Filter>display</Filter>
     </ClInclude>
-    <ClInclude Include="display\monitor.h">
-      <Filter>display</Filter>
-    </ClInclude>
-    <ClInclude Include="display\window.h">
-      <Filter>display</Filter>
-    </ClInclude>
-    <ClInclude Include="display\window_hints.h">
-      <Filter>display</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\swapchain.h">
-      <Filter>renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\render_manager.h">
-      <Filter>renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\framebuffers.h">
-      <Filter>renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\texture.h">
-      <Filter>renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\buffer.h">
-      <Filter>renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\command_buffer.h">
-      <Filter>renderer</Filter>
+    <ClInclude Include="util\enum.h">
+      <Filter>util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

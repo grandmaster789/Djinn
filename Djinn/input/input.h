@@ -11,16 +11,10 @@ namespace djinn::input {
 }
 
 namespace djinn {
-    /*
-        [NOTE] The mouse/keyboard objects are owned by a Window... seems weird, but may not be an issue
-        [NOTE] mouse/keyboard events are notification-based, while gamepad is done via polling
-    */
     class Input :
         public core::System
     {
     public:
-        using KeyboardList = std::vector<input::Keyboard*>;
-
         Input();
 
         void init() override;
@@ -30,6 +24,5 @@ namespace djinn {
         void unittest() override;
 
     private:
-        KeyboardList m_Keyboards;
     };
 }
