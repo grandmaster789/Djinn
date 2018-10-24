@@ -255,43 +255,10 @@ namespace djinn {
         }
     }
 
-    namespace {
-        std::string glfwErrorCode(int code) {
-            switch (code) {
-            case GLFW_NOT_INITIALIZED:     return "GLFW not initialized";
-            case GLFW_NO_CURRENT_CONTEXT:  return "No current context";
-            case GLFW_INVALID_ENUM:        return "Invalid enum";
-            case GLFW_INVALID_VALUE:       return "Invalid value";
-            case GLFW_OUT_OF_MEMORY:       return "Out of memory";
-            case GLFW_API_UNAVAILABLE:     return "API unavailable";
-            case GLFW_VERSION_UNAVAILABLE: return "Version unavailable";
-            case GLFW_PLATFORM_ERROR:      return "Platform error";
-            case GLFW_FORMAT_UNAVAILABLE:  return "Format unavailable";
-            case GLFW_NO_WINDOW_CONTEXT:   return "No window context";
-            default:
-                return "Unknown GLFW error";
-            }
-        }
-
-        void glfwErrorCallback(int code, const char* description) {
-            gLogError << glfwErrorCode(code) << ": " << description;
-        }
-    }
-
     void Engine::init_external_libraries() {
-        {
-            // GLFW
-            glfwInit();
-            glfwSetErrorCallback(glfwErrorCallback);
-
-            gLogDebug << "GLFW v" << glfwGetVersionString();
-        }
     }
 
     void Engine::shutdown_external_libraries() {
-        {
-            glfwTerminate();
-        }
     }
 
 	core::System* Engine::find(const std::string& name) const {
