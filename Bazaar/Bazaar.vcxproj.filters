@@ -4,7 +4,6 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="Bazaar.cfg" />
     <None Include="djinn.cfg" />
   </ItemGroup>
