@@ -46,10 +46,10 @@ public:
     }
 
     void update() override {
-        static int count = 0;
+        /*static int count = 0;
         
         if (++count > 10'000)
-            m_Engine->stop();
+            m_Engine->stop();*/
     }
 
     void shutdown() override {

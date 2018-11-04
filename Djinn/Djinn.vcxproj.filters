@@ -38,6 +38,9 @@
     <ClCompile Include="display\display.cpp">
       <Filter>display</Filter>
     </ClCompile>
+    <ClCompile Include="display\window.cpp">
+      <Filter>display</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\engine.inl">
@@ -153,6 +156,9 @@
     </ClInclude>
     <ClInclude Include="util\enum.h">
       <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="display\window.h">
+      <Filter>display</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

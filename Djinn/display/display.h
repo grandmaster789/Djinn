@@ -4,15 +4,17 @@
 #include "core/system.h"
 #include "core/mediator.h"
 
+#include "window.h"
+
 #include <memory>
 
 namespace djinn {
     class Display :
         public core::System
     {
-    private:
-
     public:
+        using Window = display::Window;
+
         Display();
 
         void init()     override;
@@ -20,5 +22,18 @@ namespace djinn {
         void shutdown() override;
 
         void unittest() override;
+
+    private:
+        void createWindow(int width, int height);
+        void initVulkan();
+
+        std::vector<Window> m_Windows;
+
+        struct WindowSettings {
+            int m_Width       = 800;
+            int m_Height      = 600;
+            bool m_Fullscreen = false;
+            // monitor? borderless?
+        } m_MainWindowSettings;
     };
 }

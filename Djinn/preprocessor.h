@@ -20,6 +20,8 @@
     #include <winsdkver.h> // this defines the _WIN32_WINNT value (relevant for boost::asio)
     //#include <DbgHelp.h> // [TODO] -- implement stack tracing
     #include <intrin.h>
+
+    #pragma comment(lib, "vulkan-1.lib")
 #endif
 
 // with MSVC we can figure out wheter this is a debug build

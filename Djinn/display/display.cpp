@@ -1,4 +1,5 @@
 #include "display.h"
+#include "core/engine.h"
 
 // ------ Vulkan debug reports ------
 namespace {
@@ -54,11 +55,11 @@ namespace {
         (void)location;
         (void)userdata;
 
-             if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)               gLogDebug << "[" << layerPrefix << "] Code " << code << " : " << message;
+             if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)               gLogDebug   << "[" << layerPrefix << "] Code " << code << " : " << message;
         else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT)             gLogWarning << "[" << layerPrefix << "] Code " << code << " : " << message;
-        else if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)               gLogError << "[" << layerPrefix << "] Code " << code << " : " << message;
+        else if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)               gLogError   << "[" << layerPrefix << "] Code " << code << " : " << message;
         else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) gLogWarning << "[" << layerPrefix << "] Code " << code << " : " << message;
-        else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)         gLog << "[" << layerPrefix << "] Code " << code << " : " << message;
+        else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)         gLog        << "[" << layerPrefix << "] Code " << code << " : " << message;
 
         return VK_FALSE;
     }
@@ -94,15 +95,38 @@ namespace djinn {
     Display::Display():
         System("Display")
     {
+        registerSetting("Width",      &m_MainWindowSettings.m_Width);
+        registerSetting("Height",     &m_MainWindowSettings.m_Height);
+        registerSetting("Fullscreen", &m_MainWindowSettings.m_Fullscreen);
     }
 
     void Display::init() {
         System::init();
-
+        
+        createWindow(
+            m_MainWindowSettings.m_Width,
+            m_MainWindowSettings.m_Height
+        );
     }
 
     void Display::update() {
-        
+        if (!m_Windows.empty()) {
+            MSG msg = {};
+
+            while (PeekMessage(
+                &msg,     // message
+                nullptr,  // hwnd
+                0,        // msg filter min
+                0,        // msg filter max
+                PM_REMOVE // remove message 
+            )) {
+                if (msg.message == WM_QUIT)
+                    m_Engine->stop();
+
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+        }
     }
 
     void Display::shutdown() {
@@ -110,5 +134,9 @@ namespace djinn {
     }
 
     void Display::unittest() {
+    }
+
+    void Display::createWindow(int width, int height) {
+        m_Windows.push_back(Window(width, height));
     }
 }
