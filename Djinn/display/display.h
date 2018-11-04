@@ -23,6 +23,8 @@ namespace djinn {
 
         void unittest() override;
 
+        vk::Instance getVkInstance() const;
+
     private:
         void createWindow(int width, int height);
         void initVulkan();
@@ -30,10 +32,14 @@ namespace djinn {
         std::vector<Window> m_Windows;
 
         struct WindowSettings {
-            int m_Width       = 800;
-            int m_Height      = 600;
-            bool m_Fullscreen = false;
+            int m_Width          = 800;
+            int m_Height         = 600;
+            bool m_Fullscreen    = false;
             // monitor? borderless?
         } m_MainWindowSettings;
+
+        // vulkan-related
+        vk::UniqueInstance               m_VkInstance;
+        vk::UniqueDebugReportCallbackEXT m_VkDebugReportCallback;
     };
 }

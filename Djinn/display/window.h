@@ -2,30 +2,43 @@
 
 #include "dependencies.h"
 
-namespace djinn::display {
-    class Window {
-    public:
-        Window(int width, int height);
-        ~Window();
+namespace djinn {
+    class Display;
 
-        // move-only (with custom move code)
-        // we need custom move code in order synchronize the 
-        // object pointer associated with the wrapped handle
-        Window             (const Window&) = delete;
-        Window& operator = (const Window&) = delete;
-        Window             (Window&&); 
-        Window& operator = (Window&&);
+    namespace display {
+        class Window {
+        public:
+            Window(int width, int height, Display* owner);
+            ~Window();
 
-        HWND getHandle() const;
+            // move-only (with custom move code)
+            // we need custom move code in order synchronize the 
+            // object pointer associated with the wrapped handle
+            Window             (const Window&) = delete;
+            Window& operator = (const Window&) = delete;
+            Window             (Window&&); 
+            Window& operator = (Window&&);
 
-        LRESULT winProc(
-            HWND handle, 
-            UINT message, 
-            WPARAM wp, 
-            LPARAM lp
-        );
+            HWND getHandle() const;
+            vk::SurfaceKHR getSurface() const;
 
-    private:
-        HWND m_Handle = nullptr;
-    };
+            LRESULT winProc(
+                HWND handle, 
+                UINT message, 
+                WPARAM wp, 
+                LPARAM lp
+            );
+
+            
+
+        private:
+            void createSurface();
+
+
+            Display* m_Owner  = nullptr;
+            HWND     m_Handle = nullptr;
+
+            vk::UniqueSurfaceKHR m_Surface;
+        };
+    }
 }

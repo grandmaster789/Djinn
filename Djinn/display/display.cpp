@@ -95,14 +95,16 @@ namespace djinn {
     Display::Display():
         System("Display")
     {
-        registerSetting("Width",      &m_MainWindowSettings.m_Width);
-        registerSetting("Height",     &m_MainWindowSettings.m_Height);
-        registerSetting("Fullscreen", &m_MainWindowSettings.m_Fullscreen);
+        registerSetting("Width",          &m_MainWindowSettings.m_Width);
+        registerSetting("Height",         &m_MainWindowSettings.m_Height);
+        registerSetting("Fullscreen",     &m_MainWindowSettings.m_Fullscreen);
     }
 
     void Display::init() {
         System::init();
         
+        initVulkan();
+
         createWindow(
             m_MainWindowSettings.m_Width,
             m_MainWindowSettings.m_Height
@@ -131,12 +133,92 @@ namespace djinn {
 
     void Display::shutdown() {
         System::shutdown();
+
+        m_Windows.clear();
     }
 
     void Display::unittest() {
     }
 
+    vk::Instance Display::getVkInstance() const {
+        return *m_VkInstance;
+    }
+
     void Display::createWindow(int width, int height) {
-        m_Windows.push_back(Window(width, height));
+        Window w(width, height, this);
+
+        m_Windows.push_back(std::move(w));
+    }
+
+    void Display::initVulkan() {
+        auto availableInstanceVersion        = vk::enumerateInstanceVersion();
+        auto availableInstanceLayerProperies = vk::enumerateInstanceLayerProperties();
+        auto availableInstanceExtensions     = vk::enumerateInstanceExtensionProperties();
+
+        gLog << "Vulkan version "
+            << VK_VERSION_MAJOR(availableInstanceVersion) << "."
+            << VK_VERSION_MINOR(availableInstanceVersion) << "."
+            << VK_VERSION_PATCH(availableInstanceVersion);
+
+        std::vector<const char*> requiredLayers = {};
+        std::vector<const char*> requiredExtensions = {
+            VK_KHR_SURFACE_EXTENSION_NAME,
+            VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+        };
+
+        // in debug mode, use validation
+#ifdef DJINN_DEBUG
+        requiredLayers.push_back("VK_LAYER_LUNARG_standard_validation"); // not sure if there is a macro definition for this
+        requiredExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+#endif
+        {
+            // verify the required layers/extensions are available
+
+        }
+
+
+        {
+            // create application-wide vulkan Instance
+            vk::ApplicationInfo appInfo = {};
+
+            appInfo
+                .setApiVersion      (VK_API_VERSION_1_1)
+                .setPApplicationName("Bazaar")
+                .setPEngineName     ("Djinn")
+                .setEngineVersion   (1);
+
+            vk::InstanceCreateInfo info = {};
+
+            info
+                .setPApplicationInfo       (&appInfo)
+                .setEnabledLayerCount      ((uint32_t)requiredLayers.size())
+                .setPpEnabledLayerNames    (requiredLayers.data())
+                .setEnabledExtensionCount  ((uint32_t)requiredExtensions.size())
+                .setPpEnabledExtensionNames(requiredExtensions.data());
+
+            m_VkInstance = vk::createInstanceUnique(info);
+        }
+
+#ifdef DJINN_DEBUG
+        {
+            // install vulkan debug callback
+            pfn_vkCreateDebugReportCallbackEXT  = (PFN_vkCreateDebugReportCallbackEXT) m_VkInstance->getProcAddr("vkCreateDebugReportCallbackEXT");
+            pfn_vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)m_VkInstance->getProcAddr("vkDestroyDebugReportCallbackEXT");
+
+            vk::DebugReportCallbackCreateInfoEXT info = {};
+
+            info
+                .setFlags(
+                    vk::DebugReportFlagBitsEXT::eDebug |
+                    vk::DebugReportFlagBitsEXT::eError |
+                    vk::DebugReportFlagBitsEXT::eInformation |
+                    vk::DebugReportFlagBitsEXT::ePerformanceWarning |
+                    vk::DebugReportFlagBitsEXT::eWarning
+                )
+                .setPfnCallback(report_to_log);
+            
+            m_VkDebugReportCallback = m_VkInstance->createDebugReportCallbackEXTUnique(info);
+        }
+#endif
     }
 }

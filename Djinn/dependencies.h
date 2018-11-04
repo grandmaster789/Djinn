@@ -9,6 +9,9 @@
 //#include <shaderc/shaderc.hpp>
 
 // ~~ make sure to link with vulkan-1.lib in the application project...
+#if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS
+    #pragma comment(lib, "vulkan-1.lib") // this #pragma is really more MSVC specific, but close enough
+#endif
 
 // JSON interoperability
 #include <json.hpp> // https://github.com/nlohmann/json

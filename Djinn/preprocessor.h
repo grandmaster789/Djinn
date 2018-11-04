@@ -21,7 +21,7 @@
     //#include <DbgHelp.h> // [TODO] -- implement stack tracing
     #include <intrin.h>
 
-    #pragma comment(lib, "vulkan-1.lib")
+    #define VK_USE_PLATFORM_WIN32_KHR
 #endif
 
 // with MSVC we can figure out wheter this is a debug build

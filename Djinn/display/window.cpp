@@ -1,4 +1,5 @@
 #include "window.h"
+#include "display.h"
 
 namespace {
     LRESULT CALLBACK deferWinProc(
@@ -54,7 +55,8 @@ namespace {
 }
 
 namespace djinn::display {
-    Window::Window(int width, int height) 
+    Window::Window(int width, int height, Display* owner):
+        m_Owner(owner)
     {
         const auto& wc = WndClass::instance().get();
         
@@ -82,6 +84,8 @@ namespace djinn::display {
         }
         else
             throw std::runtime_error("Failed to create window");
+
+        createSurface();
     }
 
     Window::~Window() {
@@ -91,7 +95,8 @@ namespace djinn::display {
     }
 
     Window::Window(Window&& w):
-        m_Handle(w.m_Handle)
+        m_Handle (w.m_Handle),
+        m_Surface(std::move(w.m_Surface))
     {
         SetWindowLongPtr(m_Handle, 0, (LONG_PTR)this);
         w.m_Handle = nullptr;
@@ -104,7 +109,8 @@ namespace djinn::display {
         if (m_Handle)
             DestroyWindow(m_Handle);
 
-        m_Handle = w.m_Handle;
+        m_Handle  = w.m_Handle;
+        m_Surface = std::move(w.m_Surface);
         w.m_Handle = nullptr;
 
         if (m_Handle)
@@ -115,6 +121,10 @@ namespace djinn::display {
 
     HWND Window::getHandle() const {
         return m_Handle;
+    }
+
+    vk::SurfaceKHR Window::getSurface() const {
+        return *m_Surface;
     }
 
     LRESULT Window::winProc(
@@ -130,5 +140,15 @@ namespace djinn::display {
         }
 
         return DefWindowProc(handle, message, wp, lp);
+    }
+
+    void Window::createSurface() {
+        vk::Win32SurfaceCreateInfoKHR info = {};
+
+        info
+            .setHinstance(GetModuleHandle(NULL))
+            .setHwnd     (m_Handle);
+
+        m_Surface = m_Owner->getVkInstance().createWin32SurfaceKHRUnique(info);
     }
 }
