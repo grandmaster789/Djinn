@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dependencies.h"
+#include "third_party.h"
 #include "core/system.h"
 #include "core/mediator.h"
 
@@ -13,7 +13,8 @@ namespace djinn {
         public core::System
     {
     public:
-        using Window = display::Window;
+        using Window    = display::Window;
+        using WindowPtr = std::unique_ptr<Window>;
 
         Display();
 
@@ -23,19 +24,27 @@ namespace djinn {
 
         void unittest() override;
 
+        void close(Window* w);
+
         vk::Instance getVkInstance() const;
 
     private:
-        void createWindow(int width, int height);
+        Window* createWindow(
+            int width         = 1280, 
+            int height        = 720,
+            bool windowed     = true, 
+            int displaydevice = 0
+        );
+
         void initVulkan();
 
-        std::vector<Window> m_Windows;
+        std::vector<WindowPtr> m_Windows;
 
         struct WindowSettings {
-            int m_Width          = 800;
-            int m_Height         = 600;
-            bool m_Fullscreen    = false;
-            // monitor? borderless?
+            int m_Width         = 1280;
+            int m_Height        = 720;
+            int m_DisplayDevice = 0;
+            bool m_Windowed     = true; // only supporting borderless fullscreen windows right now
         } m_MainWindowSettings;
 
         // vulkan-related
