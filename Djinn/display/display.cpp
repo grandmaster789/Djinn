@@ -112,8 +112,6 @@ namespace djinn {
             m_MainWindowSettings.m_Windowed,
             m_MainWindowSettings.m_DisplayDevice
         );
-
-        createWindow(200, 200);
     }
 
     void Display::update() {

@@ -28,7 +28,6 @@
     <ClCompile Include="util\typemap.cpp">
       <Filter>util</Filter>
     </ClCompile>
-    <ClCompile Include="dependencies.cpp" />
     <ClCompile Include="app\application.cpp">
       <Filter>app</Filter>
     </ClCompile>
@@ -42,6 +41,10 @@
       <Filter>display</Filter>
     </ClCompile>
     <ClCompile Include="input\keyboard.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party.cpp" />
+    <ClCompile Include="input\mouse.cpp">
       <Filter>input</Filter>
     </ClCompile>
   </ItemGroup>
@@ -134,7 +137,6 @@
     <ClInclude Include="util\typemap.h">
       <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="dependencies.h" />
     <ClInclude Include="preprocessor.h" />
     <ClInclude Include="app\application.h">
       <Filter>app</Filter>
@@ -164,6 +166,10 @@
       <Filter>display</Filter>
     </ClInclude>
     <ClInclude Include="input\keyboard.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party.h" />
+    <ClInclude Include="input\mouse.h">
       <Filter>input</Filter>
     </ClInclude>
   </ItemGroup>

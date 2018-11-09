@@ -58,8 +58,9 @@
 	#define NOMCX             // - Modem Configuration Extensions
 
     #include <windows.h>
+    #include <windowsx.h>  // for minor convenience macros... may get rid of this in the future
     #include <winsdkver.h> // this defines the _WIN32_WINNT value (relevant for boost::asio)
-    //#include <DbgHelp.h> // [TODO] -- implement stack tracing
+    #include <DbgHelp.h>   // [TODO] -- implement stack tracing
     #include <intrin.h>
 
     #define VK_USE_PLATFORM_WIN32_KHR

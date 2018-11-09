@@ -37,7 +37,27 @@ namespace djinn {
 			gLogWarning << "Cannot unregister unlisted keyboard, ignoring...";
 	}
 
-	std::vector<Input::Keyboard*> Input::getKeyboards() const {
+    void Input::registerDevice(Mouse* m) {
+        if (!util::contains(m_Mice, m))
+            m_Mice.push_back(m);
+        else
+            gLogWarning << "Duplicate mouse registration, discarding...";
+    }
+
+    void Input::unregisterDevice(Mouse* m) {
+        auto it = util::find(m_Mice, m);
+
+        if (it != std::end(m_Mice))
+            m_Mice.erase(it);
+        else
+            gLogWarning << "Cannot unregister unlisted mouse, ignoring...";
+    }
+
+	const std::vector<Input::Keyboard*>& Input::getKeyboards() const {
 		return m_Keyboards;
 	}
+
+    const std::vector<Input::Mouse*>& Input::getMice() const {
+        return m_Mice;
+    }
 }

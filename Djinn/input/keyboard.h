@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iosfwd>
+
 namespace djinn {
 	class Input;
 
@@ -20,22 +22,23 @@ namespace djinn {
 				f1, f2, f3, f4, f5, f6, f7,
 				f8, f9, f10, f11, f12,
 
-				backquote, quote,
-				comma, point,
-				backslash, slash,
-				semicolon, bracket_open, bracket_close,
-				minus, equals,
+                semicolon, questionmark, tilde, brace_open,
+                vertical_pipe, brace_close, double_quote, oem_8,
+				plus, minus, comma, period,
 
-				ctrl, alt, shift, space, tab, enter, escape,
+				ctrl, alt, shift, space, tab, enter, escape, backspace,
 
 				up, left, right, down,
 				pg_up, pg_down, home, end, ins, del
 			};
 
-			Keyboard(Input* baseSystem);
+			Keyboard(Input* manager);
 			~Keyboard();
-
-			Keyboard(const Keyboard&) = delete;
+            
+			Keyboard             (const Keyboard&) = delete;
+            Keyboard& operator = (const Keyboard&) = delete;
+            Keyboard             (Keyboard&&)      = delete;
+            Keyboard& operator = (Keyboard&&)      = delete;
 
 			bool isDown(eKey key) const;
 			bool isUp(eKey key) const;
@@ -43,15 +46,17 @@ namespace djinn {
 			void setKeyState(eKey key, bool pressed);
 
 			// --------------------- Events -----------------------
-			// [NOTE] if we want multi-keyboard support, these may not
-			//        have enough of a payload
-			struct OnKeyPressed { eKey key; };
-			struct OnKeyReleased { eKey key; };
+			struct OnKeyPressed  { Keyboard* kbd; eKey key; };
+			struct OnKeyReleased { Keyboard* kbd; eKey key; };
 
 		private:
 			Input* m_Manager = nullptr;
 
 			bool m_Keys[256] = {};
 		};
+
+        std::ostream& operator << (std::ostream& os, const Keyboard::eKey& key);
+        std::ostream& operator << (std::ostream& os, const Keyboard::OnKeyPressed& kp);
+        std::ostream& operator << (std::ostream& os, const Keyboard::OnKeyReleased& kr);
 	}
 }

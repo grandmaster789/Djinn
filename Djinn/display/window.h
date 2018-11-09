@@ -6,6 +6,8 @@
     This is *very* platform specific, just about all of it is using the windows API.
     However, because it is very centralized right now it should be fairly easy to
     switch to a cross platform interface at some point.
+
+    [NOTE] maybe switch to the raw input model instead of window message translation?
 */
 
 namespace djinn {
@@ -52,6 +54,9 @@ namespace djinn {
 
             bool isMainWindow() const;
 
+            const Keyboard* getKeyboard() const;
+            const Mouse* getMouse() const;
+
         private:
             static std::vector<DISPLAY_DEVICE> enumerateDisplayDevices(); // https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_display_devicea
             static DEVMODE                     getCurrentDisplayMode(DISPLAY_DEVICE dd); // https://docs.microsoft.com/en-us/windows/desktop/api/Wingdi/ns-wingdi-_devicemodea
@@ -68,6 +73,7 @@ namespace djinn {
             inline static HWND s_MainWindow = nullptr;
 
 			std::unique_ptr<Keyboard> m_Keyboard;
+            std::unique_ptr<Mouse>    m_Mouse;
 
             vk::UniqueSurfaceKHR m_Surface;
         };

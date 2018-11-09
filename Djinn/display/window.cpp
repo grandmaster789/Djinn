@@ -1,7 +1,8 @@
 #include "window.h"
 #include "display.h"
-#include "input/keyboard.h"
 #include "input/input.h"
+#include "input/keyboard.h"
+#include "input/mouse.h"
 #include "core/engine.h"
 
 namespace {
@@ -174,6 +175,7 @@ namespace djinn::display {
             auto inputSystem = m_Owner->getEngine()->get<Input>();
 
             m_Keyboard = std::make_unique<Keyboard>(inputSystem);
+            m_Mouse    = std::make_unique<Mouse>(inputSystem);
 
             createSurface();
         }
@@ -191,7 +193,8 @@ namespace djinn::display {
         m_Handle  (w.m_Handle),
         m_Owner   (w.m_Owner),
         m_Surface (std::move(w.m_Surface)),        
-        m_Keyboard(std::move(w.m_Keyboard))
+        m_Keyboard(std::move(w.m_Keyboard)),
+        m_Mouse   (std::move(w.m_Mouse))
     {
         SetWindowLongPtr(m_Handle, 0, (LONG_PTR)this);
         w.m_Handle = nullptr;
@@ -209,6 +212,7 @@ namespace djinn::display {
         m_Owner    = w.m_Owner;
         m_Surface  = std::move(w.m_Surface);
         m_Keyboard = std::move(w.m_Keyboard);
+        m_Mouse    = std::move(w.m_Mouse);
 
         w.m_Handle = nullptr;
         w.m_Owner  = nullptr;
@@ -228,6 +232,7 @@ namespace djinn::display {
 
         using eKey = input::Keyboard::eKey;
         // VK_ stuff can be found in <winuser.h>
+        // https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
 
         // letters * VK_A - VK_Z are the same as ASCII 'A' - 'Z' (0x41 - 0x5A)
         g_KeyMapping.insert({ 'A', eKey::a });
@@ -293,20 +298,20 @@ namespace djinn::display {
         g_KeyMapping.insert({ VK_F11, eKey::f11 });
         g_KeyMapping.insert({ VK_F12, eKey::f12 });
 
-        // symbol keys
-        g_KeyMapping.insert({ '`',  eKey::backquote });
-        g_KeyMapping.insert({ '\'', eKey::quote });
-        g_KeyMapping.insert({ ',',  eKey::comma });
-        g_KeyMapping.insert({ '.',  eKey::point });
+        // symbol keys (assuming US standard keyboard)
+        g_KeyMapping.insert({ VK_OEM_1,      eKey::semicolon     });
+        g_KeyMapping.insert({ VK_OEM_2,      eKey::questionmark  });
+        g_KeyMapping.insert({ VK_OEM_3,      eKey::tilde         });
+        g_KeyMapping.insert({ VK_OEM_4,      eKey::brace_open    });
+        g_KeyMapping.insert({ VK_OEM_5,      eKey::vertical_pipe });
+        g_KeyMapping.insert({ VK_OEM_6,      eKey::brace_close   });
+        g_KeyMapping.insert({ VK_OEM_7,      eKey::double_quote  });
+        g_KeyMapping.insert({ VK_OEM_8,      eKey::oem_8         });
 
-        g_KeyMapping.insert({ '[', eKey::bracket_open });
-        g_KeyMapping.insert({ ']', eKey::bracket_close });
-        g_KeyMapping.insert({ '=', eKey::equals });
-        g_KeyMapping.insert({ '-', eKey::minus });
-
-        g_KeyMapping.insert({ ';',  eKey::semicolon });
-        g_KeyMapping.insert({ '/',  eKey::slash });
-        g_KeyMapping.insert({ '\\', eKey::backslash });
+        g_KeyMapping.insert({ VK_OEM_PLUS,   eKey::plus   });
+        g_KeyMapping.insert({ VK_OEM_MINUS,  eKey::minus  });
+        g_KeyMapping.insert({ VK_OEM_COMMA,  eKey::comma  });
+        g_KeyMapping.insert({ VK_OEM_PERIOD, eKey::period });               
 
         // navigational keys
         g_KeyMapping.insert({ VK_UP,    eKey::up });
@@ -323,16 +328,16 @@ namespace djinn::display {
         g_KeyMapping.insert({ VK_DELETE, eKey::del });
 
         // everything else
-        g_KeyMapping.insert({ VK_CONTROL, eKey::ctrl });
-        g_KeyMapping.insert({ VK_MENU,    eKey::alt });
+        g_KeyMapping.insert({ VK_CONTROL, eKey::ctrl  });
+        g_KeyMapping.insert({ VK_MENU,    eKey::alt   });
         g_KeyMapping.insert({ VK_SHIFT,   eKey::shift });
         g_KeyMapping.insert({ VK_SPACE,   eKey::space });
 
-        g_KeyMapping.insert({ VK_TAB,     eKey::tab });
-        g_KeyMapping.insert({ VK_RETURN,  eKey::enter });
-        g_KeyMapping.insert({ VK_ESCAPE,  eKey::escape });
+        g_KeyMapping.insert({ VK_TAB,     eKey::tab       });
+        g_KeyMapping.insert({ VK_RETURN,  eKey::enter     });
+        g_KeyMapping.insert({ VK_ESCAPE,  eKey::escape    });
+        g_KeyMapping.insert({ VK_BACK,    eKey::backspace });
     }
-
 
     vk::SurfaceKHR Window::getSurface() const {
         return *m_Surface;
@@ -344,36 +349,65 @@ namespace djinn::display {
         WPARAM wp,
         LPARAM lp
     ) {
+        using eMouseButton = input::Mouse::eButton;
+
+        auto getMouseCoords = [this, lp] {
+            int screen_x = GET_X_LPARAM(lp);
+            int screen_y = GET_Y_LPARAM(lp);
+
+            RECT rect;
+            GetClientRect(m_Handle, &rect);
+
+            // remap to [-1..1], flip the Y so that [-1, -1] is the bottom left of the window
+            float x = -1.0f + 2.0f * (screen_x - rect.left) / (rect.right  - rect.left);
+            float y =  1.0f - 2.0f * (screen_y - rect.top)  / (rect.bottom - rect.top);
+
+            return std::make_pair(x, y);
+        };
+
         switch (message) {
-        case WM_DESTROY: 
-            {
+        case WM_DESTROY: {
                 if (isMainWindow())
                     PostQuitMessage(0);
                 break;
             }
 
-        case WM_CLOSE: 
-            {
+        case WM_CLOSE: {
                 m_Owner->close(this);
                 break;
             }
 
         case WM_KEYDOWN:
-        case WM_SYSKEYDOWN:
-            {
+        case WM_SYSKEYDOWN: {
                 auto key = findKeyCode(wp);
                 m_Keyboard->setKeyState(key, true);
                 break;
             }
 
         case WM_KEYUP:
-        case WM_SYSKEYUP:
-            {
+        case WM_SYSKEYUP: {
                 auto key = findKeyCode(wp);
                 m_Keyboard->setKeyState(key, false);
                 break;
             }
-        
+
+        case WM_MOUSEMOVE: {
+                auto [x, y] = getMouseCoords();
+                m_Mouse->setPosition(x, y);
+                break;
+            }
+
+        case WM_LBUTTONDOWN:   { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::left,   true); break; }
+        case WM_RBUTTONDOWN:   { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::right,  true); break; }
+        case WM_MBUTTONDOWN:   { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::middle, true); break; }
+
+        case WM_LBUTTONUP:     {                       m_Mouse->setButtonState(eMouseButton::left,   false); break; }
+        case WM_RBUTTONUP:     {                       m_Mouse->setButtonState(eMouseButton::right,  false); break; }
+        case WM_MBUTTONUP:     {                       m_Mouse->setButtonState(eMouseButton::middle, false); break; }
+
+        case WM_LBUTTONDBLCLK: { SetCapture(m_Handle); m_Mouse->doDoubleClick(eMouseButton::left);           break; }
+        case WM_RBUTTONDBLCLK: { SetCapture(m_Handle); m_Mouse->doDoubleClick(eMouseButton::right);          break; }
+        case WM_MBUTTONDBLCLK: { SetCapture(m_Handle); m_Mouse->doDoubleClick(eMouseButton::middle);         break; }
 
         default:
             return DefWindowProc(handle, message, wp, lp);
@@ -384,6 +418,14 @@ namespace djinn::display {
 
     bool Window::isMainWindow() const {
         return m_Handle == s_MainWindow;
+    }
+
+    const Window::Keyboard* Window::getKeyboard() const {
+        return m_Keyboard.get();
+    }
+
+    const Window::Mouse* Window::getMouse() const {
+        return m_Mouse.get();
     }
 
     std::vector<DISPLAY_DEVICE> Window::enumerateDisplayDevices() {

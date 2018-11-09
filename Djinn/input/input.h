@@ -33,11 +33,15 @@ namespace djinn {
 
 		void registerDevice(Keyboard* kbd);
 		void unregisterDevice(Keyboard* kbd);
-		
-		std::vector<Keyboard*> getKeyboards() const;
 
+        void registerDevice(Mouse* m);
+        void unregisterDevice(Mouse* m);
+		
+		const std::vector<Keyboard*>& getKeyboards() const;
+        const std::vector<Mouse*>&    getMice() const;
 
     private:
 		std::vector<Keyboard*> m_Keyboards;
+        std::vector<Mouse*>    m_Mice;
     };
 }
