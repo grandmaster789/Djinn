@@ -95,10 +95,11 @@ namespace djinn {
     Display::Display():
         System("Display")
     {
-        registerSetting("Width",         &m_MainWindowSettings.m_Width);
-        registerSetting("Height",        &m_MainWindowSettings.m_Height);
-        registerSetting("Windowed",      &m_MainWindowSettings.m_Windowed);
-        registerSetting("DisplayDevice", &m_MainWindowSettings.m_DisplayDevice);
+		addDependency("Input");
+
+        registerSetting("Width",          &m_MainWindowSettings.m_Width);
+        registerSetting("Height",         &m_MainWindowSettings.m_Height);
+        registerSetting("Fullscreen",     &m_MainWindowSettings.m_Fullscreen);
     }
 
     void Display::init() {
@@ -108,12 +109,8 @@ namespace djinn {
 
         createWindow(
             m_MainWindowSettings.m_Width,
-            m_MainWindowSettings.m_Height,
-            m_MainWindowSettings.m_Windowed,
-            m_MainWindowSettings.m_DisplayDevice
+            m_MainWindowSettings.m_Height
         );
-
-        createWindow(200, 200);
     }
 
     void Display::update() {
@@ -145,31 +142,14 @@ namespace djinn {
     void Display::unittest() {
     }
 
-    void Display::close(Window* w) {
-        auto it = util::find_if(m_Windows, [w](const WindowPtr& win) { return (win.get() == w); });
-        if (it != m_Windows.end())
-            m_Windows.erase(it);
-    }
-
     vk::Instance Display::getVkInstance() const {
         return *m_VkInstance;
     }
 
-    Display::Window* Display::createWindow(
-        int  width, 
-        int  height, 
-        bool windowed, 
-        int  displayDevice
-    ) {
-        m_Windows.push_back(std::make_unique<Window>(
-            width, 
-            height, 
-            windowed, 
-            displayDevice, 
-            this
-        ));
+    void Display::createWindow(int width, int height) {
+        Window w(width, height, this);
 
-        return m_Windows.back().get();
+        m_Windows.push_back(std::move(w));
     }
 
     void Display::initVulkan() {
@@ -233,7 +213,7 @@ namespace djinn {
                 .setFlags(
                     vk::DebugReportFlagBitsEXT::eDebug |
                     vk::DebugReportFlagBitsEXT::eError |
-                    //vk::DebugReportFlagBitsEXT::eInformation | // this one is kinda spammy
+                    //vk::DebugReportFlagBitsEXT::eInformation | //spammy
                     vk::DebugReportFlagBitsEXT::ePerformanceWarning |
                     vk::DebugReportFlagBitsEXT::eWarning
                 )

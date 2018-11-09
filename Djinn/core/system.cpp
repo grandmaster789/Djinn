@@ -43,6 +43,10 @@ namespace djinn::core {
      bool System::isInitialized() const {
          return (m_Engine != nullptr);
      }
+
+	 Engine* System::getEngine() const {
+		 return m_Engine;
+	 }
     
     std::ostream& operator << (std::ostream& os, const System& s) {
     	os << s.getName() << "\n";

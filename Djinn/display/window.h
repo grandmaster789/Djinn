@@ -1,6 +1,6 @@
 #pragma once
 
-#include "third_party.h"
+#include "dependencies.h"
 
 /*
     This is *very* platform specific, just about all of it is using the windows API.
@@ -11,23 +11,24 @@
 namespace djinn {
     class Display;
 
+	namespace input {
+		class Mouse;
+		class Keyboard;
+	}
+
     namespace display {
         class Window {
         public:
-            Window(
-                int      width, 
-                int      height, 
-                bool     windowed,
-                int      displayDevice,
-                Display* owner
-            );
+			using Mouse    = input::Mouse;
+			using Keyboard = input::Keyboard;
+
+            Window(int width, int height, Display* owner);
             ~Window();
 
             // move-only (with custom move code)
             // we need custom move code in order synchronize the 
             // object pointer associated with the wrapped handle
-            // [NOTE] the move code turned out to be quite a hassle, it may be better
-            //        to just get rid of it altogether
+			// TBH this is quickly becoming a hassle
             Window             (const Window&) = delete;
             Window& operator = (const Window&) = delete;
             Window             (Window&&); 
@@ -37,27 +38,22 @@ namespace djinn {
             vk::SurfaceKHR getSurface() const;
 
             LRESULT winProc(
-                HWND handle, 
-                UINT message, 
+                HWND   handle, 
+                UINT   message, 
                 WPARAM wp, 
                 LPARAM lp
-            );
-
-            bool isMainWindow() const;
+            );   
 
         private:
-            static std::vector<DISPLAY_DEVICE> enumerateDisplayDevices(); // https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_display_devicea
-            static DEVMODE                     getCurrentDisplayMode(DISPLAY_DEVICE dd); // https://docs.microsoft.com/en-us/windows/desktop/api/Wingdi/ns-wingdi-_devicemodea
-
+			// while browsing the virtual key docs, it seems that
+			// 
+			void initKeyMapping();
             void createSurface();
 
             Display* m_Owner  = nullptr;
             HWND     m_Handle = nullptr;
 
-            int m_Width  = 0;
-            int m_Height = 0;
-
-            inline static HWND s_MainWindow = nullptr;
+			std::unique_ptr<Keyboard> m_Keyboard;
 
             vk::UniqueSurfaceKHR m_Surface;
         };
