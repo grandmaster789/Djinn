@@ -46,10 +46,10 @@ namespace djinn {
         std::vector<WindowPtr> m_Windows;
 
         struct WindowSettings {
-            int m_Width         = 1280;
-            int m_Height        = 720;
-            int m_DisplayDevice = 0;
-            bool m_Windowed     = true; // only supporting borderless fullscreen windows right now
+            int  m_Width         = 1280;
+            int  m_Height        = 720;
+            int  m_DisplayDevice = 0;
+            bool m_Windowed      = true; // only supporting borderless fullscreen windows right now
         } m_MainWindowSettings;
 
         // vulkan-related

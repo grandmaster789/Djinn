@@ -6,9 +6,9 @@ namespace {
     PFN_vkCreateDebugReportCallbackEXT  pfn_vkCreateDebugReportCallbackEXT = nullptr;
     PFN_vkDestroyDebugReportCallbackEXT pfn_vkDestroyDebugReportCallbackEXT = nullptr;
 
-    using string        = std::string;
+    using string = std::string;
     using ExtensionList = std::vector<vk::ExtensionProperties>;
-    using LayerList     = std::vector<vk::LayerProperties>;
+    using LayerList = std::vector<vk::LayerProperties>;
 
     bool isExtensionAvailable(
         const string&        name,
@@ -35,7 +35,7 @@ namespace {
         return contains_if(
             availableLayers,
             [&](const LayerProperties& layer) {
-              return (name == layer.layerName);
+                return (name == layer.layerName);
             }
         );
     }
@@ -92,25 +92,28 @@ VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
 }
 
 namespace djinn {
-    Display::Display():
+    Display::Display() :
         System("Display")
     {
-		addDependency("Input");
-
-        registerSetting("Width",          &m_MainWindowSettings.m_Width);
-        registerSetting("Height",         &m_MainWindowSettings.m_Height);
-        registerSetting("Fullscreen",     &m_MainWindowSettings.m_Fullscreen);
+        registerSetting("Width",         &m_MainWindowSettings.m_Width);
+        registerSetting("Height",        &m_MainWindowSettings.m_Height);
+        registerSetting("Windowed",      &m_MainWindowSettings.m_Windowed);
+        registerSetting("DisplayDevice", &m_MainWindowSettings.m_DisplayDevice);
     }
 
     void Display::init() {
         System::init();
-        
+
         initVulkan();
 
         createWindow(
             m_MainWindowSettings.m_Width,
-            m_MainWindowSettings.m_Height
+            m_MainWindowSettings.m_Height,
+            m_MainWindowSettings.m_Windowed,
+            m_MainWindowSettings.m_DisplayDevice
         );
+
+        createWindow(200, 200);
     }
 
     void Display::update() {
@@ -142,14 +145,31 @@ namespace djinn {
     void Display::unittest() {
     }
 
+    void Display::close(Window* w) {
+        auto it = util::find_if(m_Windows, [w](const WindowPtr& win) { return (win.get() == w); });
+        if (it != m_Windows.end())
+            m_Windows.erase(it);
+    }
+
     vk::Instance Display::getVkInstance() const {
         return *m_VkInstance;
     }
 
-    void Display::createWindow(int width, int height) {
-        Window w(width, height, this);
+    Display::Window* Display::createWindow(
+        int  width,
+        int  height,
+        bool windowed,
+        int  displayDevice
+    ) {
+        m_Windows.push_back(std::make_unique<Window>(
+            width,
+            height,
+            windowed,
+            displayDevice,
+            this
+        ));
 
-        m_Windows.push_back(std::move(w));
+        return m_Windows.back().get();
     }
 
     void Display::initVulkan() {
@@ -184,18 +204,18 @@ namespace djinn {
             vk::ApplicationInfo appInfo = {};
 
             appInfo
-                .setApiVersion      (VK_API_VERSION_1_1)
+                .setApiVersion(VK_API_VERSION_1_1)
                 .setPApplicationName("Bazaar")
-                .setPEngineName     ("Djinn")
-                .setEngineVersion   (1);
+                .setPEngineName("Djinn")
+                .setEngineVersion(1);
 
             vk::InstanceCreateInfo info = {};
 
             info
-                .setPApplicationInfo       (&appInfo)
-                .setEnabledLayerCount      ((uint32_t)requiredLayers.size())
-                .setPpEnabledLayerNames    (requiredLayers.data())
-                .setEnabledExtensionCount  ((uint32_t)requiredExtensions.size())
+                .setPApplicationInfo(&appInfo)
+                .setEnabledLayerCount((uint32_t)requiredLayers.size())
+                .setPpEnabledLayerNames(requiredLayers.data())
+                .setEnabledExtensionCount((uint32_t)requiredExtensions.size())
                 .setPpEnabledExtensionNames(requiredExtensions.data());
 
             m_VkInstance = vk::createInstanceUnique(info);
@@ -204,7 +224,7 @@ namespace djinn {
 #ifdef DJINN_DEBUG
         {
             // install vulkan debug callback
-            pfn_vkCreateDebugReportCallbackEXT  = (PFN_vkCreateDebugReportCallbackEXT) m_VkInstance->getProcAddr("vkCreateDebugReportCallbackEXT");
+            pfn_vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)m_VkInstance->getProcAddr("vkCreateDebugReportCallbackEXT");
             pfn_vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)m_VkInstance->getProcAddr("vkDestroyDebugReportCallbackEXT");
 
             vk::DebugReportCallbackCreateInfoEXT info = {};
@@ -213,12 +233,12 @@ namespace djinn {
                 .setFlags(
                     vk::DebugReportFlagBitsEXT::eDebug |
                     vk::DebugReportFlagBitsEXT::eError |
-                    //vk::DebugReportFlagBitsEXT::eInformation | //spammy
+                    //vk::DebugReportFlagBitsEXT::eInformation | // this one is kinda spammy
                     vk::DebugReportFlagBitsEXT::ePerformanceWarning |
                     vk::DebugReportFlagBitsEXT::eWarning
                 )
                 .setPfnCallback(report_to_log);
-            
+
             m_VkDebugReportCallback = m_VkInstance->createDebugReportCallbackEXTUnique(info);
         }
 #endif

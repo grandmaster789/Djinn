@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dependencies.h"
+#include "third_party.h"
 
 /*
     This is *very* platform specific, just about all of it is using the windows API.
@@ -22,7 +22,13 @@ namespace djinn {
 			using Mouse    = input::Mouse;
 			using Keyboard = input::Keyboard;
 
-            Window(int width, int height, Display* owner);
+            Window(
+                int      width,
+                int      height,
+                bool     windowed,
+                int      displayDevice,
+                Display* owner
+            );
             ~Window();
 
             // move-only (with custom move code)
@@ -44,14 +50,22 @@ namespace djinn {
                 LPARAM lp
             );   
 
+            bool isMainWindow() const;
+
         private:
-			// while browsing the virtual key docs, it seems that
-			// 
+            static std::vector<DISPLAY_DEVICE> enumerateDisplayDevices(); // https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_display_devicea
+            static DEVMODE                     getCurrentDisplayMode(DISPLAY_DEVICE dd); // https://docs.microsoft.com/en-us/windows/desktop/api/Wingdi/ns-wingdi-_devicemodea
+
 			void initKeyMapping();
             void createSurface();
 
             Display* m_Owner  = nullptr;
             HWND     m_Handle = nullptr;
+
+            int m_Width  = 0;
+            int m_Height = 0;
+            
+            inline static HWND s_MainWindow = nullptr;
 
 			std::unique_ptr<Keyboard> m_Keyboard;
 
