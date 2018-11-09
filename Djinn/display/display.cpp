@@ -95,6 +95,8 @@ namespace djinn {
     Display::Display():
         System("Display")
     {
+		addDependency("Input");
+
         registerSetting("Width",          &m_MainWindowSettings.m_Width);
         registerSetting("Height",         &m_MainWindowSettings.m_Height);
         registerSetting("Fullscreen",     &m_MainWindowSettings.m_Fullscreen);
@@ -211,7 +213,7 @@ namespace djinn {
                 .setFlags(
                     vk::DebugReportFlagBitsEXT::eDebug |
                     vk::DebugReportFlagBitsEXT::eError |
-                    vk::DebugReportFlagBitsEXT::eInformation |
+                    //vk::DebugReportFlagBitsEXT::eInformation | //spammy
                     vk::DebugReportFlagBitsEXT::ePerformanceWarning |
                     vk::DebugReportFlagBitsEXT::eWarning
                 )

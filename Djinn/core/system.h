@@ -49,6 +49,8 @@ namespace djinn::core {
     	const Dependencies& getDependencies() const;
     	const Settings&     getSettings()     const;
         bool                isInitialized()   const;
+
+		Engine* getEngine() const;
     
     protected:
     	void addDependency(const std::string& systemName);

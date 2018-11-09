@@ -4,6 +4,10 @@
 
 #include <vector>
 
+namespace djinn::display {
+	class Window;
+}
+
 namespace djinn::input {
     class Keyboard;
     class Mouse;
@@ -15,6 +19,10 @@ namespace djinn {
         public core::System
     {
     public:
+		using Keyboard = input::Keyboard;
+		using Mouse    = input::Mouse;
+		using Gamepad  = input::Gamepad;
+
         Input();
 
         void init() override;
@@ -23,6 +31,13 @@ namespace djinn {
 
         void unittest() override;
 
+		void registerDevice(Keyboard* kbd);
+		void unregisterDevice(Keyboard* kbd);
+		
+		std::vector<Keyboard*> getKeyboards() const;
+
+
     private:
+		std::vector<Keyboard*> m_Keyboards;
     };
 }
