@@ -5,7 +5,7 @@
 #include <ostream>
 #include <functional>
 
-#include "dependencies.h"
+#include "third_party.h"
 
 namespace djinn {
     class Engine;
