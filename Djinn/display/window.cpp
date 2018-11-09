@@ -78,7 +78,7 @@ namespace djinn::display {
         auto deviceMode = getCurrentDisplayMode(devices[displayDevice]);
 
         RECT rect;
-        DWORD style = 0; // https://docs.microsoft.com/en-us/windows/desktop/winmsg/window-styles
+        DWORD style   = 0; // https://docs.microsoft.com/en-us/windows/desktop/winmsg/window-styles
         DWORD exStyle = 0; // https://docs.microsoft.com/en-us/windows/desktop/winmsg/extended-window-styles
 
         if (windowed) {
@@ -126,18 +126,6 @@ namespace djinn::display {
 
         const auto& wc = WndClass::instance().get();
         
-        // [NOTE] this is for the primary monitor
-        int left = CW_USEDEFAULT;
-        int top = CW_USEDEFAULT;
-
-        if (isMainWindow()) {
-            int screen_width = GetSystemMetrics(SM_CXSCREEN);
-            int screen_height = GetSystemMetrics(SM_CYSCREEN);
-
-            left = (screen_width - width) / 2;
-            top  = (screen_height - height) / 2;
-        }
-
         m_Handle = CreateWindowEx(
             exStyle, 
             wc.lpszClassName,

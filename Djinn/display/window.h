@@ -2,6 +2,12 @@
 
 #include "third_party.h"
 
+/*
+    This is *very* platform specific, just about all of it is using the windows API.
+    However, because it is very centralized right now it should be fairly easy to
+    switch to a cross platform interface at some point.
+*/
+
 namespace djinn {
     class Display;
 

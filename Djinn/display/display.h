@@ -8,6 +8,11 @@
 
 #include <memory>
 
+/*
+    Very marginal platform dependant stuff in here:
+    - the vulkan win32 surface extension name is in here    
+*/
+
 namespace djinn {
     class Display :
         public core::System
