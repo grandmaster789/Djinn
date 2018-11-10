@@ -394,6 +394,20 @@ namespace djinn::display {
         case WM_MOUSEMOVE: {
                 auto [x, y] = getMouseCoords();
                 m_Mouse->setPosition(x, y);
+
+                if (!m_CursorTracked) {
+                    TRACKMOUSEEVENT tracker = {};
+
+                    tracker.cbSize    = sizeof(tracker);
+                    tracker.dwFlags   = TME_LEAVE;
+                    tracker.hwndTrack = m_Handle;
+
+                    TrackMouseEvent(&tracker);
+                    m_CursorTracked = true;
+
+                    m_Mouse->doEnter(this);
+                }
+
                 break;
             }
 
@@ -408,6 +422,17 @@ namespace djinn::display {
         case WM_LBUTTONDBLCLK: { SetCapture(m_Handle); m_Mouse->doDoubleClick(eMouseButton::left);           break; }
         case WM_RBUTTONDBLCLK: { SetCapture(m_Handle); m_Mouse->doDoubleClick(eMouseButton::right);          break; }
         case WM_MBUTTONDBLCLK: { SetCapture(m_Handle); m_Mouse->doDoubleClick(eMouseButton::middle);         break; }
+
+        case WM_MOUSEWHEEL: { 
+            m_Mouse->doScroll(GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA); 
+            break; 
+        }
+
+        case WM_MOUSELEAVE: { 
+            m_CursorTracked = false; 
+            m_Mouse->doLeave(this); 
+            break; 
+        }
 
         default:
             return DefWindowProc(handle, message, wp, lp);

@@ -42,8 +42,11 @@ namespace djinn {
 
             void setButtonState(eButton button, bool pressed);
             void setPosition(float x, float y);
-            void doDoubleClick(eButton button);
-            // scrolling?
+
+            void doDoubleClick (eButton button);
+            void doScroll(int amount);
+            void doEnter(Window* w);
+            void doLeave(Window* w);
 
             // --------------------- Events -----------------------
             struct OnMoved {
@@ -78,8 +81,7 @@ namespace djinn {
 
             struct OnScroll {
                 Mouse* m_Mouse;
-                int    m_ScrollY;
-                int    m_ScrollX;
+                int    m_ScrollAmount;
             };
 
             struct OnEnterWindow {

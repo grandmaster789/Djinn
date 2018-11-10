@@ -17,7 +17,10 @@ class Bazaar :
     //public MessageHandler<input::Mouse::OnMoved>,
     public MessageHandler<input::Mouse::OnButtonPressed>,
     //public MessageHandler<input::Mouse::OnButtonReleased>,
-    public MessageHandler<input::Mouse::OnDoubleClick>
+    public MessageHandler<input::Mouse::OnDoubleClick>,
+    public MessageHandler<input::Mouse::OnScroll>,
+    public MessageHandler<input::Mouse::OnEnterWindow>,
+    public MessageHandler<input::Mouse::OnLeaveWindow>
 {
 public:
     Bazaar():
@@ -55,6 +58,10 @@ public:
     void operator()(const input::Mouse::OnButtonPressed& bp)  { gLog << bp; }
     void operator()(const input::Mouse::OnButtonReleased& br) { gLog << br; }
     void operator()(const input::Mouse::OnDoubleClick& dc)    { gLog << dc; }
+    void operator()(const input::Mouse::OnScroll& sc)         { gLog << sc; }
+
+    void operator()(const input::Mouse::OnEnterWindow& ow) { gLog << ow; }
+    void operator()(const input::Mouse::OnLeaveWindow& ow) { gLog << ow; }
 };
 
 int main() {

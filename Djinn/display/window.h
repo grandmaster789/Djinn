@@ -7,6 +7,8 @@
     However, because it is very centralized right now it should be fairly easy to
     switch to a cross platform interface at some point.
 
+    - TODO: window resizing events, minimizing/maximizing
+
     [NOTE] maybe switch to the raw input model instead of window message translation?
 */
 
@@ -67,8 +69,9 @@ namespace djinn {
             Display* m_Owner  = nullptr;
             HWND     m_Handle = nullptr;
 
-            int m_Width  = 0;
-            int m_Height = 0;
+            int  m_Width  = 0;
+            int  m_Height = 0;
+            bool m_CursorTracked = false;
             
             inline static HWND s_MainWindow = nullptr;
 

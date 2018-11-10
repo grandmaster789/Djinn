@@ -54,6 +54,18 @@ namespace djinn::input {
         broadcast(OnDoubleClick{ this, m_X, m_Y, button });
     }
 
+    void Mouse::doScroll(int amount) {
+        broadcast(OnScroll{ this, amount });
+    }
+
+    void Mouse::doEnter(Window* w) {
+        broadcast(OnEnterWindow{ this, w });
+    }
+
+    void Mouse::doLeave(Window* w) {
+        broadcast(OnLeaveWindow{ this, w });
+    }
+
     std::ostream& operator << (std::ostream& os, const Mouse::eButton& button) {
         using eButton = Mouse::eButton;
 
@@ -95,7 +107,7 @@ namespace djinn::input {
     }
 
     std::ostream& operator << (std::ostream& os, const Mouse::OnScroll& ms) {
-        os << "Scroll: " << ms.m_ScrollX << ", " << ms.m_ScrollY;
+        os << "Scroll: " << ms.m_ScrollAmount;
 
         return os;
     }
