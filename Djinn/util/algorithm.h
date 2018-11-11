@@ -84,6 +84,22 @@ namespace djinn::util {
         tContainer& c, 
         tCompareFn  predicateFn
     );
+
+    template <typename tContainer>
+    void copy(
+        const tContainer& source,
+              tContainer& destination
+    );
+
+    template <
+        typename tContainer, 
+        typename tPredicateFn
+    >
+    void copy_if(
+        const tContainer&    source,
+              tContainer&    destination,
+              tPredicateFn&& predicate
+    );
     
     template <typename tContainer>
     void sort(tContainer& c);

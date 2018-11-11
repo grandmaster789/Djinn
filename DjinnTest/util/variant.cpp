@@ -4,7 +4,6 @@
 #include <string>
 
 #include "util/variant.h"
-#include "../indicator.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

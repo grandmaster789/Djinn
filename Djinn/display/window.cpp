@@ -151,7 +151,7 @@ namespace djinn::display {
             style,
             rect.left,
             rect.top,
-            rect.right - rect.left, // width
+            rect.right - rect.left,  // width
             rect.bottom - rect.top,  // height
             nullptr,                 // parent window
             nullptr,                 // menu
@@ -384,6 +384,11 @@ namespace djinn::display {
                 break;
             }
 
+        case WM_PAINT: {
+                ValidateRect(m_Handle, nullptr); // this makes the entire client area redraw
+                break;
+            }
+
         case WM_KEYUP:
         case WM_SYSKEYUP: {
                 auto key = findKeyCode(wp);
@@ -451,6 +456,88 @@ namespace djinn::display {
 
     const Window::Mouse* Window::getMouse() const {
         return m_Mouse.get();
+    }
+
+    void Window::initSwapChain() {
+        auto physicalDevice = m_Owner->getVkPhysicalDevice();
+        auto device         = m_Owner->getVkDevice();
+
+        // make sure the device actually supports this surface
+        if (!physicalDevice.getSurfaceSupportKHR(0, *m_Surface))
+            throw std::runtime_error("Physical device does not support the window surface");
+
+        auto surfaceCaps           = physicalDevice.getSurfaceCapabilitiesKHR(*m_Surface);
+        auto supportedFormats      = physicalDevice.getSurfaceFormatsKHR     (*m_Surface);
+        auto supportedPresentModes = physicalDevice.getSurfacePresentModesKHR(*m_Surface);
+
+        vk::SurfaceFormatKHR desiredFormat;
+        desiredFormat.format     = vk::Format::eB8G8R8A8Unorm;
+        desiredFormat.colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear;
+
+        if (!util::contains(supportedFormats, desiredFormat))
+            throw std::runtime_error("Desired surface format not supported");
+
+        vk::PresentModeKHR desiredPresentMode = vk::PresentModeKHR::eMailbox;
+
+        if (!util::contains(supportedPresentModes, desiredPresentMode))
+            throw std::runtime_error("Desired present mode not available");
+
+        m_SurfaceExtent = surfaceCaps.currentExtent;
+        
+        vk::SwapchainCreateInfoKHR swapchain_info;
+
+        swapchain_info
+            .setSurface         (*m_Surface)
+            .setMinImageCount   (2)                                 // 2 for double buffering
+            .setImageFormat     (desiredFormat.format)
+            .setImageColorSpace (desiredFormat.colorSpace)
+            .setImageExtent     (m_SurfaceExtent)
+            .setImageArrayLayers(1)
+            .setImageUsage      (vk::ImageUsageFlagBits::eColorAttachment)
+            .setImageSharingMode(vk::SharingMode::eExclusive)
+            .setPreTransform    (vk::SurfaceTransformFlagBitsKHR::eIdentity)
+            .setCompositeAlpha  (vk::CompositeAlphaFlagBitsKHR::eOpaque)
+            .setPresentMode     (desiredPresentMode)
+            .setClipped         (VK_TRUE)
+            .setOldSwapchain    (m_SwapChain ? *m_SwapChain : nullptr);
+
+        m_SwapChain = device.createSwapchainKHRUnique(swapchain_info);
+
+        // create the swapchain texture views
+        {
+            m_SwapChainImages = device.getSwapchainImagesKHR(*m_SwapChain);
+            m_SwapChainViews.clear();
+
+            for (const auto& image: m_SwapChainImages) {
+                vk::ImageViewCreateInfo   view_info;
+                vk::ComponentMapping      components;
+                vk::ImageSubresourceRange subresourceRange;
+
+                components
+                    .setR(vk::ComponentSwizzle::eR)
+                    .setG(vk::ComponentSwizzle::eG)
+                    .setB(vk::ComponentSwizzle::eB)
+                    .setA(vk::ComponentSwizzle::eA);
+
+                subresourceRange
+                    .setAspectMask    (vk::ImageAspectFlagBits::eColor)
+                    .setBaseMipLevel  (0)
+                    .setLevelCount    (1)
+                    .setBaseArrayLayer(0)
+                    .setLayerCount    (1);
+
+                view_info
+                    .setViewType        (vk::ImageViewType::e2D)
+                    .setFormat          (desiredFormat.format)
+                    .setComponents      (components)
+                    .setSubresourceRange(subresourceRange)
+                    .setImage           (image);
+
+                m_SwapChainViews.push_back(
+                    device.createImageViewUnique(view_info)
+                );
+            }
+        }
     }
 
     std::vector<DISPLAY_DEVICE> Window::enumerateDisplayDevices() {

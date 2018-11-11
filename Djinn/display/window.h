@@ -7,7 +7,9 @@
     However, because it is very centralized right now it should be fairly easy to
     switch to a cross platform interface at some point.
 
-    - TODO: window resizing events, minimizing/maximizing
+    - TODO: window resizing events
+    - TODO: minimizing + maximizing
+    - TODO: actual text input
 
     [NOTE] maybe switch to the raw input model instead of window message translation?
 */
@@ -44,7 +46,7 @@ namespace djinn {
             Window             (Window&&); 
             Window& operator = (Window&&);
 
-            HWND getHandle() const;
+            HWND           getHandle()  const;
             vk::SurfaceKHR getSurface() const;
 
             LRESULT winProc(
@@ -57,7 +59,9 @@ namespace djinn {
             bool isMainWindow() const;
 
             const Keyboard* getKeyboard() const;
-            const Mouse* getMouse() const;
+            const Mouse*    getMouse()    const;
+
+            void initSwapChain(); // this only works when the Display has physical+logical devices available
 
         private:
             static std::vector<DISPLAY_DEVICE> enumerateDisplayDevices(); // https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_display_devicea
@@ -71,6 +75,7 @@ namespace djinn {
 
             int  m_Width  = 0;
             int  m_Height = 0;
+
             bool m_CursorTracked = false;
             
             inline static HWND s_MainWindow = nullptr;
@@ -78,7 +83,13 @@ namespace djinn {
 			std::unique_ptr<Keyboard> m_Keyboard;
             std::unique_ptr<Mouse>    m_Mouse;
 
-            vk::UniqueSurfaceKHR m_Surface;
+            // [NOTE] the swapchain images may be replaced eventually
+            //        with some kind of Texture class
+            vk::UniqueSurfaceKHR             m_Surface;
+            vk::Extent2D                     m_SurfaceExtent;
+            vk::UniqueSwapchainKHR           m_SwapChain;
+            std::vector<vk::Image>           m_SwapChainImages;
+            std::vector<vk::UniqueImageView> m_SwapChainViews;
         };
     }
 }

@@ -11,6 +11,7 @@
 /*
     Very marginal platform dependant stuff in here:
     - the vulkan win32 surface extension name is in here    
+    [TODO] multi-GPU support... don't have the hardware for that tho
 */
 
 namespace djinn {
@@ -31,7 +32,9 @@ namespace djinn {
 
         void close(Window* w);
 
-        vk::Instance getVkInstance() const;
+        vk::Instance       getVkInstance() const;
+        vk::PhysicalDevice getVkPhysicalDevice() const;
+        vk::Device         getVkDevice() const;
 
     private:
         Window* createWindow(
@@ -42,6 +45,7 @@ namespace djinn {
         );
 
         void initVulkan();
+        void createVulkanDevice();
 
         std::vector<WindowPtr> m_Windows;
 
@@ -53,7 +57,12 @@ namespace djinn {
         } m_MainWindowSettings;
 
         // vulkan-related
-        vk::UniqueInstance               m_VkInstance;
-        vk::UniqueDebugReportCallbackEXT m_VkDebugReportCallback;
+        vk::UniqueInstance                 m_VkInstance;
+        vk::UniqueDebugReportCallbackEXT   m_VkDebugReportCallback;
+
+        vk::PhysicalDevice                 m_VkPhysicalDevice;
+        vk::PhysicalDeviceMemoryProperties m_VkPhysicalDeviceMemoryProperties;
+
+        vk::UniqueDevice                   m_VkDevice;
     };
 }

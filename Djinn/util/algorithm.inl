@@ -93,6 +93,35 @@ namespace djinn::util {
         if (it != std::end(container))
             container.erase(it);
     }
+
+    template <typename C>
+    void copy(const C& source, C& destination) {
+        using std::copy;
+        using std::begin;
+        using std::end;
+        using std::back_inserter;
+
+        copy(
+            begin(source),
+            end(source),
+            back_inserter(destination)
+        );
+    }
+
+    template <typename C, typename P>
+    void copy_if(const C& source, C& destination, P&& predicateFn) {
+        using std::copy_if;
+        using std::begin;
+        using std::end;
+        using std::back_inserter;
+
+        copy_if(
+            begin(source),
+            end(source),
+            back_inserter(destination),
+            predicateFn
+        );
+    }
     
     template <typename C>
     void sort(C& container) {

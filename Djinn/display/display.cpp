@@ -41,14 +41,14 @@ namespace {
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL report_to_log(
-        VkDebugReportFlagsEXT      flags,
-        VkDebugReportObjectTypeEXT objectType,
-        uint64_t                   object,
-        size_t                     location,
-        int32_t                    code,
-        const char*                layerPrefix,
-        const char*                message,
-        void*                      userdata
+              VkDebugReportFlagsEXT      flags,
+              VkDebugReportObjectTypeEXT objectType,
+              uint64_t                   object,
+              size_t                     location,
+              int32_t                    code,
+        const char*                      layerPrefix,
+        const char*                      message,
+              void*                      userdata
     ) {
         (void)objectType;
         (void)object;
@@ -66,28 +66,28 @@ namespace {
 }
 
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugReportCallbackEXT(
-    VkInstance                                instance,
+          VkInstance                          instance,
     const VkDebugReportCallbackCreateInfoEXT* pCreateInfo,
     const VkAllocationCallbacks*              pAllocator,
-    VkDebugReportCallbackEXT*                 pCallback
+          VkDebugReportCallbackEXT*           pCallback
 ) {
     if (pfn_vkCreateDebugReportCallbackEXT)
         return pfn_vkCreateDebugReportCallbackEXT(instance, pCreateInfo, pAllocator, pCallback);
     else
-        // [NOTE] this is expected to be nothrow, noexcept
+        // [NOTE] this is expected to be nothrow + noexcept
         //        so use an error code instead
         return VkResult::VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
 VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
-    VkInstance                   instance,
-    VkDebugReportCallbackEXT     callback,
-    const VkAllocationCallbacks* pAllocator
+          VkInstance               instance,
+          VkDebugReportCallbackEXT callback,
+    const VkAllocationCallbacks*   pAllocator
 ) {
     if (pfn_vkDestroyDebugReportCallbackEXT)
         pfn_vkDestroyDebugReportCallbackEXT(instance, callback, pAllocator);
 
-    // [NOTE] this is expected to be nothrow, noexcept    
+    // [NOTE] this is expected to be nothrow + noexcept    
     //        so silent fail because of the void return type
 }
 
@@ -112,6 +112,12 @@ namespace djinn {
             m_MainWindowSettings.m_Windowed,
             m_MainWindowSettings.m_DisplayDevice
         );
+
+        createVulkanDevice();
+        
+        for (auto& window : m_Windows)
+            window->initSwapChain();
+
     }
 
     void Display::update() {
@@ -153,6 +159,14 @@ namespace djinn {
         return *m_VkInstance;
     }
 
+    vk::PhysicalDevice Display::getVkPhysicalDevice() const {
+        return m_VkPhysicalDevice;
+    }
+
+    vk::Device Display::getVkDevice() const {
+        return *m_VkDevice;
+    }
+
     Display::Window* Display::createWindow(
         int  width,
         int  height,
@@ -188,12 +202,19 @@ namespace djinn {
 
         // in debug mode, use validation
 #ifdef DJINN_DEBUG
+        // https://vulkan.lunarg.com/doc/sdk/1.1.85.0/windows/validation_layers.html
         requiredLayers.push_back("VK_LAYER_LUNARG_standard_validation"); // not sure if there is a macro definition for this
         requiredExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 #endif
         {
             // verify the required layers/extensions are available
+            for (const auto& layerName : requiredLayers)
+                if (!isLayerAvailable(layerName, availableInstanceLayerProperies))
+                    throw std::runtime_error("Required layer not available");
 
+            for (const auto& extensionName : requiredExtensions)
+                if (!isExtensionAvailable(extensionName, availableInstanceExtensions))
+                    throw std::runtime_error("Required extension not available");
         }
 
 
@@ -210,11 +231,11 @@ namespace djinn {
             vk::InstanceCreateInfo info = {};
 
             info
-                .setPApplicationInfo(&appInfo)
-                .setEnabledLayerCount((uint32_t)requiredLayers.size())
-                .setPpEnabledLayerNames(requiredLayers.data())
-                .setEnabledExtensionCount((uint32_t)requiredExtensions.size())
-                .setPpEnabledExtensionNames(requiredExtensions.data());
+                .setPApplicationInfo       (&appInfo)
+                .setEnabledLayerCount      ((uint32_t)requiredLayers.size())
+                .setPpEnabledLayerNames    (          requiredLayers.data())
+                .setEnabledExtensionCount  ((uint32_t)requiredExtensions.size())
+                .setPpEnabledExtensionNames(          requiredExtensions.data());
 
             m_VkInstance = vk::createInstanceUnique(info);
         }
@@ -222,7 +243,7 @@ namespace djinn {
 #ifdef DJINN_DEBUG
         {
             // install vulkan debug callback
-            pfn_vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)m_VkInstance->getProcAddr("vkCreateDebugReportCallbackEXT");
+            pfn_vkCreateDebugReportCallbackEXT  = (PFN_vkCreateDebugReportCallbackEXT) m_VkInstance->getProcAddr("vkCreateDebugReportCallbackEXT");
             pfn_vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)m_VkInstance->getProcAddr("vkDestroyDebugReportCallbackEXT");
 
             vk::DebugReportCallbackCreateInfoEXT info = {};
@@ -241,4 +262,114 @@ namespace djinn {
         }
 #endif
     }
+
+    void Display::createVulkanDevice() {
+        gLogDebug << "Available physical devices: ";
+        auto available_physical_devices = m_VkInstance->enumeratePhysicalDevices();
+
+        for (const auto& dev : available_physical_devices) {
+            auto props = dev.getProperties();
+
+            std::string gpu_type;
+
+            switch (props.deviceType) {
+            case vk::PhysicalDeviceType::eCpu:           gpu_type = "CPU";            break;
+            case vk::PhysicalDeviceType::eDiscreteGpu:   gpu_type = "Discrete GPU";   break;
+            case vk::PhysicalDeviceType::eIntegratedGpu: gpu_type = "Integrated GPU"; break;
+            case vk::PhysicalDeviceType::eOther:         gpu_type = "Other";          break;
+            case vk::PhysicalDeviceType::eVirtualGpu:    gpu_type = "Virtual GPU";    break;
+            default:
+                gpu_type = "<< UNKNOWN >>";
+            }
+
+            gLogDebug                     << props.deviceName 
+                << "\n\tType:"            << gpu_type
+                << "\n\tDriver version: " << props.driverVersion
+                << "\n\tAPI version: " 
+                    << VK_VERSION_MAJOR(props.apiVersion) << "."
+                    << VK_VERSION_MINOR(props.apiVersion) << "."
+                    << VK_VERSION_PATCH(props.apiVersion);
+        }
+
+        // we *require*:
+        // - swapchain support
+        std::vector<const char*> requiredDeviceExtensions = {
+                VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        };
+
+        std::vector<const char*> requiredDeviceLayers;
+
+#ifdef DJINN_DEBUG
+        requiredDeviceLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+#endif
+
+        auto hasRequirements = [=](const vk::PhysicalDevice& device) {
+            auto availableDeviceExtensions = device.enumerateDeviceExtensionProperties();
+            auto availableDeviceLayers     = device.enumerateDeviceLayerProperties();
+
+            for (const auto& requirement : requiredDeviceExtensions)
+                if (!isExtensionAvailable(requirement, availableDeviceExtensions))
+                    return false;
+
+            for (const auto& requirement : requiredDeviceLayers)
+                if (!isLayerAvailable(requirement, availableDeviceLayers))
+                    return false;
+
+            return true;
+        };
+        
+        // we *prefer*:
+        // - discrete GPU
+        // - the largest texture size available
+        
+        // filter available devices for required features
+        std::vector<vk::PhysicalDevice> candidates;
+        util::copy_if(available_physical_devices, candidates, hasRequirements);
+
+        if (candidates.empty())
+            throw std::runtime_error("None of the physical devices conforms to the requirements");
+
+        // if we only have one candidate, we're done
+        if (candidates.size() == 1) {
+            m_VkPhysicalDevice = candidates[0];
+            gLog << "Selected " << m_VkPhysicalDevice.getProperties().deviceName;            
+        }
+        else {
+            // [TODO] implement scoring to order candidates and pick the best one
+            m_VkPhysicalDevice = candidates[0];
+            gLog << "Selected " << m_VkPhysicalDevice.getProperties().deviceName;
+        }
+
+        m_VkPhysicalDeviceMemoryProperties = m_VkPhysicalDevice.getMemoryProperties();
+
+        // [TODO] the queuing thing is more complex than what i've written here - as its written
+        //        it uses a single queue for all operations, which is not ideal...
+        {
+            vk::DeviceQueueCreateInfo queue_info;
+
+            float priorities[] = { 1.0f };
+
+            auto availableQueueFamilies = m_VkPhysicalDevice.getQueueFamilyProperties();
+            if (availableQueueFamilies.empty())
+                throw std::runtime_error("No vulkan queue families available...");
+
+            queue_info
+                .setQueueCount      (1)
+                .setQueueFamilyIndex(0)
+                .setPQueuePriorities(priorities);
+
+            vk::DeviceCreateInfo info;
+
+            info
+                .setQueueCreateInfoCount   (1)
+                .setPQueueCreateInfos      (&queue_info)
+                .setEnabledLayerCount      ((uint32_t)requiredDeviceLayers.size())
+                .setPpEnabledLayerNames    (          requiredDeviceLayers.data())
+                .setEnabledExtensionCount  ((uint32_t)requiredDeviceExtensions.size())
+                .setPpEnabledExtensionNames(          requiredDeviceExtensions.data());
+
+            m_VkDevice = m_VkPhysicalDevice.createDeviceUnique(info);
+        }
+    }
+
 }
