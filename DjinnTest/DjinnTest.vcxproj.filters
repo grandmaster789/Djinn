@@ -20,6 +20,9 @@
     <ClCompile Include="util\enum.cpp">
       <Filter>util</Filter>
     </ClCompile>
+    <ClCompile Include="util\prefer.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

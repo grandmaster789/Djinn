@@ -477,10 +477,40 @@ namespace djinn::display {
         if (!util::contains(supportedFormats, desiredFormat))
             throw std::runtime_error("Desired surface format not supported");
 
-        vk::PresentModeKHR desiredPresentMode = vk::PresentModeKHR::eMailbox;
+        // present mode effectively enables/disables VSync
+        //
+        // prefer immediate pressent mode, then mailbox, finally fifo 
+        // (see official docs for  more options)
+        //
+        // - immediate: 
+        //      specifies that the presentation engine does not wait for a vertical blanking 
+        //      period to update the current image, meaning this mode may result in visible 
+        //      tearing. No internal queuing of presentation requests is needed, as the 
+        //      requests are applied immediately
+        // - mailbox:
+        //      specifies that the presentation engine waits for the next vertical blanking 
+        //      period to update the current image. Tearing cannot be observed. An internal 
+        //      single-entry queue is used to hold pending presentation requests. If the 
+        //      queue is full when a new presentation request is received, the new request 
+        //      replaces the existing entry, and any images associated with the prior entry 
+        //      become available for re-use by the application. One request is removed from 
+        //      the queue and processed during each vertical blanking period in which the 
+        //      queue is non-empty
+        // - fifo:
+        //      specifies that the presentation engine waits for the next vertical blanking 
+        //      period to update the current image. Tearing cannot be observed. An internal 
+        //      queue is used to hold pending presentation requests. New requests are 
+        //      appended to the end of the queue, and one request is removed from the 
+        //      beginning of the queue and processed during each vertical blanking period in 
+        //      which the queue is non-empty. This is the only value of presentMode that is 
+        //      required to be supported
 
-        if (!util::contains(supportedPresentModes, desiredPresentMode))
-            throw std::runtime_error("Desired present mode not available");
+        vk::PresentModeKHR desiredPresentMode = *util::prefer(
+            supportedPresentModes,
+            vk::PresentModeKHR::eImmediate,
+            vk::PresentModeKHR::eMailbox,
+            vk::PresentModeKHR::eFifo       // <- this one is *required*, so one of the options is always available
+        );
 
         m_SurfaceExtent = surfaceCaps.currentExtent;
         

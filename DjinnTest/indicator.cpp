@@ -50,12 +50,12 @@ bool Indicator::isMoveAssigned() const noexcept {
 
 std::ostream& operator << (std::ostream& os, const Indicator& i) {
     switch (i.m_Val) {
-    case 1: os << "Default constructed"; break;
-    case 2: os << "Copy constructed";    break;
-    case 3: os << "Copy assigned";       break;
-    case 4: os << "Move constructed";    break;
-    case 5: os << "Moved from husk";     break;
-    case 6: os << "Move assigned";       break;
+    case 1: os << "1"; break; // default constructed
+    case 2: os << "2"; break; // copy constructed
+    case 3: os << "3"; break; // copy assigned
+    case 4: os << "4"; break; // move constructed
+    case 5: os << "5"; break; // moved from husk
+    case 6: os << "6"; break; // move assigned
 
     default:
         os << "<< UNKNOWN STATE >>";

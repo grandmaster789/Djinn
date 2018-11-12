@@ -14,7 +14,7 @@ namespace djinn::util {
     }
     
     template <typename C, typename Fn>
-    bool contains_if(const C& container, Fn predicateFn) {
+    bool contains_if(const C& container, Fn&& predicateFn) {
         using std::find_if;
         using std::begin;
         using std::end;
@@ -145,5 +145,37 @@ namespace djinn::util {
         );
     
         container.erase(it, end(container));
+    }
+
+    namespace detail {
+        template <typename C, typename T, typename...Vs>
+        std::optional<typename C::value_type> prefer_impl(
+            const C& options,
+            const T& candidate,
+            const Vs&... vs
+        ) {
+            static_assert(std::is_same_v<typename C::value_type, T>);
+
+            if (contains(options, candidate))
+                return candidate;
+                
+            if constexpr (sizeof...(Vs) > 0) {
+                return prefer_impl(options, vs...);
+            }
+
+            return std::nullopt;
+        };
+    }
+
+    template <typename tContainer, typename...tValues>
+    std::optional<typename tContainer::value_type> prefer(
+        const tContainer& available_options,
+        const tValues&... preferred
+    ) {
+        if constexpr (sizeof...(tValues) == 0) {
+            return std::nullopt;
+        }
+
+        return detail::prefer_impl(available_options, preferred...);
     }
 }
