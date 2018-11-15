@@ -343,7 +343,7 @@ namespace djinn {
         m_VkPhysicalDeviceMemoryProperties = m_VkPhysicalDevice.getMemoryProperties();
 
         // [TODO] the queuing thing is more complex than what i've written here - as its written
-        //        it uses a single queue for all operations, which is not ideal...
+        //        it uses a single queue for all operations, which is not ideal...        
         {
             vk::DeviceQueueCreateInfo queue_info;
 
