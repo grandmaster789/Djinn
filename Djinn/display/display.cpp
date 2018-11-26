@@ -1,5 +1,7 @@
 #include "display.h"
 #include "core/engine.h"
+#include "util/flat_map.h"
+#include "util/enum.h"
 
 // ------ Vulkan debug reports ------
 namespace {
@@ -62,6 +64,37 @@ namespace {
         else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)         gLog        << "[" << layerPrefix << "] Code " << code << " : " << message;
 
         return VK_FALSE;
+    }
+
+    // will throw if the requested type is not found
+    // [NOTE] some simple preference system for dedicated queues would be nice
+    djinn::util::FlatMap<vk::QueueFlagBits, int> scanFamilies(
+        const std::vector<vk::QueueFamilyProperties>& availableFamilies, 
+        const std::vector<vk::QueueFlagBits>&         requestedTypes
+    ) {
+        using namespace djinn::util;
+
+        FlatMap<vk::QueueFlagBits, int> result;
+
+        auto scan = [](
+            const vk::QueueFamilyProperties& props, 
+            const vk::QueueFlagBits&         type
+        ) {
+            return (props.queueFlags & type);
+        };
+
+        for (const auto& type : requestedTypes) {
+            auto it = find_if(availableFamilies, scan);
+
+            if (it == std::end(availableFamilies))
+                throw std::runtime_error("Requested queue family type not found");
+
+            int idx = static_cast<int>(std::distance(availableFamilies.begin(), it));
+            
+            result.assign(type, idx);
+        }
+
+        return result;
     }
 }
 
@@ -342,18 +375,43 @@ namespace djinn {
 
         m_VkPhysicalDeviceMemoryProperties = m_VkPhysicalDevice.getMemoryProperties();
 
-        // [TODO] the queuing thing is more complex than what i've written here - as its written
-        //        it uses a single queue for all operations, which is not ideal...        
+        // for now, I'm going for a two-queue approach; one for graphics and one for
+        // transfers. Probably this will be extended to more queues at some point.
         {
-            vk::DeviceQueueCreateInfo queue_info;
+            vk::DeviceQueueCreateInfo queue_info[2];
 
-            float priorities[] = { 1.0f };
+            float priorities[] = { 
+                1.0f, 
+                0.0f 
+            };
 
             auto availableQueueFamilies = m_VkPhysicalDevice.getQueueFamilyProperties();
             if (availableQueueFamilies.empty())
                 throw std::runtime_error("No vulkan queue families available...");
 
-            queue_info
+            // scan the available families for graphics and transfer queues;
+            // [TODO] prefer separate families if possible
+            auto selection = scanFamilies(
+                availableQueueFamilies,
+                { 
+                    vk::QueueFlagBits::eGraphics,
+                    vk::QueueFlagBits::eTransfer
+                }
+            );
+
+            // right now we only have either 1 family for both queue types
+            // or 2 families... when we get more, this should be revisited
+
+            int numQueues;
+
+            if (selection[vk::QueueFlagBits::eGraphics] == selection[vk::QueueFlagBits::eTransfer]) {
+                numQueues = 1;
+            }
+            else {
+                numQueues = 2;
+            }
+
+            queue_info[0]
                 .setQueueCount      (1)
                 .setQueueFamilyIndex(0)
                 .setPQueuePriorities(priorities);
@@ -362,7 +420,7 @@ namespace djinn {
 
             info
                 .setQueueCreateInfoCount   (1)
-                .setPQueueCreateInfos      (&queue_info)
+                .setPQueueCreateInfos      (queue_info)
                 .setEnabledLayerCount      ((uint32_t)requiredDeviceLayers.size())
                 .setPpEnabledLayerNames    (          requiredDeviceLayers.data())
                 .setEnabledExtensionCount  ((uint32_t)requiredDeviceExtensions.size())

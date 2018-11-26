@@ -3,64 +3,26 @@
 
 #include "util/enum.h"
 #include <sstream>
+#include <vector>
+#include <map>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
-namespace {
-    enum class FooBar {
-        aaa,
-        bbb,
-        ccc,
-        ddd,
-        eee,
-        fff
-    };
-
-    std::ostream& operator << (std::ostream& os, const FooBar& fb) {
-        switch (fb) {
-        case FooBar::aaa: os << "aaa"; break;
-        case FooBar::bbb: os << "bbb"; break;
-        case FooBar::ccc: os << "ccc"; break;
-        case FooBar::ddd: os << "ddd"; break;
-        case FooBar::eee: os << "eee"; break;
-        case FooBar::fff: os << "fff"; break;
-        }
-
-        return os;
-    }
-
-    using FooBarIterator = djinn::util::EnumIterator<FooBar, FooBar::aaa, FooBar::fff>;
-}
+using namespace djinn;
 
 namespace DjinnTest {
     TEST_CLASS(Enum) {
     public:
         TEST_METHOD(enum_iterator) {
-            {
-                std::stringstream sstr;
+            std::vector<char> poor_string = {
+                'a', 'b', 'c', 'd', 'e', 'f'
+            };
 
-                FooBar fb = FooBar::ddd;
+            std::stringstream sstr;
 
-                for (auto it = FooBarIterator(fb); it != FooBarIterator::end(); ++it)
-                    sstr << *it;
-                
-                std::string result   = sstr.str();
-                std::string expected = "dddeeefff";
+            for (auto[idx, val] : util::enumerate(poor_string))
+                sstr << idx << ":" << val << " ";
 
-                Assert::IsTrue(result == expected);
-            }
-
-            {
-                std::stringstream sstr;
-
-                for (auto val : FooBarIterator())
-                    sstr << val;
-
-                std::string result = sstr.str();
-                std::string expected = "aaabbbcccdddeeefff";
-
-                Assert::IsTrue(result == expected);
-            }
+            Assert::IsTrue(sstr.str() == "0:a 1:b 2:c 3:d 4:e 5:f ");
         }
     };
 }

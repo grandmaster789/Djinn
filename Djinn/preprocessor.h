@@ -15,6 +15,9 @@
 #if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS
 	// disable as much of the windows header as possible
 
+    // [NOTE] at some point I may get around to wrapping this completely inside a
+    //        cpp file instead of a header; should limit global symbols a *lot*
+
 	#define WIN32_LEAN_AND_MEAN // disables many additional headers
 
 	#define NOGDICAPMASKS     // CC_ * , LC_*, PC_*, CP_*, TC_*, RC_

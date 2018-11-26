@@ -6,8 +6,6 @@
 #include "input/mouse.h"
 #include <iostream>
 
-#include "util/enum.h"
-
 using namespace djinn;
 
 class Bazaar :

@@ -3,46 +3,44 @@
 #include "enum.h"
 
 namespace djinn::util {
-    template <typename E, E a, E z>
-    EnumIterator<E, a, z>::EnumIterator():
-        m_Cursor(static_cast<value_type>(a))
-    {
-    }
+    template <
+        typename T,
+        typename It,
+        typename
+    >
+    constexpr auto enumerate(T&& iterable) {
+        struct Iterator {
+            bool operator != (const Iterator& it) const {
+                return m_Iterator != it.m_Iterator;
+            }
 
-    template <typename E, E a, E z>
-    EnumIterator<E, a, z>::EnumIterator(const E& e):
-        m_Cursor(static_cast<int>(e))
-    {
-    }
+            void operator ++ () {
+                ++m_Index;
+                ++m_Iterator;
+            }
 
-    template <typename E, E a, E z>
-    EnumIterator<E, a, z>& EnumIterator<E, a, z>::operator ++ () {
-        ++m_Cursor;
-        return *this;
-    }
+            auto operator* () const {
+                return std::tie(m_Index, *m_Iterator);
+            }
 
-    template <typename E, E a, E z>
-    E EnumIterator<E, a, z>::operator * () const {
-        return static_cast<E>(m_Cursor);
-    }
+            size_t m_Index;
+            It     m_Iterator;
+        };
 
-    template <typename E, E a, E z>
-    EnumIterator<E, a, z> EnumIterator<E, a, z>::begin() {
-        return EnumIterator(a);
-    }
+        struct IteratorWrapper {
+            T m_Iterable;
 
-    template <typename E, E a, E z>
-    EnumIterator<E, a, z> EnumIterator<E, a, z>::end() {
-        return ++EnumIterator(z);
-    }
+            auto begin() {
+                return Iterator{ 0, std::begin(m_Iterable) };
+            }
 
-    template <typename E, E a, E z>
-    bool EnumIterator<E, a, z>::operator == (const EnumIterator& ei) {
-        return ei.m_Cursor == m_Cursor;
-    }
+            auto end() {
+                return Iterator{ 0, std::end(m_Iterable) };
+            }
+        };
 
-    template <typename E, E a, E z>
-    bool EnumIterator<E, a, z>::operator != (const EnumIterator& ei) {
-        return !(*this == ei);
+        return IteratorWrapper{
+            std::forward<T>(iterable)
+        };
     }
 }

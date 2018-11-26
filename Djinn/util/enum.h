@@ -1,38 +1,36 @@
 #pragma once
 
-#include <type_traits>
+#include <tuple>
 
 namespace djinn::util {
     /*
-        This allows ranged iteration over enum classes
+        This allows for [index, value] ranged iteration over a collection. 
+        All template arguments are deduced, just point it at some STL-compatible
+        collection and it should work, with no unnecessary overhead.
 
-        Caveat: the values must be fully sequential
+        Given something iterable, a ranged for-loop using enumerate will 
+        yield [index, element] tuples, which can be picked apart with a structured
+        binding, resulting in a very compact usage syntax:
+
+            vector<string> v = { "foo", "bar", "baz" };
+            for (auto [index, value]: enumerate(v))
+                std::cout << index << " -> " << value << "\n"
+
+        yields:
+
+            0 -> foo
+            1 -> bar
+            2 -> baz
+
+        See unit test for example usage
     */
+
     template <
-        typename Enum, 
-        Enum beginValue,
-        Enum endValue
+        typename T,
+        typename tIterator = decltype(std::begin(std::declval<T>())),
+        typename           = decltype(std::end(  std::declval<T>()))
     >
-    class EnumIterator {
-    public:
-        using value_type = std::underlying_type_t<Enum>;
-
-        EnumIterator();
-        EnumIterator(const Enum& e);
-
-        EnumIterator& operator ++ ();
-
-        Enum operator * () const;
-
-        static EnumIterator begin();
-        static EnumIterator end();
-
-        bool operator == (const EnumIterator& ei);
-        bool operator != (const EnumIterator& ei);
-
-    private:
-        int m_Cursor;
-    };
+    constexpr auto enumerate(T&& iterable);
 }
 
 #include "enum.inl"
