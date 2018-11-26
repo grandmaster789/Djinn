@@ -407,15 +407,26 @@ namespace djinn {
 
             if (graphicsFamilyIdx == transferFamilyIdx) {
                 // 1 family supports both queue types
+				// [NOTE] my laptop supports just one queue with one queue family. All types though...
+				uint32_t queueCount = 2;
 
                 numQueueInfos    = 1;                
                 drawQueueIdx     = 0;
                 transferQueueIdx = 1;
 
-                queue_info[0]
-                    .setQueueCount(2)
-                    .setQueueFamilyIndex(graphicsFamilyIdx)
-                    .setPQueuePriorities(priorities);
+				if (availableQueueFamilies.size() == 1) {
+					// check if the one available queue family has enough queues available
+					// not sure if this is the general case
+					if (availableQueueFamilies.back().queueCount < 2) {
+						queueCount = 1;
+						transferQueueIdx = 0;
+					}
+				}
+
+				queue_info[0]
+					.setQueueCount(queueCount)
+					.setQueueFamilyIndex(graphicsFamilyIdx)
+					.setPQueuePriorities(priorities);
             }
             else {
                 // separate families per queue type
