@@ -64,5 +64,10 @@ namespace djinn {
         vk::PhysicalDeviceMemoryProperties m_VkPhysicalDeviceMemoryProperties;
 
         vk::UniqueDevice                   m_VkDevice;
+
+        vk::Queue m_GraphicsQueue;
+        vk::Queue m_TransferQueue;
+
+
     };
 }

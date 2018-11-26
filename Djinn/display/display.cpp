@@ -68,28 +68,25 @@ namespace {
 
     // will throw if the requested type is not found
     // [NOTE] some simple preference system for dedicated queues would be nice
-    djinn::util::FlatMap<vk::QueueFlagBits, int> scanFamilies(
+    djinn::util::FlatMap<vk::QueueFlagBits, uint32_t> scanFamilies(
         const std::vector<vk::QueueFamilyProperties>& availableFamilies, 
         const std::vector<vk::QueueFlagBits>&         requestedTypes
     ) {
         using namespace djinn::util;
 
-        FlatMap<vk::QueueFlagBits, int> result;
-
-        auto scan = [](
-            const vk::QueueFamilyProperties& props, 
-            const vk::QueueFlagBits&         type
-        ) {
-            return (props.queueFlags & type);
-        };
+        FlatMap<vk::QueueFlagBits, uint32_t> result;
 
         for (const auto& type : requestedTypes) {
+            auto scan = [type](const vk::QueueFamilyProperties& props) {
+                return (props.queueFlags & type);
+            };
+
             auto it = find_if(availableFamilies, scan);
 
             if (it == std::end(availableFamilies))
                 throw std::runtime_error("Requested queue family type not found");
 
-            int idx = static_cast<int>(std::distance(availableFamilies.begin(), it));
+            uint32_t idx = static_cast<uint32_t>(std::distance(availableFamilies.begin(), it));
             
             result.assign(type, idx);
         }
@@ -382,7 +379,7 @@ namespace djinn {
 
             float priorities[] = { 
                 1.0f, 
-                0.0f 
+                0.0f  
             };
 
             auto availableQueueFamilies = m_VkPhysicalDevice.getQueueFamilyProperties();
@@ -390,8 +387,8 @@ namespace djinn {
                 throw std::runtime_error("No vulkan queue families available...");
 
             // scan the available families for graphics and transfer queues;
-            // [TODO] prefer separate families if possible
-            auto selection = scanFamilies(
+            // [TODO] maybe prefer separate families if possible?
+            auto selectedFamilies = scanFamilies(
                 availableQueueFamilies,
                 { 
                     vk::QueueFlagBits::eGraphics,
@@ -399,27 +396,48 @@ namespace djinn {
                 }
             );
 
+            uint32_t graphicsFamilyIdx = *selectedFamilies[vk::QueueFlagBits::eGraphics];
+            uint32_t transferFamilyIdx = *selectedFamilies[vk::QueueFlagBits::eTransfer];
+
             // right now we only have either 1 family for both queue types
             // or 2 families... when we get more, this should be revisited
+            uint32_t numQueueInfos;
+            uint32_t drawQueueIdx;
+            uint32_t transferQueueIdx;
 
-            int numQueues;
+            if (graphicsFamilyIdx == transferFamilyIdx) {
+                // 1 family supports both queue types
 
-            if (selection[vk::QueueFlagBits::eGraphics] == selection[vk::QueueFlagBits::eTransfer]) {
-                numQueues = 1;
+                numQueueInfos    = 1;                
+                drawQueueIdx     = 0;
+                transferQueueIdx = 1;
+
+                queue_info[0]
+                    .setQueueCount(2)
+                    .setQueueFamilyIndex(graphicsFamilyIdx)
+                    .setPQueuePriorities(priorities);
             }
             else {
-                numQueues = 2;
-            }
+                // separate families per queue type
+                numQueueInfos    = 2;
+                drawQueueIdx     = 0;
+                transferQueueIdx = 0;
 
-            queue_info[0]
-                .setQueueCount      (1)
-                .setQueueFamilyIndex(0)
-                .setPQueuePriorities(priorities);
+                queue_info[0]
+                    .setQueueCount(1)
+                    .setQueueFamilyIndex(graphicsFamilyIdx)
+                    .setPQueuePriorities(&priorities[0]);
+
+                queue_info[1]
+                    .setQueueCount(1)
+                    .setQueueFamilyIndex(transferFamilyIdx)
+                    .setPQueuePriorities(&priorities[1]);
+            }
 
             vk::DeviceCreateInfo info;
 
             info
-                .setQueueCreateInfoCount   (1)
+                .setQueueCreateInfoCount   (numQueueInfos)
                 .setPQueueCreateInfos      (queue_info)
                 .setEnabledLayerCount      ((uint32_t)requiredDeviceLayers.size())
                 .setPpEnabledLayerNames    (          requiredDeviceLayers.data())
@@ -427,6 +445,9 @@ namespace djinn {
                 .setPpEnabledExtensionNames(          requiredDeviceExtensions.data());
 
             m_VkDevice = m_VkPhysicalDevice.createDeviceUnique(info);
+
+            m_GraphicsQueue = m_VkDevice->getQueue(graphicsFamilyIdx, drawQueueIdx);
+            m_TransferQueue = m_VkDevice->getQueue(transferFamilyIdx, transferQueueIdx);
         }
     }
 
