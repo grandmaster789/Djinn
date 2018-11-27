@@ -147,6 +147,7 @@
     <ClCompile Include="core\log_message.cpp" />
     <ClCompile Include="core\log_sink.cpp" />
     <ClCompile Include="core\system.cpp" />
+    <ClCompile Include="display\command_buffer.cpp" />
     <ClCompile Include="input\mouse.cpp" />
     <ClCompile Include="third_party.cpp" />
     <ClCompile Include="display\display.cpp" />
@@ -181,6 +182,7 @@
     <ClInclude Include="core\mediator.h" />
     <ClInclude Include="core\mediator_queue.h" />
     <ClInclude Include="core\system.h" />
+    <ClInclude Include="display\command_buffer.h" />
     <ClInclude Include="input\mouse.h" />
     <ClInclude Include="third_party.h" />
     <ClInclude Include="display\display.h" />
