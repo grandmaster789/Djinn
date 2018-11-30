@@ -22,13 +22,13 @@ namespace djinn::display {
 
         vk::CommandBuffer getHandle() const;
 
-        bool init(vk::Device device, uint32_t queueFamilyIndex); // TODO: make this typesafe
+        void init(vk::Device device, uint32_t queueFamilyIndex); // TODO: make this typesafe
 
-        bool start();
-        bool stop();
-        bool run();
+        void begin();
+        void end();
+        void run(vk::Queue queue);
         bool wait();
-        bool reset();
+        void reset();
 
         void setState(eState s);
         eState getState() const;
@@ -39,6 +39,8 @@ namespace djinn::display {
         vk::UniqueFence         m_ExecutionFence;
         vk::UniqueCommandBuffer m_Handle;
         vk::UniqueCommandPool   m_Pool;
+
+		vk::Device m_Device;
     };
 
     std::ostream& operator << (std::ostream& os, const CommandBuffer::eState& state);
