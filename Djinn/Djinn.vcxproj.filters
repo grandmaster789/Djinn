@@ -47,9 +47,6 @@
     <ClCompile Include="input\mouse.cpp">
       <Filter>input</Filter>
     </ClCompile>
-    <ClCompile Include="display\command_buffer.cpp">
-      <Filter>display</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\engine.inl">
@@ -174,9 +171,6 @@
     <ClInclude Include="third_party.h" />
     <ClInclude Include="input\mouse.h">
       <Filter>input</Filter>
-    </ClInclude>
-    <ClInclude Include="display\command_buffer.h">
-      <Filter>display</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

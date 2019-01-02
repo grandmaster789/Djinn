@@ -407,7 +407,7 @@ namespace djinn {
 
             if (graphicsFamilyIdx == transferFamilyIdx) {
                 // 1 family supports both queue types
-				// [NOTE] my laptop supports just one queue with one queue family. All types though...
+				// [NOTE] my laptop (Intel UHD 620) supports just one queue with one queue family. All types though...
 				uint32_t queueCount = 2;
 
                 numQueueInfos    = 1;                
@@ -460,6 +460,102 @@ namespace djinn {
             m_GraphicsQueue = m_VkDevice->getQueue(graphicsFamilyIdx, drawQueueIdx);
             m_TransferQueue = m_VkDevice->getQueue(transferFamilyIdx, transferQueueIdx);
         }
+
+        // assemble vtx + frag shaders
+        // for now, embed triangle vertex data in the shader itself
+        {
+            std::string vtxShaderSource = R"(
+                #version 450
+                #extension GL_ARB_separate_shader_objects: enable
+
+                out gl_PerVertex {
+                    vec4 gl_Position;
+                };
+
+                layout(location = 0) out vec3 fragColor;
+            
+                vec2 positions[3] = vec2[](
+                    vec2( 0.0, -0.5),
+                    vec2( 0.5,  0.5),
+                    vec2(-0.5,  0.5)
+                );
+
+                vec3 colors[3] = vec3[](
+                    vec3(1.0, 0.0, 0.0),
+                    vec3(0.0, 1.0, 0.0),
+                    vec3(0.0, 0.0, 1.0)
+                );
+
+                void main() {
+                    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
+                    fragColor   = colors[gl_VertexIndex];
+                }
+            )";
+
+            std::string fragShaderSource = R"(
+                #version 450
+                #extension GL_ARB_separate_shader_objects: enable
+
+                layout(location = 0) in vec3 fragColor;
+                layout(location = 0) out vec4 outColor;
+
+                void main() {
+                    outColor = vec4(fragColor, 1.0);
+                }
+            )";
+
+            shaderc::Compiler compiler;
+            shaderc::CompileOptions options;
+
+            options.SetOptimizationLevel(shaderc_optimization_level::shaderc_optimization_level_performance);
+
+            auto vtxShaderResult = compiler.CompileGlslToSpv(
+                vtxShaderSource, 
+                shaderc_shader_kind::shaderc_vertex_shader, 
+                "Embedded vertex shader"
+            );
+
+            if (vtxShaderResult.GetCompilationStatus() != shaderc_compilation_status::shaderc_compilation_status_success) {
+                gLogError << "Failed to compile vertex shader: " << vtxShaderResult.GetErrorMessage();
+                return;
+            }
+            
+            std::vector<uint32_t> vtxShaderSpirv(
+                vtxShaderResult.cbegin(),
+                vtxShaderResult.cend()
+            );
+
+            vk::ShaderModuleCreateInfo vtxShaderInfo;
+            vtxShaderInfo
+                .setCodeSize(vtxShaderSpirv.size() * sizeof(uint32_t))
+                .setPCode   (vtxShaderSpirv.data());
+
+            m_VertexShader = m_VkDevice->createShaderModuleUnique(vtxShaderInfo);
+
+            auto fragShaderResult = compiler.CompileGlslToSpv(
+                fragShaderSource,
+                shaderc_shader_kind::shaderc_fragment_shader,
+                "Embedded fragment shader"
+            );
+
+            if (fragShaderResult.GetCompilationStatus() != shaderc_compilation_status::shaderc_compilation_status_success) {
+                gLogError << "Failed to compile fragment shader: " << fragShaderResult.GetErrorMessage();
+                return;
+            }
+
+            std::vector<uint32_t> fragShaderSpirv(
+                fragShaderResult.cbegin(),
+                fragShaderResult.cend()
+            );
+
+            vk::ShaderModuleCreateInfo fragShaderInfo;
+            fragShaderInfo
+                .setCodeSize(fragShaderSpirv.size() * sizeof(uint32_t))
+                .setPCode   (fragShaderSpirv.data());
+
+            m_FragmentShader = m_VkDevice->createShaderModuleUnique(fragShaderInfo);
+        }
+
     }
 
 }

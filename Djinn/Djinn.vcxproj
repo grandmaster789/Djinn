@@ -89,6 +89,7 @@
       <AdditionalIncludeDirectories>.;..;..\ThirdParty\include;$(VULKAN_SDK)\include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(VULKAN_SDK)\Third-Party\Bin</AdditionalLibraryDirectories>
@@ -100,6 +101,7 @@
     <Lib>
       <AdditionalDependencies>
       </AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)/shaderc/build/install/lib;$(VULKAN_SDK)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -127,6 +129,7 @@
       <AdditionalIncludeDirectories>.;..;..\ThirdParty\include;$(VULKAN_SDK)\include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -137,7 +140,11 @@
     <Lib>
       <AdditionalDependencies>
       </AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)/shaderc/build/install/lib;$(VULKAN_SDK)</AdditionalLibraryDirectories>
     </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="app\application.cpp" />
@@ -147,7 +154,6 @@
     <ClCompile Include="core\log_message.cpp" />
     <ClCompile Include="core\log_sink.cpp" />
     <ClCompile Include="core\system.cpp" />
-    <ClCompile Include="display\command_buffer.cpp" />
     <ClCompile Include="input\mouse.cpp" />
     <ClCompile Include="third_party.cpp" />
     <ClCompile Include="display\display.cpp" />
@@ -182,7 +188,6 @@
     <ClInclude Include="core\mediator.h" />
     <ClInclude Include="core\mediator_queue.h" />
     <ClInclude Include="core\system.h" />
-    <ClInclude Include="display\command_buffer.h" />
     <ClInclude Include="input\mouse.h" />
     <ClInclude Include="third_party.h" />
     <ClInclude Include="display\display.h" />

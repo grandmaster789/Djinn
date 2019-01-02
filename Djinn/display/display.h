@@ -68,6 +68,7 @@ namespace djinn {
         vk::Queue m_GraphicsQueue;
         vk::Queue m_TransferQueue;
 
-
+        vk::UniqueShaderModule m_VertexShader;
+        vk::UniqueShaderModule m_FragmentShader;
     };
 }
