@@ -25,6 +25,8 @@ namespace djinn {
     namespace display {
         class Window {
         public:
+            friend class Display;
+
 			using Mouse    = input::Mouse;
 			using Keyboard = input::Keyboard;
 
@@ -62,6 +64,9 @@ namespace djinn {
             const Mouse*    getMouse()    const;
 
             void initSwapChain(); // this only works when the Display has physical+logical devices available
+
+            uint32_t getWidth() const;
+            uint32_t getHeight() const;
 
         private:
             static std::vector<DISPLAY_DEVICE> enumerateDisplayDevices(); // https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_display_devicea

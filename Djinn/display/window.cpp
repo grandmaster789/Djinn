@@ -570,6 +570,14 @@ namespace djinn::display {
         }
     }
 
+    uint32_t Window::getWidth() const {
+        return m_Width;
+    }
+
+    uint32_t Window::getHeight() const {
+        return m_Height;
+    }
+
     std::vector<DISPLAY_DEVICE> Window::enumerateDisplayDevices() {
         std::vector<DISPLAY_DEVICE> result;
 

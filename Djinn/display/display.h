@@ -67,8 +67,24 @@ namespace djinn {
 
         vk::Queue m_GraphicsQueue;
         vk::Queue m_TransferQueue;
+        vk::Queue m_PresentQueue;
 
-        vk::UniqueShaderModule m_VertexShader;
-        vk::UniqueShaderModule m_FragmentShader;
+        uint32_t m_GraphicsFamilyIdx;
+        uint32_t m_TransferFamilyIdx;
+        uint32_t m_PresentFamilyIdx;
+
+        vk::UniqueShaderModule   m_VertexShader;
+        vk::UniqueShaderModule   m_FragmentShader; 
+
+        vk::UniquePipelineLayout m_PipelineLayout;
+        vk::UniqueRenderPass     m_RenderPass;
+        vk::UniquePipeline       m_Pipeline;
+
+        vk::UniqueSemaphore      m_ImageAvailable;
+        vk::UniqueSemaphore      m_RenderCompleted;
+
+        std::vector<vk::UniqueFramebuffer>   m_FrameBuffers;
+        std::vector<vk::UniqueCommandBuffer> m_CommandBuffers;
+        vk::UniqueCommandPool                m_CommandPool;
     };
 }

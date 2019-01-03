@@ -166,6 +166,43 @@ namespace djinn {
 
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
+
+                auto& mainWindow = m_Windows.front();
+                auto imageIndex  = m_VkDevice->acquireNextImageKHR(
+                    *mainWindow->m_SwapChain,
+                    std::numeric_limits<uint64_t>::max(), 
+                    *m_ImageAvailable,
+                    {} // fence
+                );
+
+                vk::PipelineStageFlags waitStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+
+                vk::SubmitInfo submitInfo;
+                submitInfo
+                    .setWaitSemaphoreCount  (1)
+                    .setPWaitSemaphores     (&*m_ImageAvailable)
+                    .setPWaitDstStageMask   (& waitStageMask)
+                    .setCommandBufferCount  (1)
+                    .setPCommandBuffers     (&*m_CommandBuffers[imageIndex.value])
+                    .setSignalSemaphoreCount(1)
+                    .setPSignalSemaphores   (&*m_RenderCompleted);
+
+                m_GraphicsQueue.submit(
+                    submitInfo, 
+                    {} // fence
+                );
+
+                auto presentInfo = vk::PresentInfoKHR{ 
+                    1, 
+                    &*m_RenderCompleted,
+                    1,
+                    &*mainWindow->m_SwapChain, 
+                    &imageIndex.value 
+                };
+
+                m_PresentQueue.presentKHR(presentInfo);
+
+                m_VkDevice->waitIdle();
             }
         }
     }
@@ -396,16 +433,18 @@ namespace djinn {
                 }
             );
 
-            uint32_t graphicsFamilyIdx = *selectedFamilies[vk::QueueFlagBits::eGraphics];
-            uint32_t transferFamilyIdx = *selectedFamilies[vk::QueueFlagBits::eTransfer];
+            m_GraphicsFamilyIdx = *selectedFamilies[vk::QueueFlagBits::eGraphics];
+            m_TransferFamilyIdx = *selectedFamilies[vk::QueueFlagBits::eTransfer];
 
             // right now we only have either 1 family for both queue types
             // or 2 families... when we get more, this should be revisited
             uint32_t numQueueInfos;
+
             uint32_t drawQueueIdx;
             uint32_t transferQueueIdx;
+            uint32_t presentQueueIdx;
 
-            if (graphicsFamilyIdx == transferFamilyIdx) {
+            if (m_GraphicsFamilyIdx == m_TransferFamilyIdx) {
                 // 1 family supports both queue types
 				// [NOTE] my laptop (Intel UHD 620) supports just one queue with one queue family. All types though...
 				uint32_t queueCount = 2;
@@ -425,7 +464,7 @@ namespace djinn {
 
 				queue_info[0]
 					.setQueueCount(queueCount)
-					.setQueueFamilyIndex(graphicsFamilyIdx)
+					.setQueueFamilyIndex(m_GraphicsFamilyIdx)
 					.setPQueuePriorities(priorities);
             }
             else {
@@ -436,12 +475,12 @@ namespace djinn {
 
                 queue_info[0]
                     .setQueueCount(1)
-                    .setQueueFamilyIndex(graphicsFamilyIdx)
+                    .setQueueFamilyIndex(m_GraphicsFamilyIdx)
                     .setPQueuePriorities(&priorities[0]);
 
                 queue_info[1]
                     .setQueueCount(1)
-                    .setQueueFamilyIndex(transferFamilyIdx)
+                    .setQueueFamilyIndex(m_TransferFamilyIdx)
                     .setPQueuePriorities(&priorities[1]);
             }
 
@@ -457,8 +496,12 @@ namespace djinn {
 
             m_VkDevice = m_VkPhysicalDevice.createDeviceUnique(info);
 
-            m_GraphicsQueue = m_VkDevice->getQueue(graphicsFamilyIdx, drawQueueIdx);
-            m_TransferQueue = m_VkDevice->getQueue(transferFamilyIdx, transferQueueIdx);
+            m_PresentFamilyIdx = m_GraphicsFamilyIdx;
+            presentQueueIdx = drawQueueIdx;
+
+            m_GraphicsQueue = m_VkDevice->getQueue(m_GraphicsFamilyIdx, drawQueueIdx);
+            m_TransferQueue = m_VkDevice->getQueue(m_TransferFamilyIdx, transferQueueIdx);
+            m_PresentQueue  = m_VkDevice->getQueue(m_PresentFamilyIdx,  presentQueueIdx);
         }
 
         // assemble vtx + frag shaders
@@ -556,6 +599,221 @@ namespace djinn {
             m_FragmentShader = m_VkDevice->createShaderModuleUnique(fragShaderInfo);
         }
 
-    }
+        // set up a pipeline
+        {
+            vk::PipelineShaderStageCreateInfo vtxStageInfo;
+            vk::PipelineShaderStageCreateInfo fragStageInfo;
+            
+            vtxStageInfo
+                .setStage (vk::ShaderStageFlagBits::eVertex)
+                .setModule(*m_VertexShader)
+                .setPName ("main");
 
+            fragStageInfo
+                .setStage (vk::ShaderStageFlagBits::eFragment)
+                .setModule(*m_FragmentShader)
+                .setPName ("main");
+
+            std::vector<vk::PipelineShaderStageCreateInfo> pipelineStages = {
+                vtxStageInfo,
+                fragStageInfo
+            };
+            
+            vk::PipelineVertexInputStateCreateInfo vtxInputInfo;
+
+            vtxInputInfo
+                .setVertexAttributeDescriptionCount(0)
+                .setPVertexAttributeDescriptions   (nullptr)
+                .setVertexBindingDescriptionCount  (0)
+                .setPVertexBindingDescriptions     (nullptr);
+
+            vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
+
+            inputAssemblyInfo
+                .setTopology              (vk::PrimitiveTopology::eTriangleList)
+                .setPrimitiveRestartEnable(false);
+
+            const auto& mainWindow = m_Windows.front();
+
+            uint32_t width  = mainWindow->getWidth();
+            uint32_t height = mainWindow->getHeight();
+
+            vk::Viewport viewport(
+                0.0f,                       // x
+                0.0f,                       // y
+                static_cast<float>(width),  // width
+                static_cast<float>(height), // height
+                0.0f,                       // mindepth
+                1.0f                        // maxdepth 
+            );
+
+            vk::Rect2D scissor(
+                { 0, 0 }, 
+                { width, height }
+            );
+
+            vk::PipelineViewportStateCreateInfo viewportStateInfo;
+            viewportStateInfo
+                .setScissorCount (1)
+                .setPScissors    (&scissor)
+                .setViewportCount(1)
+                .setPViewports   (&viewport);
+
+            vk::PipelineRasterizationStateCreateInfo rasterizerInfo;
+            rasterizerInfo
+                .setDepthClampEnable       (false)
+                .setRasterizerDiscardEnable(false)
+                .setPolygonMode            (vk::PolygonMode::eFill)
+                .setFrontFace              (vk::FrontFace::eCounterClockwise)
+                .setLineWidth              (1.0f);
+
+            vk::PipelineMultisampleStateCreateInfo multisamplingInfo;
+            multisamplingInfo
+                .setRasterizationSamples (vk::SampleCountFlagBits::e1)
+                .setAlphaToOneEnable     (false)
+                .setAlphaToCoverageEnable(false)
+                .setMinSampleShading     (1.0f);
+
+            vk::PipelineColorBlendAttachmentState colorBlendAttachmentInfo;
+            colorBlendAttachmentInfo
+                .setSrcColorBlendFactor(vk::BlendFactor::eOne)
+                .setDstColorBlendFactor(vk::BlendFactor::eZero)
+                .setColorBlendOp       (vk::BlendOp::eAdd)
+                .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
+                .setDstAlphaBlendFactor(vk::BlendFactor::eZero)
+                .setAlphaBlendOp       (vk::BlendOp::eAdd)
+                .setColorWriteMask(
+                    vk::ColorComponentFlagBits::eR |
+                    vk::ColorComponentFlagBits::eG |
+                    vk::ColorComponentFlagBits::eB |
+                    vk::ColorComponentFlagBits::eA
+                );
+
+            vk::PipelineColorBlendStateCreateInfo colorBlendInfo;
+            colorBlendInfo
+                .setLogicOpEnable  (false)
+                .setLogicOp        (vk::LogicOp::eCopy)
+                .setAttachmentCount(1)
+                .setPAttachments   (&colorBlendAttachmentInfo);
+
+            m_PipelineLayout = m_VkDevice->createPipelineLayoutUnique({});
+
+            vk::AttachmentDescription colorAttachmentDesc;
+            colorAttachmentDesc
+                .setFormat       (vk::Format::eB8G8R8A8Unorm)
+                .setSamples      (vk::SampleCountFlagBits::e1)
+                .setLoadOp       (vk::AttachmentLoadOp::eClear)
+                .setStoreOp      (vk::AttachmentStoreOp::eStore)
+                .setFinalLayout  (vk::ImageLayout::ePresentSrcKHR);
+
+            vk::AttachmentReference colorAttachmentRef;
+            colorAttachmentRef
+                .setAttachment(0)
+                .setLayout    (vk::ImageLayout::eColorAttachmentOptimal);
+
+            vk::SubpassDescription subpassDesc;
+            subpassDesc
+                .setPipelineBindPoint   (vk::PipelineBindPoint::eGraphics)
+                .setInputAttachmentCount(0)
+                .setPInputAttachments   (nullptr)
+                .setColorAttachmentCount(1)
+                .setPColorAttachments   (&colorAttachmentRef);
+
+            m_ImageAvailable  = m_VkDevice->createSemaphoreUnique({});
+            m_RenderCompleted = m_VkDevice->createSemaphoreUnique({});
+
+            vk::SubpassDependency subpassDep;
+            subpassDep
+                .setSrcSubpass(VK_SUBPASS_EXTERNAL)
+                .setDstSubpass(0)
+                .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+                .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+                .setDstAccessMask(
+                    vk::AccessFlagBits::eColorAttachmentRead |
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                );
+            
+            vk::RenderPassCreateInfo renderPassInfo;
+            renderPassInfo
+                .setAttachmentCount(1)
+                .setPAttachments   (&colorAttachmentDesc)
+                .setSubpassCount   (1)
+                .setPSubpasses     (&subpassDesc);
+
+            m_RenderPass = m_VkDevice->createRenderPassUnique(renderPassInfo);
+
+            vk::GraphicsPipelineCreateInfo graphicsPipelineInfo;
+            graphicsPipelineInfo
+                .setStageCount         (static_cast<uint32_t>(pipelineStages.size()))
+                .setPStages            (pipelineStages.data())
+                .setPVertexInputState  (&vtxInputInfo)
+                .setPInputAssemblyState(&inputAssemblyInfo)
+                .setPTessellationState (nullptr)
+                .setPViewportState     (&viewportStateInfo)
+                .setPRasterizationState(&rasterizerInfo)
+                .setPMultisampleState  (&multisamplingInfo)
+                .setPDepthStencilState (nullptr)
+                .setPColorBlendState   (&colorBlendInfo)
+                .setPDynamicState      (nullptr)
+                .setLayout             (*m_PipelineLayout)
+                .setRenderPass         (*m_RenderPass)
+                .setSubpass            (0);
+
+            m_Pipeline = m_VkDevice->createGraphicsPipelineUnique({}, graphicsPipelineInfo);
+
+            m_FrameBuffers.resize(mainWindow->m_SwapChainImages.size());
+
+            for (size_t i = 0; i < m_FrameBuffers.size(); ++i) {
+                vk::FramebufferCreateInfo frameBufferInfo;
+                frameBufferInfo
+                    .setRenderPass     (*m_RenderPass)
+                    .setAttachmentCount(1)
+                    .setPAttachments   (&(*mainWindow->m_SwapChainViews[i]))
+                    .setWidth          (width)
+                    .setHeight         (height)
+                    .setLayers         (1);
+
+                m_FrameBuffers[i] = m_VkDevice->createFramebufferUnique(frameBufferInfo);
+            }
+
+            vk::CommandPoolCreateInfo commandPoolInfo;
+            commandPoolInfo
+                .setQueueFamilyIndex(m_GraphicsFamilyIdx);
+
+            m_CommandPool    = m_VkDevice->createCommandPoolUnique(commandPoolInfo);
+
+            vk::CommandBufferAllocateInfo commandBufferInfo;
+            commandBufferInfo
+                .setCommandPool       (*m_CommandPool)
+                .setLevel             (vk::CommandBufferLevel::ePrimary)
+                .setCommandBufferCount(static_cast<uint32_t>(m_FrameBuffers.size()));
+
+            m_CommandBuffers = m_VkDevice->allocateCommandBuffersUnique(commandBufferInfo);
+
+            for (size_t i = 0; i < m_CommandBuffers.size(); ++i) {
+                vk::CommandBufferBeginInfo beginInfo;
+
+                m_CommandBuffers[i]->begin(beginInfo);
+
+                vk::ClearValue clearValues;
+
+                vk::RenderPassBeginInfo renderPassBeginInfo;
+                renderPassBeginInfo
+                    .setRenderPass     (*m_RenderPass)
+                    .setFramebuffer    (*m_FrameBuffers[i])
+                    .setRenderArea     (vk::Rect2D(
+                                            { 0, 0 }, 
+                                            { width, height }
+                                        ))
+                    .setClearValueCount(1)
+                    .setPClearValues   (&clearValues);
+
+                m_CommandBuffers[i]->beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
+                m_CommandBuffers[i]->bindPipeline(vk::PipelineBindPoint::eGraphics, *m_Pipeline);
+                m_CommandBuffers[i]->draw(3, 1, 0, 0);
+                m_CommandBuffers[i]->endRenderPass();
+                m_CommandBuffers[i]->end();
+            }                
+        }
+    }
 }
