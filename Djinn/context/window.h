@@ -15,17 +15,17 @@
 */
 
 namespace djinn {
-    class Display;
+    class Context;
 
 	namespace input {
 		class Mouse;
 		class Keyboard;
 	}
 
-    namespace display {
+    namespace context {
         class Window {
         public:
-            friend class Display;
+            friend class Context;
 
 			using Mouse    = input::Mouse;
 			using Keyboard = input::Keyboard;
@@ -35,7 +35,7 @@ namespace djinn {
                 int      height,
                 bool     windowed,
                 int      displayDevice,
-                Display* owner
+                Context* owner
             );
             ~Window();
 
@@ -49,8 +49,7 @@ namespace djinn {
             Window& operator = (Window&&);
 
             HWND           getHandle()  const;
-            vk::SurfaceKHR getSurface() const;
-
+            
             LRESULT winProc(
                 HWND   handle, 
                 UINT   message, 
@@ -63,8 +62,6 @@ namespace djinn {
             const Keyboard* getKeyboard() const;
             const Mouse*    getMouse()    const;
 
-            void initSwapChain(); // this only works when the Display has physical+logical devices available
-
             uint32_t getWidth() const;
             uint32_t getHeight() const;
 
@@ -73,9 +70,8 @@ namespace djinn {
             static DEVMODE                     getCurrentDisplayMode(DISPLAY_DEVICE dd); // https://docs.microsoft.com/en-us/windows/desktop/api/Wingdi/ns-wingdi-_devicemodea
 
 			void initKeyMapping();
-            void createSurface();
 
-            Display* m_Owner  = nullptr;
+            Context* m_Owner  = nullptr;
             HWND     m_Handle = nullptr;
 
             int  m_Width  = 0;
@@ -87,14 +83,6 @@ namespace djinn {
 
 			std::unique_ptr<Keyboard> m_Keyboard;
             std::unique_ptr<Mouse>    m_Mouse;
-
-            // [NOTE] the swapchain images may be replaced eventually
-            //        with some kind of Texture class
-            vk::UniqueSurfaceKHR             m_Surface;
-            vk::Extent2D                     m_SurfaceExtent;
-            vk::UniqueSwapchainKHR           m_SwapChain;
-            std::vector<vk::Image>           m_SwapChainImages;
-            std::vector<vk::UniqueImageView> m_SwapChainViews;
         };
     }
 }

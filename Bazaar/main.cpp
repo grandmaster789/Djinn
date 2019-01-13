@@ -1,6 +1,6 @@
 #include "core/engine.h"
 #include "app/application.h"
-#include "display/display.h"
+#include "context/context.h"
 #include "input/input.h"
 #include "input/keyboard.h"
 #include "input/mouse.h"
@@ -65,7 +65,7 @@ public:
 int main() {
 	auto& engine = Engine::instance();
 
-    engine.enable<Display>();
+    engine.enable<Context>();
     engine.enable<Input>();
 
     engine.setApplication<Bazaar>();

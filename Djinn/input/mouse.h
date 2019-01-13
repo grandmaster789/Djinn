@@ -6,7 +6,7 @@
 namespace djinn {
     class Input;
 
-    namespace display {
+    namespace context {
         class Window;
     }
 
@@ -19,7 +19,7 @@ namespace djinn {
 
         class Mouse {
         public:
-            using Window = display::Window;
+            using Window = context::Window;
 
             enum class eButton {
                 left,

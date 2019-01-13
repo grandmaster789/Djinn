@@ -34,18 +34,18 @@
     <ClCompile Include="input\input.cpp">
       <Filter>input</Filter>
     </ClCompile>
-    <ClCompile Include="display\display.cpp">
-      <Filter>display</Filter>
-    </ClCompile>
-    <ClCompile Include="display\window.cpp">
-      <Filter>display</Filter>
-    </ClCompile>
     <ClCompile Include="input\keyboard.cpp">
       <Filter>input</Filter>
     </ClCompile>
     <ClCompile Include="third_party.cpp" />
     <ClCompile Include="input\mouse.cpp">
       <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="context\window.cpp">
+      <Filter>context</Filter>
+    </ClCompile>
+    <ClCompile Include="context\context.cpp">
+      <Filter>context</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -102,7 +102,7 @@
     <Filter Include="input">
       <UniqueIdentifier>{fb76ab57-588f-42d1-b0a0-ca32bcdb7d93}</UniqueIdentifier>
     </Filter>
-    <Filter Include="display">
+    <Filter Include="context">
       <UniqueIdentifier>{0c2a96fd-e93d-4f40-9723-0ce8fec61df4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -156,14 +156,8 @@
     <ClInclude Include="util\variant.h">
       <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="display\display.h">
-      <Filter>display</Filter>
-    </ClInclude>
     <ClInclude Include="util\enum.h">
       <Filter>util</Filter>
-    </ClInclude>
-    <ClInclude Include="display\window.h">
-      <Filter>display</Filter>
     </ClInclude>
     <ClInclude Include="input\keyboard.h">
       <Filter>input</Filter>
@@ -171,6 +165,12 @@
     <ClInclude Include="third_party.h" />
     <ClInclude Include="input\mouse.h">
       <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="context\window.h">
+      <Filter>context</Filter>
+    </ClInclude>
+    <ClInclude Include="context\context.h">
+      <Filter>context</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

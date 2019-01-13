@@ -1,5 +1,5 @@
 #include "window.h"
-#include "display.h"
+#include "context.h"
 #include "input/input.h"
 #include "input/keyboard.h"
 #include "input/mouse.h"
@@ -28,7 +28,7 @@ namespace {
         if (ptr == NULL)
             return DefWindowProc(window, msg, wp, lp);
         else
-            return ((djinn::display::Window*)ptr)->winProc(window, msg, wp, lp);
+            return ((djinn::context::Window*)ptr)->winProc(window, msg, wp, lp);
     }
 
     struct WndClass {
@@ -70,13 +70,13 @@ namespace {
     };
 }
 
-namespace djinn::display {
+namespace djinn::context {
     Window::Window(
         int      width, 
         int      height, 
         bool     windowed,
         int      displayDevice,
-        Display* owner
+        Context* owner
     ):
         m_Owner(owner)
     {
@@ -176,8 +176,6 @@ namespace djinn::display {
 
             m_Keyboard = std::make_unique<Keyboard>(inputSystem);
             m_Mouse    = std::make_unique<Mouse>(inputSystem);
-
-            createSurface();
         }
         else
             throw std::runtime_error("Failed to create window");
@@ -192,7 +190,6 @@ namespace djinn::display {
     Window::Window(Window&& w):
         m_Handle  (w.m_Handle),
         m_Owner   (w.m_Owner),
-        m_Surface (std::move(w.m_Surface)),        
         m_Keyboard(std::move(w.m_Keyboard)),
         m_Mouse   (std::move(w.m_Mouse))
     {
@@ -210,7 +207,6 @@ namespace djinn::display {
 
         m_Handle   = w.m_Handle;
         m_Owner    = w.m_Owner;
-        m_Surface  = std::move(w.m_Surface);
         m_Keyboard = std::move(w.m_Keyboard);
         m_Mouse    = std::move(w.m_Mouse);
 
@@ -339,10 +335,6 @@ namespace djinn::display {
         g_KeyMapping.insert({ VK_BACK,    eKey::backspace });
     }
 
-    vk::SurfaceKHR Window::getSurface() const {
-        return *m_Surface;
-    }
-
     LRESULT Window::winProc(
         HWND handle,
         UINT message,
@@ -458,118 +450,6 @@ namespace djinn::display {
         return m_Mouse.get();
     }
 
-    void Window::initSwapChain() {
-        auto physicalDevice = m_Owner->getVkPhysicalDevice();
-        auto device         = m_Owner->getVkDevice();
-
-        // make sure the device actually supports this surface
-        if (!physicalDevice.getSurfaceSupportKHR(0, *m_Surface))
-            throw std::runtime_error("Physical device does not support the window surface");
-
-        auto surfaceCaps           = physicalDevice.getSurfaceCapabilitiesKHR(*m_Surface);
-        auto supportedFormats      = physicalDevice.getSurfaceFormatsKHR     (*m_Surface);
-        auto supportedPresentModes = physicalDevice.getSurfacePresentModesKHR(*m_Surface);
-
-        vk::SurfaceFormatKHR desiredFormat;
-        desiredFormat.format     = vk::Format::eB8G8R8A8Unorm;
-        desiredFormat.colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear;
-
-        if (!util::contains(supportedFormats, desiredFormat))
-            throw std::runtime_error("Desired surface format not supported");
-
-        // present mode effectively enables/disables VSync
-        //
-        // prefer immediate pressent mode, then mailbox, finally fifo 
-        // (see official docs for  more options)
-        //
-        // - immediate: 
-        //      specifies that the presentation engine does not wait for a vertical blanking 
-        //      period to update the current image, meaning this mode may result in visible 
-        //      tearing. No internal queuing of presentation requests is needed, as the 
-        //      requests are applied immediately
-        // - mailbox:
-        //      specifies that the presentation engine waits for the next vertical blanking 
-        //      period to update the current image. Tearing cannot be observed. An internal 
-        //      single-entry queue is used to hold pending presentation requests. If the 
-        //      queue is full when a new presentation request is received, the new request 
-        //      replaces the existing entry, and any images associated with the prior entry 
-        //      become available for re-use by the application. One request is removed from 
-        //      the queue and processed during each vertical blanking period in which the 
-        //      queue is non-empty
-        // - fifo:
-        //      specifies that the presentation engine waits for the next vertical blanking 
-        //      period to update the current image. Tearing cannot be observed. An internal 
-        //      queue is used to hold pending presentation requests. New requests are 
-        //      appended to the end of the queue, and one request is removed from the 
-        //      beginning of the queue and processed during each vertical blanking period in 
-        //      which the queue is non-empty. This is the only value of presentMode that is 
-        //      required to be supported
-
-        vk::PresentModeKHR desiredPresentMode = *util::prefer(
-            supportedPresentModes,
-            vk::PresentModeKHR::eImmediate,
-            vk::PresentModeKHR::eMailbox,
-            vk::PresentModeKHR::eFifo       // <- this one is *required*, so one of the options is always available
-        );
-
-        m_SurfaceExtent = surfaceCaps.currentExtent;
-        
-        vk::SwapchainCreateInfoKHR swapchain_info;
-
-        swapchain_info
-            .setSurface         (*m_Surface)
-            .setMinImageCount   (2)                                 // 2 for double buffering
-            .setImageFormat     (desiredFormat.format)
-            .setImageColorSpace (desiredFormat.colorSpace)
-            .setImageExtent     (m_SurfaceExtent)
-            .setImageArrayLayers(1)
-            .setImageUsage      (vk::ImageUsageFlagBits::eColorAttachment)
-            .setImageSharingMode(vk::SharingMode::eExclusive)
-            .setPreTransform    (vk::SurfaceTransformFlagBitsKHR::eIdentity)
-            .setCompositeAlpha  (vk::CompositeAlphaFlagBitsKHR::eOpaque)
-            .setPresentMode     (desiredPresentMode)
-            .setClipped         (VK_TRUE)
-            .setOldSwapchain    (m_SwapChain ? *m_SwapChain : nullptr);
-
-        m_SwapChain = device.createSwapchainKHRUnique(swapchain_info);
-
-        // create the swapchain texture views
-        {
-            m_SwapChainImages = device.getSwapchainImagesKHR(*m_SwapChain);
-            m_SwapChainViews.clear();
-
-            for (const auto& image: m_SwapChainImages) {
-                vk::ImageViewCreateInfo   view_info;
-                vk::ComponentMapping      components;
-                vk::ImageSubresourceRange subresourceRange;
-
-                components
-                    .setR(vk::ComponentSwizzle::eR)
-                    .setG(vk::ComponentSwizzle::eG)
-                    .setB(vk::ComponentSwizzle::eB)
-                    .setA(vk::ComponentSwizzle::eA);
-
-                subresourceRange
-                    .setAspectMask    (vk::ImageAspectFlagBits::eColor)
-                    .setBaseMipLevel  (0)
-                    .setLevelCount    (1)
-                    .setBaseArrayLayer(0)
-                    .setLayerCount    (1);
-
-                view_info
-                    .setViewType        (vk::ImageViewType::e2D)
-                    .setFormat          (desiredFormat.format)
-                    .setComponents      (components)
-                    .setSubresourceRange(subresourceRange)
-                    .setImage           (image);
-
-                m_SwapChainViews.push_back(
-                    device.createImageViewUnique(view_info)
-                );
-            }
-        }
-    }
-
     uint32_t Window::getWidth() const {
         return m_Width;
     }
@@ -608,15 +488,5 @@ namespace djinn::display {
             throw std::runtime_error("Failed to query current display mode");
 
         return mode;
-    }
-
-    void Window::createSurface() {
-        vk::Win32SurfaceCreateInfoKHR info = {};
-
-        info
-            .setHinstance(GetModuleHandle(NULL))
-            .setHwnd     (m_Handle);
-
-        m_Surface = m_Owner->getVkInstance().createWin32SurfaceKHRUnique(info);
     }
 }

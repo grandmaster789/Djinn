@@ -4,7 +4,7 @@
 
 #include <vector>
 
-namespace djinn::display {
+namespace djinn::context {
 	class Window;
 }
 
