@@ -52,6 +52,12 @@ namespace djinn {
         void createSwapchain();
         void createCommandPool();
 
+        vk::UniqueRenderPass createRenderpass();
+        vk::UniqueFramebuffer createFramebuffer(
+            vk::RenderPass pass,
+            vk::ImageView  colorView
+        );
+
         WindowPtr m_Window;
 
         struct WindowSettings {
@@ -62,39 +68,36 @@ namespace djinn {
         } m_MainWindowSettings;
 
         // vulkan-related
-        vk::UniqueInstance                 m_Instance;
-        vk::UniqueDebugReportCallbackEXT   m_DebugReportCallback;
-
-        vk::PhysicalDevice                 m_PhysicalDevice;
-        vk::PhysicalDeviceMemoryProperties m_PhysicalDeviceMemoryProperties;
-
+        // [NOTE] the order is pretty specific, for proper destruction ordering
+        // [NOTE] some of these are more of a per-window thing
+        
         static constexpr uint32_t NOT_FOUND = ~0ul;
 
         uint32_t m_GraphicsFamilyIdx = NOT_FOUND;
 
-        bool m_PushDescriptorsSupported = false;
-        bool m_CheckpointsSupported     = false;
-        bool m_MeshShading              = false;
-
-        vk::UniqueDevice                   m_Device;
-
-        // some of these are more of a per-window thing
-        vk::UniqueSurfaceKHR m_Surface;
-
-        vk::UniqueSwapchainKHR m_Swapchain;
-        std::vector<vk::Image> m_SwapchainImages;
-
         vk::Format m_SwapchainFormat;
         vk::Format m_DepthFormat = vk::Format::eD32Sfloat;
 
-        vk::Extent2D m_Extent;
+        vk::UniqueInstance                 m_Instance;
+        vk::UniqueDebugReportCallbackEXT   m_DebugReportCallback;
+        vk::UniqueDevice                   m_Device;
+        vk::UniqueSurfaceKHR               m_Surface;
+
+        vk::PhysicalDevice                 m_PhysicalDevice;
+        vk::PhysicalDeviceMemoryProperties m_PhysicalDeviceMemoryProperties;
 
         vk::UniqueSemaphore m_AcquireSemaphore;
         vk::UniqueSemaphore m_ReleaseSemaphore;
 
+        vk::UniqueSwapchainKHR             m_Swapchain;
+        std::vector<vk::Image>             m_SwapchainImages;
+        std::vector<vk::UniqueImageView>   m_SwapchainViews;
+        std::vector<vk::UniqueFramebuffer> m_Framebuffers;
+
+        vk::UniqueRenderPass    m_Renderpass;
+        vk::UniqueCommandPool   m_CommandPool;
+
         vk::Queue               m_GraphicsQueue;
         vk::UniqueCommandBuffer m_GraphicsCommands;
-
-        vk::UniqueCommandPool m_CommandPool;
     };
 }

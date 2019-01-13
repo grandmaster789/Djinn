@@ -103,6 +103,12 @@ namespace djinn::util {
         const tContainer& available_options,
         const tValues&... preferred
     );
+
+    // type-safe raw array sizes, c++ version of classic COUNTOF macro
+    // [NOTE] in this project, this is mostly used for vulkan arraysizes, 
+    //        so casting to uint32_t here will save some typing
+    template <typename T, size_t N>
+    constexpr uint32_t CountOf(T(&)[N]);
 }
 
 #pragma warning(push)

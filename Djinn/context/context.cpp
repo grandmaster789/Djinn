@@ -2,6 +2,7 @@
 #include "core/engine.h"
 #include "util/flat_map.h"
 #include "util/enum.h"
+#include "util/algorithm.h"
 
 // ------ Vulkan debug reports ------
 namespace {
@@ -152,6 +153,7 @@ namespace djinn {
             throw std::runtime_error("Physical device does not support presenting to the surface");
 
         selectSwapchainFormat();
+        m_Renderpass = createRenderpass(); // depends on the swapchain format
         createSwapchain();
 
         m_AcquireSemaphore = m_Device->createSemaphoreUnique({});
@@ -184,19 +186,18 @@ namespace djinn {
             if (m_Swapchain) {
                 uint32_t imageIndex = 0;
 
-                m_Device->acquireNextImageKHR(
+                imageIndex = m_Device->acquireNextImageKHR(
                     *m_Swapchain, 
                     std::numeric_limits<uint64_t>::max(), // timeout
                     *m_AcquireSemaphore, 
                     vk::Fence()
-                );
+                ).value;
 
                 m_Device->resetCommandPool(
                     *m_CommandPool,
                     vk::CommandPoolResetFlags()
                 );
 
-                // ~~ clear to purple
                 {
                     vk::CommandBufferBeginInfo info;
 
@@ -218,7 +219,7 @@ namespace djinn {
 
                     m_GraphicsCommands->clearColorImage(
                         m_SwapchainImages[imageIndex],
-                        vk::ImageLayout::eTransferDstOptimal,
+                        vk::ImageLayout::eGeneral,
                         ccv,
                         range
                     );
@@ -263,6 +264,9 @@ namespace djinn {
 
     void Context::shutdown() {
         System::shutdown();
+
+        if (m_Device)
+            m_Device->waitIdle();
 
         m_Window.reset();
     }
@@ -322,7 +326,7 @@ namespace djinn {
 
         // in debug mode, use validation
 #ifdef DJINN_DEBUG
-        // https://vulkan.lunarg.com/doc/sdk/1.1.85.0/windows/validation_layers.html
+        // https://vulkan.lunarg.com/doc/sdk/1.1.92.1/windows/validation_layers.html
         requiredLayers.push_back("VK_LAYER_LUNARG_standard_validation"); // not sure if there is a macro definition for this
         requiredExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 #endif
@@ -404,7 +408,10 @@ namespace djinn {
 
             gLogDebug                     << props.deviceName 
                 << "\n\tType:"            << gpu_type
-                << "\n\tDriver version: " << props.driverVersion
+                << "\n\tDriver version: " 
+                    << VK_VERSION_MAJOR(props.driverVersion) << "."
+                    << VK_VERSION_MINOR(props.driverVersion) << "."
+                    << VK_VERSION_PATCH(props.driverVersion)
                 << "\n\tAPI version: " 
                     << VK_VERSION_MAJOR(props.apiVersion) << "."
                     << VK_VERSION_MINOR(props.apiVersion) << "."
@@ -490,23 +497,6 @@ namespace djinn {
         else
             gLog << "Selected physical device: " << m_PhysicalDevice.getProperties().deviceName;
 
-        // detect some capabilities
-        // NOTE some of these are vendor specific
-        auto extensions = m_PhysicalDevice.enumerateDeviceExtensionProperties();
-        
-        for (const auto& ext : extensions) {
-            auto name = std::string(ext.extensionName);
-
-            if (name == VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME)
-                m_PushDescriptorsSupported = true;
-
-            if (name == VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME)
-                m_CheckpointsSupported = true;
-
-            if (name == VK_NV_MESH_SHADER_EXTENSION_NAME)
-                m_MeshShading = true;
-        }
-
         m_GraphicsFamilyIdx = getFamilyIdx(m_PhysicalDevice, vk::QueueFlagBits::eGraphics);
     }
 
@@ -521,35 +511,8 @@ namespace djinn {
             .setPQueuePriorities(&queuePriorities);
 
         std::vector<const char*> requiredExtensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-            VK_KHR_16BIT_STORAGE_EXTENSION_NAME,
-            VK_KHR_8BIT_STORAGE_EXTENSION_NAME,
-            VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME,
-            VK_EXT_SAMPLER_FILTER_MINMAX_EXTENSION_NAME
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
-
-        if (m_PushDescriptorsSupported)
-            requiredExtensions.push_back(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
-        if (m_CheckpointsSupported)
-            requiredExtensions.push_back(VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME);
-        if (m_MeshShading)
-            requiredExtensions.push_back(VK_NV_MESH_SHADER_EXTENSION_NAME);
-
-        vk::PhysicalDeviceFeatures2              pdf;
-        vk::PhysicalDevice16BitStorageFeatures   f16;
-        vk::PhysicalDevice8BitStorageFeaturesKHR f8;
-        vk::PhysicalDeviceMeshShaderFeaturesNV   mesh;
-
-        pdf.features
-            .setMultiDrawIndirect      (true)
-            .setPipelineStatisticsQuery(true);
-
-        f16.setStorageBuffer16BitAccess(true);
-        f8.setStorageBuffer8BitAccess(true);
-
-        mesh
-            .setTaskShader(true)
-            .setMeshShader(true);
 
         vk::DeviceCreateInfo devInfo;
 
@@ -557,14 +520,7 @@ namespace djinn {
             .setQueueCreateInfoCount   (1)
             .setPQueueCreateInfos      (&queueInfo)
             .setEnabledExtensionCount  (static_cast<uint32_t>(requiredExtensions.size()))
-            .setPpEnabledExtensionNames(requiredExtensions.data())
-            .setPNext(&pdf);
-
-        pdf.setPNext(&f16);
-        f16.setPNext(&f8);
-
-        if (m_MeshShading)
-            f8.setPNext(&mesh);
+            .setPpEnabledExtensionNames(requiredExtensions.data());
 
         m_Device = m_PhysicalDevice.createDeviceUnique(devInfo);
     }
@@ -618,38 +574,71 @@ namespace djinn {
 
         auto caps = m_PhysicalDevice.getSurfaceCapabilitiesKHR(*m_Surface);
         
-        m_Extent
+        vk::Extent2D extent;
+
+        extent
             .setWidth (m_Window->getWidth())
             .setHeight(m_Window->getHeight());
-
-        vk::CompositeAlphaFlagBitsKHR surfaceComposite = vk::CompositeAlphaFlagBitsKHR::eInherit;
-
-        if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque)
-            surfaceComposite = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-        if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::ePreMultiplied)
-            surfaceComposite = vk::CompositeAlphaFlagBitsKHR::ePreMultiplied;
-        if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::ePostMultiplied)
-            surfaceComposite = vk::CompositeAlphaFlagBitsKHR::ePostMultiplied;
 
         info
             .setSurface              (*m_Surface)
             .setMinImageCount        (std::max(caps.minImageCount, 2u)) 
             .setImageFormat          (m_SwapchainFormat)
             .setImageColorSpace      (vk::ColorSpaceKHR::eSrgbNonlinear)
-            .setImageExtent          (m_Extent)
+            .setImageExtent          (extent)
             .setImageArrayLayers     (1)
-            .setImageUsage           (vk::ImageUsageFlagBits::eTransferDst)
+            .setImageUsage           (
+                vk::ImageUsageFlagBits::eTransferDst |
+                vk::ImageUsageFlagBits::eColorAttachment
+            )
             .setImageSharingMode     (vk::SharingMode::eExclusive)
             .setQueueFamilyIndexCount(1)
             .setPQueueFamilyIndices  (&m_GraphicsFamilyIdx)
             .setPresentMode          (vk::PresentModeKHR::eFifo)
             .setOldSwapchain         (*m_Swapchain)
-            .setCompositeAlpha       (surfaceComposite)
+            .setCompositeAlpha       (vk::CompositeAlphaFlagBitsKHR::eOpaque)
             .setPreTransform         (caps.currentTransform);
 
         m_Swapchain = m_Device->createSwapchainKHRUnique(info);
 
         m_SwapchainImages = m_Device->getSwapchainImagesKHR(*m_Swapchain);
+
+        // views for all of the swapchain images
+        for (const auto& img : m_SwapchainImages) {
+            vk::ImageSubresourceRange range;
+
+            range
+                .setAspectMask    (vk::ImageAspectFlagBits::eColor)
+                .setBaseArrayLayer(0)
+                .setLayerCount    (1)
+                .setBaseMipLevel  (0)
+                .setLevelCount    (1);
+
+            vk::ImageViewCreateInfo view_info;
+
+            view_info
+                .setImage           (img)
+                .setViewType        (vk::ImageViewType::e2D)
+                .setFormat          (m_SwapchainFormat)
+                .setSubresourceRange(range);
+
+            m_SwapchainViews.push_back(m_Device->createImageViewUnique(view_info));
+        }
+
+        // framebuffers for all of the swapchain images
+        for (const auto& view : m_SwapchainViews) {
+            vk::FramebufferCreateInfo fb_info;
+
+            fb_info
+                .setWidth          (m_Window->getWidth())
+                .setHeight         (m_Window->getHeight())
+                .setLayers         (1)
+                .setAttachmentCount(1)
+                .setPAttachments   (&*view)
+                .setRenderPass     (*m_Renderpass);
+
+            m_Framebuffers.push_back(m_Device->createFramebufferUnique(fb_info));
+        }
     }
 
     void Context::createCommandPool() {
@@ -674,5 +663,63 @@ namespace djinn {
             // NOTE allocating a buffer yields a vector
             m_GraphicsCommands = std::move(m_Device->allocateCommandBuffersUnique(info).front());
         }
+    }
+
+    vk::UniqueRenderPass Context::createRenderpass() {
+        // for now, just use 1 subpass in a renderpass
+        vk::AttachmentDescription attachment;
+            
+        attachment
+            .setFormat        (m_SwapchainFormat)
+            .setSamples       (vk::SampleCountFlagBits::e1)
+            .setLoadOp        (vk::AttachmentLoadOp::eClear)
+            .setStoreOp       (vk::AttachmentStoreOp::eStore)
+            .setStencilLoadOp (vk::AttachmentLoadOp::eDontCare)
+            .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+            .setInitialLayout (vk::ImageLayout::eColorAttachmentOptimal)
+            .setFinalLayout   (vk::ImageLayout::eColorAttachmentOptimal);
+
+        vk::AttachmentReference attRefs;
+        attRefs
+            .setAttachment(0)
+            .setLayout    (vk::ImageLayout::eColorAttachmentOptimal);
+
+        vk::SubpassDescription subpassDesc;
+
+        subpassDesc
+            .setPipelineBindPoint   (vk::PipelineBindPoint::eGraphics)
+            .setColorAttachmentCount(1)
+            .setPColorAttachments   (&attRefs);
+
+        vk::RenderPassCreateInfo rp_info;
+
+        rp_info
+            .setAttachmentCount(1)
+            .setPAttachments   (&attachment)
+            .setSubpassCount   (1)
+            .setPSubpasses     (&subpassDesc);
+        
+        return m_Device->createRenderPassUnique(rp_info);
+    }
+
+    vk::UniqueFramebuffer Context::createFramebuffer(
+        vk::RenderPass pass,
+        vk::ImageView colorView
+    ) {
+        vk::ImageView attachments[] = {
+            colorView
+        };
+
+        vk::FramebufferCreateInfo fb_info;
+
+        fb_info
+            .setRenderPass     (pass)
+            .setAttachmentCount(util::CountOf(attachments))
+            .setPAttachments   (attachments)
+            .setWidth          (m_Window->getWidth())
+            .setHeight         (m_Window->getHeight())
+            .setLayers         (1);
+
+        return m_Device->createFramebufferUnique(fb_info);
     }
 }

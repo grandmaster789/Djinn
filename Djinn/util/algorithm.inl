@@ -178,4 +178,10 @@ namespace djinn::util {
 
         return detail::prefer_impl(available_options, preferred...);
     }
+
+    template <typename T, size_t N>
+    constexpr uint32_t CountOf(T(&)[N]) {
+        assert(N < std::numeric_limits<uint32_t>::max());
+        return static_cast<uint32_t>(N);
+    }
 }
