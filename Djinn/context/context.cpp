@@ -156,8 +156,8 @@ namespace djinn {
         m_Renderpass = createRenderpass(); // depends on the swapchain format
         createSwapchain();
 
-        m_AcquireSemaphore = m_Device->createSemaphoreUnique({});
-        m_ReleaseSemaphore = m_Device->createSemaphoreUnique({});
+        m_ImageAvailableSemaphore = m_Device->createSemaphoreUnique({});
+        m_PresentCompletedSemaphore = m_Device->createSemaphoreUnique({});
 
         m_GraphicsQueue = m_Device->getQueue(m_GraphicsFamilyIdx, 0);
 
@@ -189,16 +189,14 @@ namespace djinn {
                 imageIndex = m_Device->acquireNextImageKHR(
                     *m_Swapchain, 
                     std::numeric_limits<uint64_t>::max(), // timeout
-                    *m_AcquireSemaphore, 
+                    *m_ImageAvailableSemaphore, 
                     vk::Fence()
                 ).value;
 
-                m_Device->resetCommandPool(
-                    *m_CommandPool,
-                    vk::CommandPoolResetFlags()
-                );
+                m_Device->resetCommandPool(*m_CommandPool, vk::CommandPoolResetFlags());
 
                 {
+                    // one time command for clearing the image
                     vk::CommandBufferBeginInfo info;
 
                     info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
@@ -206,7 +204,7 @@ namespace djinn {
                     m_GraphicsCommands->begin(info);
                     
                     vk::ClearColorValue ccv;
-                    ccv.setFloat32({ 1.0f, 0.0f, 1.0f, 1.0f });
+                    ccv.setFloat32({ 0.2f, 0.0f, 0.0f, 1.0f }); // this is in RGBA format
 
                     vk::ImageSubresourceRange range;
 
@@ -234,12 +232,12 @@ namespace djinn {
 
                     info
                         .setWaitSemaphoreCount  (1)
-                        .setPWaitSemaphores     (&*m_AcquireSemaphore)
+                        .setPWaitSemaphores     (&*m_ImageAvailableSemaphore)
                         .setPWaitDstStageMask   (&stageMask)
                         .setCommandBufferCount  (1)
                         .setPCommandBuffers     (&*m_GraphicsCommands)
                         .setSignalSemaphoreCount(1)
-                        .setPSignalSemaphores   (&*m_ReleaseSemaphore);
+                        .setPSignalSemaphores   (&*m_PresentCompletedSemaphore);
 
                     m_GraphicsQueue.submit({ info }, {});
                 }
@@ -252,7 +250,7 @@ namespace djinn {
                         .setPSwapchains       (&*m_Swapchain)
                         .setPImageIndices     (&imageIndex)
                         .setWaitSemaphoreCount(1)
-                        .setPWaitSemaphores   (&*m_ReleaseSemaphore);
+                        .setPWaitSemaphores   (&*m_PresentCompletedSemaphore);
 
                     m_GraphicsQueue.presentKHR(info);
                 }
@@ -587,10 +585,7 @@ namespace djinn {
             .setImageColorSpace      (vk::ColorSpaceKHR::eSrgbNonlinear)
             .setImageExtent          (extent)
             .setImageArrayLayers     (1)
-            .setImageUsage           (
-                vk::ImageUsageFlagBits::eTransferDst |
-                vk::ImageUsageFlagBits::eColorAttachment
-            )
+            .setImageUsage           (vk::ImageUsageFlagBits::eColorAttachment)
             .setImageSharingMode     (vk::SharingMode::eExclusive)
             .setQueueFamilyIndexCount(1)
             .setPQueueFamilyIndices  (&m_GraphicsFamilyIdx)

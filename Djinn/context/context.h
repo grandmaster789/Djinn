@@ -86,8 +86,8 @@ namespace djinn {
         vk::PhysicalDevice                 m_PhysicalDevice;
         vk::PhysicalDeviceMemoryProperties m_PhysicalDeviceMemoryProperties;
 
-        vk::UniqueSemaphore m_AcquireSemaphore;
-        vk::UniqueSemaphore m_ReleaseSemaphore;
+        vk::UniqueSemaphore m_ImageAvailableSemaphore;
+        vk::UniqueSemaphore m_PresentCompletedSemaphore;
 
         vk::UniqueSwapchainKHR             m_Swapchain;
         std::vector<vk::Image>             m_SwapchainImages;
