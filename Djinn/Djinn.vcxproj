@@ -171,6 +171,8 @@
     <None Include="core\mediator.inl" />
     <None Include="core\mediator_queue.inl" />
     <None Include="core\system.inl" />
+    <None Include="shaders\triangle.frag.glsl" />
+    <None Include="shaders\triangle.vert.glsl" />
     <None Include="util\algorithm.inl" />
     <None Include="util\enum.inl" />
     <None Include="util\flat_map.inl" />

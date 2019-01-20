@@ -85,6 +85,12 @@
     <None Include="util\enum.inl">
       <Filter>util</Filter>
     </None>
+    <None Include="shaders\triangle.frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\triangle.vert.glsl">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
@@ -104,6 +110,9 @@
     </Filter>
     <Filter Include="context">
       <UniqueIdentifier>{0c2a96fd-e93d-4f40-9723-0ce8fec61df4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{174db6fa-5135-4519-80b5-4c1356181d2f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
