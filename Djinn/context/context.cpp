@@ -215,6 +215,9 @@ namespace djinn {
                 DispatchMessage(&msg);
             }
 
+            if (!m_Window)
+                return;
+
             // present an image
             if (m_Swapchain) {
                 uint32_t imageIndex = 0;
@@ -274,14 +277,15 @@ namespace djinn {
                         }
                     };
 
+                    // NOTE vulkan uses an unusual screenspace coordinate system, here it is flipped to match openGL/DirectX style
                     vk::Viewport viewport;
                     viewport
                         .setX     (0)
-                        .setY     (0)
-                        .setWidth (static_cast<float>(m_Window->getWidth()))
-                        .setHeight(static_cast<float>(m_Window->getHeight()));
+                        .setY     ( static_cast<float>(m_Window->getHeight()))
+                        .setWidth ( static_cast<float>(m_Window->getWidth ()))
+                        .setHeight(-static_cast<float>(m_Window->getHeight()));
 
-                    m_GraphicsCommands->setScissor(0, 1, &scissor);
+                    m_GraphicsCommands->setScissor (0, 1, &scissor);
                     m_GraphicsCommands->setViewport(0, 1, &viewport);
 
                     m_GraphicsCommands->bindPipeline(vk::PipelineBindPoint::eGraphics, *m_TrianglePipeline);
