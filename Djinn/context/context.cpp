@@ -4,6 +4,8 @@
 #include "util/enum.h"
 #include "util/algorithm.h"
 
+#include <fstream>
+
 // ------ Vulkan debug reports ------
 namespace {
     PFN_vkCreateDebugReportCallbackEXT  pfn_vkCreateDebugReportCallbackEXT = nullptr;
@@ -162,6 +164,37 @@ namespace djinn {
         m_GraphicsQueue = m_Device->getQueue(m_GraphicsFamilyIdx, 0);
 
         createCommandPool();
+
+        m_PipelineCache = m_Device->createPipelineCacheUnique({});
+
+        // [NOTE] this doesn't really belong here, but it's the first time this has come up
+#if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS
+        {
+            char executable_name[MAX_PATH + 1] = {};
+            GetModuleFileName(GetModuleHandle(NULL), executable_name, MAX_PATH);
+
+            std::filesystem::path executable_path(executable_name);
+            auto folder = executable_path.parent_path();
+
+            char dir[MAX_PATH + 1] = {};
+            strcpy_s(dir, sizeof(dir), folder.string().c_str());
+            SetCurrentDirectory(dir);
+
+            char current[MAX_PATH + 1];
+            GetCurrentDirectory(MAX_PATH + 1, current);
+        }
+#endif
+
+        // [NOTE] this currently relies on a post-build batch script to create correct locations
+        m_TriangleVertexShader   = loadShader("shaders/triangle.vert.spv");
+        m_TriangleFragmentShader = loadShader("shaders/triangle.frag.spv");
+        m_TrianglePipelineLayout = createPipelineLayout();
+        
+        m_TrianglePipeline = createSimpleGraphicsPipeline(
+            *m_TriangleVertexShader,
+            *m_TriangleFragmentShader,
+            *m_TrianglePipelineLayout
+        );
     }
 
     void Context::update() {
@@ -182,6 +215,9 @@ namespace djinn {
                 DispatchMessage(&msg);
             }
 
+            if (!m_Window)
+                return;
+
             // present an image
             if (m_Swapchain) {
                 uint32_t imageIndex = 0;
@@ -196,30 +232,70 @@ namespace djinn {
                 m_Device->resetCommandPool(*m_CommandPool, vk::CommandPoolResetFlags());
 
                 {
-					// one time command for clearing the image
-                    vk::CommandBufferBeginInfo info;
+                    // one time command for clearing the image
+                    vk::CommandBufferBeginInfo cmdInfo;
 
-                    info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+                    cmdInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
 
-                    m_GraphicsCommands->begin(info);
+                    m_GraphicsCommands->begin(cmdInfo);
                     
+                    vk::RenderPassBeginInfo passBeginInfo;
+
                     vk::ClearColorValue ccv;
                     ccv.setFloat32({ 0.2f, 0.0f, 0.0f, 1.0f }); // this is in RGBA format
 
-                    vk::ImageSubresourceRange range;
+                    vk::ClearDepthStencilValue cdsv;
+                    cdsv
+                        .setDepth(0.0f)
+                        .setStencil(0);
 
-                    range
-                        .setAspectMask    (vk::ImageAspectFlagBits::eColor)
-                        .setBaseArrayLayer(0)
-                        .setLayerCount    (1)
-                        .setBaseMipLevel  (0)
-                        .setLevelCount    (1);
+                    vk::ClearValue clearValue;
+                    clearValue
+                        .setDepthStencil(cdsv)
+                        .setColor(ccv);
 
-                    m_GraphicsCommands->clearColorImage(
-                        m_SwapchainImages[imageIndex],
-                        vk::ImageLayout::eGeneral,
-                        ccv,
-                        range
+                    passBeginInfo
+                        .setFramebuffer    (*m_Framebuffers[imageIndex])
+                        .setRenderArea     (vk::Rect2D(
+                            { 0, 0 }, 
+                            { m_Window->getWidth(),
+                              m_Window->getHeight() 
+                            } 
+                        ))
+                        .setClearValueCount(1)
+                        .setPClearValues   (&clearValue)
+                        .setRenderPass     (*m_Renderpass);
+
+                    m_GraphicsCommands->beginRenderPass(passBeginInfo, vk::SubpassContents());
+
+                    // NOTE this assumes the pipeline has dynamic state flags for scissor and viewport
+                    vk::Rect2D scissor = {
+                        { 0, 0 },
+                        {
+                            m_Window->getWidth(),
+                            m_Window->getHeight()
+                        }
+                    };
+
+                    // NOTE vulkan uses an unusual screenspace coordinate system, here it is flipped to match openGL/DirectX style
+                    vk::Viewport viewport;
+                    viewport
+                        .setX     (0)
+                        .setY     ( static_cast<float>(m_Window->getHeight()))
+                        .setWidth ( static_cast<float>(m_Window->getWidth ()))
+                        .setHeight(-static_cast<float>(m_Window->getHeight()));
+
+                    m_GraphicsCommands->setScissor (0, 1, &scissor);
+                    m_GraphicsCommands->setViewport(0, 1, &viewport);
+
+                    m_GraphicsCommands->bindPipeline(vk::PipelineBindPoint::eGraphics, *m_TrianglePipeline);
+
+                    // draw calls go here
+                    m_GraphicsCommands->draw(
+                        3, // vertex count
+                        1, // instance count
+                        0, // first vertex
+                        0  // first instance
                     );
 
                     m_GraphicsCommands->end();
@@ -417,12 +493,12 @@ namespace djinn {
         }
 
         // we *require*:
-        // - several extensions (swapchain, storage, draw_indirect etc)
+        // - extensions (swapchain etc)
         // - a graphics queue
         // - presentation support
         // - vulkan api 1.1
         std::vector<const char*> requiredDeviceExtensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
 
         auto getFamilyIdx = [](const vk::PhysicalDevice& pd, vk::QueueFlagBits family) {
@@ -656,7 +732,7 @@ namespace djinn {
         }
     }
 
-    vk::UniqueRenderPass Context::createRenderpass() {
+    vk::UniqueRenderPass Context::createRenderpass() const {
         // for now, just use 1 subpass in a renderpass
         vk::AttachmentDescription attachment;
             
@@ -696,7 +772,7 @@ namespace djinn {
     vk::UniqueFramebuffer Context::createFramebuffer(
         vk::RenderPass pass,
         vk::ImageView colorView
-    ) {
+    ) const {
         vk::ImageView attachments[] = {
             colorView
         };
@@ -712,5 +788,117 @@ namespace djinn {
             .setLayers         (1);
 
         return m_Device->createFramebufferUnique(fb_info);
+    }
+
+    vk::UniqueShaderModule Context::loadShader(const std::filesystem::path& p) const {
+        std::ifstream in(p.string().c_str(), std::ios::binary);
+        if (!in.good())
+            throw std::runtime_error("Failed to open file");
+
+        in.seekg(0, std::ios::end);
+        auto numBytes = in.tellg();
+
+        std::vector<char> data(numBytes);
+
+
+        in.seekg(0, std::ios::beg);
+        in.read(data.data(), numBytes);
+
+        vk::ShaderModuleCreateInfo info;
+
+        info
+            .setCodeSize(numBytes) // NOTE createShaderModuleUnique will fail if this is not a multiple of 4
+            .setPCode   (reinterpret_cast<const uint32_t*>(data.data()));
+
+        return m_Device->createShaderModuleUnique(info);
+    }
+
+    vk::UniquePipelineLayout Context::createPipelineLayout() const {
+        vk::PipelineLayoutCreateInfo info;
+
+        
+
+        return m_Device->createPipelineLayoutUnique(info);
+    }
+
+    vk::UniquePipeline Context::createSimpleGraphicsPipeline(
+        vk::ShaderModule   vertexShader,
+        vk::ShaderModule   fragmentShader,
+        vk::PipelineLayout layout
+    ) const {
+        vk::PipelineShaderStageCreateInfo        stages[2];
+
+        vk::GraphicsPipelineCreateInfo           info;
+
+        // soo many settings to tweak...
+        vk::PipelineVertexInputStateCreateInfo   vertexInputState;
+        vk::PipelineInputAssemblyStateCreateInfo inputAssembly;
+        vk::PipelineViewportStateCreateInfo      viewportState;
+        vk::PipelineRasterizationStateCreateInfo rasterizationState;
+        vk::PipelineMultisampleStateCreateInfo   multisampleState;
+        vk::PipelineDepthStencilStateCreateInfo  depthStencilState;
+        vk::PipelineColorBlendStateCreateInfo    colorBlendState;
+        vk::PipelineDynamicStateCreateInfo       dynamicState;
+
+        stages[0]
+            .setModule(vertexShader)
+            .setPName("main")
+            .setStage(vk::ShaderStageFlagBits::eVertex);
+
+        stages[1]
+            .setModule(fragmentShader)
+            .setPName("main")
+            .setStage(vk::ShaderStageFlagBits::eFragment);
+
+        inputAssembly
+            .setTopology(vk::PrimitiveTopology::eTriangleList);
+
+        viewportState
+            .setScissorCount(1)
+            .setViewportCount(1);
+
+        rasterizationState
+            .setLineWidth(1.0f);
+
+        multisampleState
+            .setRasterizationSamples(vk::SampleCountFlagBits::e1);
+
+        vk::PipelineColorBlendAttachmentState colorBlendAttachment;
+        colorBlendAttachment
+            .setColorWriteMask(
+                vk::ColorComponentFlagBits::eR |
+                vk::ColorComponentFlagBits::eG |
+                vk::ColorComponentFlagBits::eB |
+                vk::ColorComponentFlagBits::eA
+            );
+
+        colorBlendState
+            .setAttachmentCount(1)
+            .setPAttachments   (&colorBlendAttachment); // err this should match what was done in the createRenderpass thingie
+
+        vk::DynamicState dynamicStates[] = {
+            vk::DynamicState::eScissor,
+            vk::DynamicState::eViewport
+        };
+
+        dynamicState
+            .setDynamicStateCount(util::CountOf(dynamicStates))
+            .setPDynamicStates   (dynamicStates);
+
+        info
+            .setStageCount         (util::CountOf(stages))
+            .setPStages            (stages)
+            .setPVertexInputState  (&vertexInputState)
+            .setPInputAssemblyState(&inputAssembly)
+            .setPViewportState     (&viewportState)
+            .setPRasterizationState(&rasterizationState)
+            .setPMultisampleState  (&multisampleState)
+            .setPDepthStencilState (&depthStencilState)
+            .setPColorBlendState   (&colorBlendState)
+            .setPDynamicState      (&dynamicState)
+            .setLayout             (layout)
+            .setRenderPass         (*m_Renderpass);
+
+        return m_Device->createGraphicsPipelineUnique(*m_PipelineCache, info);
     }
 }

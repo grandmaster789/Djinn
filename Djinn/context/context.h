@@ -52,11 +52,19 @@ namespace djinn {
         void createSwapchain();
         void createCommandPool();
 
-        vk::UniqueRenderPass createRenderpass();
+        vk::UniqueRenderPass createRenderpass() const;
         vk::UniqueFramebuffer createFramebuffer(
             vk::RenderPass pass,
             vk::ImageView  colorView
-        );
+        ) const;
+
+        vk::UniqueShaderModule loadShader(const std::filesystem::path& p) const;
+        vk::UniquePipelineLayout createPipelineLayout() const;
+        vk::UniquePipeline createSimpleGraphicsPipeline(
+            vk::ShaderModule   vertexShader,
+            vk::ShaderModule   fragmentShader,
+            vk::PipelineLayout layout
+        ) const;
 
         WindowPtr m_Window;
 
@@ -99,5 +107,11 @@ namespace djinn {
 
         vk::Queue               m_GraphicsQueue;
         vk::UniqueCommandBuffer m_GraphicsCommands;
+        vk::UniquePipelineCache m_PipelineCache;
+
+        vk::UniqueShaderModule   m_TriangleVertexShader;
+        vk::UniqueShaderModule   m_TriangleFragmentShader;
+        vk::UniquePipelineLayout m_TrianglePipelineLayout;
+        vk::UniquePipeline       m_TrianglePipeline;
     };
 }
