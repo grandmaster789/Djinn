@@ -8,7 +8,12 @@ namespace djinn::util {
         const std::vector<std::string>& parts, 
         const std::string& separator
     ) {
-        std::string result;
+		size_t total = 0;
+		for (const auto& part : parts)
+			total += part.size();
+
+		std::string result;
+		result.reserve(total);
     
         for (const auto& part : parts) {
             result.append(part);
@@ -22,7 +27,12 @@ namespace djinn::util {
         const std::vector<const char*>& parts,
         const std::string& separator
     ) {
+		size_t total = 0;
+		for (const auto& part : parts)
+			total += strlen(part); // kind of icky, but still
+
         std::string result;
+		result.reserve(total);
     
         for (const auto& part : parts) {
             result.append(part);
@@ -83,11 +93,10 @@ namespace djinn::util {
         size_t len           = source.length();
     
         while (last_position < len + 1) {
-            // for some reason, MSVC requires an explicit template parameter for boyer_moore_searcher...
             auto it = search(
                 source.begin() + last_position,
                 source.end(),
-                boyer_moore_horspool_searcher<string::const_iterator>( 
+                boyer_moore_horspool_searcher( 
                     delimiter.begin(),
                     delimiter.end()
                 )
@@ -140,7 +149,7 @@ namespace djinn::util {
                 auto it = search(
                     source.begin() + last_position,
                     source.end(),
-                    boyer_moore_horspool_searcher<string::const_iterator>(
+                    boyer_moore_horspool_searcher(
                         delim.begin(),
                         delim.end()
                     )

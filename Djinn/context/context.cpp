@@ -1,7 +1,6 @@
 #include "context.h"
 #include "core/engine.h"
 #include "util/flat_map.h"
-#include "util/enum.h"
 #include "util/algorithm.h"
 
 #include <fstream>
@@ -448,10 +447,10 @@ namespace djinn {
 
             info
                 .setFlags(
-                    vk::DebugReportFlagBitsEXT::eDebug |
+                    //vk::DebugReportFlagBitsEXT::eDebug |
                     vk::DebugReportFlagBitsEXT::eError |
                     //vk::DebugReportFlagBitsEXT::eInformation | // this one is kinda spammy
-                    vk::DebugReportFlagBitsEXT::ePerformanceWarning |
+                    //vk::DebugReportFlagBitsEXT::ePerformanceWarning |
                     vk::DebugReportFlagBitsEXT::eWarning
                 )
                 .setPfnCallback(report_to_log);
@@ -615,14 +614,19 @@ namespace djinn {
     void Context::selectSwapchainFormat() {
         auto formats = m_PhysicalDevice.getSurfaceFormatsKHR(*m_Surface);
 
+		if (formats.empty())
+			throw std::runtime_error("No formats are supported for presentation");
+
         // prefer 32-bits BGRA unorm, or RGBA unorm
         // if neither is available, pick the first one in the supported set
         if (
             (formats.size() == 1) &&
             (formats[0].format == vk::Format::eUndefined)
         )
+			// this is a corner case, if only 1 undefined format is reported actually all formats are supported
             m_SwapchainFormat = vk::Format::eB8G8R8A8Unorm;
         else {
+			// prefer either BGRA32 or RGBA32 formats
             for (const auto& fmt : formats) {
                 if (fmt.format == vk::Format::eB8G8R8A8Unorm) {
                     m_SwapchainFormat = vk::Format::eB8G8R8A8Unorm;
@@ -636,6 +640,7 @@ namespace djinn {
             }
         }
 
+		// if none of the preferred formats is available, pick the first one
         m_SwapchainFormat = formats[0].format;
     }
 

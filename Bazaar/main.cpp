@@ -6,6 +6,8 @@
 #include "input/mouse.h"
 #include <iostream>
 
+#include "util/reflect.h"
+
 using namespace djinn;
 
 class Bazaar :
@@ -63,6 +65,19 @@ public:
 };
 
 int main() {
+	struct Foo {
+		int i = 123;
+		double d = 4.5;
+		bool b = true;
+	};
+
+	Foo f;
+
+	using namespace djinn::util::reflect;
+	std::cout << "Foo: " << std::boolalpha;
+	to_ostream(std::cout, f) << '\n';
+
+	/*
 	auto& engine = Engine::instance();
 
     engine.enable<Context>();
@@ -71,4 +86,5 @@ int main() {
     engine.setApplication<Bazaar>();
 
     engine.run();
+	*/
 }

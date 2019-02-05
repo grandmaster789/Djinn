@@ -82,14 +82,14 @@
     <None Include="util\variant.inl">
       <Filter>util</Filter>
     </None>
-    <None Include="util\enum.inl">
-      <Filter>util</Filter>
-    </None>
     <None Include="shaders\triangle.frag.glsl">
       <Filter>shaders</Filter>
     </None>
     <None Include="shaders\triangle.vert.glsl">
       <Filter>shaders</Filter>
+    </None>
+    <None Include="util\reflect.inl">
+      <Filter>util</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -165,9 +165,6 @@
     <ClInclude Include="util\variant.h">
       <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="util\enum.h">
-      <Filter>util</Filter>
-    </ClInclude>
     <ClInclude Include="input\keyboard.h">
       <Filter>input</Filter>
     </ClInclude>
@@ -180,6 +177,9 @@
     </ClInclude>
     <ClInclude Include="context\context.h">
       <Filter>context</Filter>
+    </ClInclude>
+    <ClInclude Include="util\reflect.h">
+      <Filter>util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

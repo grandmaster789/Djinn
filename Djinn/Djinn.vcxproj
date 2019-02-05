@@ -174,8 +174,8 @@
     <None Include="shaders\triangle.frag.glsl" />
     <None Include="shaders\triangle.vert.glsl" />
     <None Include="util\algorithm.inl" />
-    <None Include="util\enum.inl" />
     <None Include="util\flat_map.inl" />
+    <None Include="util\reflect.inl" />
     <None Include="util\string_util.inl" />
     <None Include="util\typemap.inl" />
     <None Include="util\variant.inl" />
@@ -198,9 +198,9 @@
     <ClInclude Include="input\keyboard.h" />
     <ClInclude Include="preprocessor.h" />
     <ClInclude Include="util\algorithm.h" />
-    <ClInclude Include="util\enum.h" />
     <ClInclude Include="util\exception_windows.h" />
     <ClInclude Include="util\flat_map.h" />
+    <ClInclude Include="util\reflect.h" />
     <ClInclude Include="util\string_util.h" />
     <ClInclude Include="util\typemap.h" />
     <ClInclude Include="util\variant.h" />
