@@ -59,7 +59,6 @@ namespace djinn {
         ) const;
 
         vk::UniqueShaderModule loadShader(const std::filesystem::path& p) const;
-        vk::UniquePipelineLayout createPipelineLayout() const;
         vk::UniquePipeline createSimpleGraphicsPipeline(
             vk::ShaderModule   vertexShader,
             vk::ShaderModule   fragmentShader,

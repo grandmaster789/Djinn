@@ -187,7 +187,7 @@ namespace djinn {
         // [NOTE] this currently relies on a post-build batch script to create correct locations
         m_TriangleVertexShader   = loadShader("shaders/triangle.vert.spv");
         m_TriangleFragmentShader = loadShader("shaders/triangle.frag.spv");
-        m_TrianglePipelineLayout = createPipelineLayout();
+		m_TrianglePipelineLayout = m_Device->createPipelineLayoutUnique({});
         
         m_TrianglePipeline = createSimpleGraphicsPipeline(
             *m_TriangleVertexShader,
@@ -195,6 +195,34 @@ namespace djinn {
             *m_TrianglePipelineLayout
         );
     }
+
+	vk::ImageMemoryBarrier imageBarrier(
+		vk::Image          image,
+		vk::AccessFlagBits srcAccess,
+		vk::ImageLayout    srcLayout,
+		vk::AccessFlagBits dstAccess,
+		vk::ImageLayout    dstLayout
+	) {
+		vk::ImageMemoryBarrier result;
+
+		vk::ImageSubresourceRange range;
+		range
+			.setAspectMask(vk::ImageAspectFlagBits::eColor)
+			.setLevelCount(VK_REMAINING_MIP_LEVELS)
+			.setLayerCount(VK_REMAINING_ARRAY_LAYERS);
+
+		result
+			.setImage              (image)
+			.setSubresourceRange   (range)
+			.setSrcAccessMask      (srcAccess)
+			.setOldLayout          (srcLayout)
+			.setDstAccessMask      (dstAccess)
+			.setNewLayout          (dstLayout)
+			.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+			.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+
+		return result;
+	}
 
     void Context::update() {
         if (m_Window) {
@@ -239,6 +267,26 @@ namespace djinn {
                     m_GraphicsCommands->begin(cmdInfo);
                     
                     vk::RenderPassBeginInfo passBeginInfo;
+
+					auto renderBeginBarrier = imageBarrier(
+						m_SwapchainImages[imageIndex],
+						vk::AccessFlagBits::eMemoryRead,
+						vk::ImageLayout   ::eUndefined,
+						vk::AccessFlagBits::eColorAttachmentWrite,
+						vk::ImageLayout   ::eColorAttachmentOptimal
+					);
+
+					m_GraphicsCommands->pipelineBarrier(
+						vk::PipelineStageFlagBits::eBottomOfPipe,
+						vk::PipelineStageFlagBits::eColorAttachmentOutput,
+						vk::DependencyFlagBits   ::eByRegion,
+						0,                    // memory barrier count
+						nullptr,              // pMemoryBarriers
+						0,                    // buffer memory barriers
+						nullptr,              // pBufferMemoryBarriers
+						1,			          // image memory barriers
+						&renderBeginBarrier   // pImageMemoryBarriers
+					);
 
                     vk::ClearColorValue ccv;
                     ccv.setFloat32({ 0.2f, 0.0f, 0.0f, 1.0f }); // this is in RGBA format
@@ -296,6 +344,28 @@ namespace djinn {
                         0, // first vertex
                         0  // first instance
                     );
+
+					m_GraphicsCommands->endRenderPass();
+
+					auto renderEndBarrier = imageBarrier(
+						m_SwapchainImages[imageIndex],						
+						vk::AccessFlagBits::eColorAttachmentWrite,
+						vk::ImageLayout   ::eColorAttachmentOptimal,
+						vk::AccessFlagBits::eMemoryRead,
+						vk::ImageLayout   ::ePresentSrcKHR
+					);
+
+					m_GraphicsCommands->pipelineBarrier(
+						vk::PipelineStageFlagBits::eColorAttachmentOutput,
+						vk::PipelineStageFlagBits::eTopOfPipe,
+						vk::DependencyFlagBits   ::eByRegion,
+						0,                    // memory barrier count
+						nullptr,              // pMemoryBarriers
+						0,                    // buffer memory barriers
+						nullptr,              // pBufferMemoryBarriers
+						1,			          // image memory barriers
+						&renderEndBarrier     // pImageMemoryBarriers
+					);
 
                     m_GraphicsCommands->end();
                 }
@@ -824,14 +894,6 @@ namespace djinn {
             .setPCode   (reinterpret_cast<const uint32_t*>(data.data()));
 
         return m_Device->createShaderModuleUnique(info);
-    }
-
-    vk::UniquePipelineLayout Context::createPipelineLayout() const {
-        vk::PipelineLayoutCreateInfo info;
-
-        
-
-        return m_Device->createPipelineLayoutUnique(info);
     }
 
     vk::UniquePipeline Context::createSimpleGraphicsPipeline(
