@@ -5,6 +5,10 @@ namespace djinn::core {
     Logger::Logger(const std::string& filename) {
     	add(makeConsoleSink());
     	add(makeFileSink(filename));
+
+#if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS
+		add(makeWindowsConsoleSink());
+#endif
     }
     
     LogMessage Logger::operator()(
