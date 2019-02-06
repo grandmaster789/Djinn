@@ -65,15 +65,6 @@ public:
 };
 
 int main() {
-	struct Foo {
-		int i = 123;
-		double d = 4.5;
-		bool b = true;
-	};
-
-	Foo f;
-
-	/*
 	auto& engine = Engine::instance();
 
     engine.enable<Context>();
@@ -82,5 +73,4 @@ int main() {
     engine.setApplication<Bazaar>();
 
     engine.run();
-	*/
 }
