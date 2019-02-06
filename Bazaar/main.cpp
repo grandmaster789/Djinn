@@ -73,10 +73,6 @@ int main() {
 
 	Foo f;
 
-	using namespace djinn::util::reflect;
-	std::cout << "Foo: " << std::boolalpha;
-	to_ostream(std::cout, f) << '\n';
-
 	/*
 	auto& engine = Engine::instance();
 
