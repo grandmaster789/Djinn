@@ -8,8 +8,8 @@ namespace djinn::core {
     	const std::string& sourceFile,
     	int sourceLineNumber
     ):
-    	mOwner(owner),
-    	mMetaInfo {
+    	m_Owner(owner),
+    	m_MetaInfo {
     		category,
     		sourceFile,
     		sourceLineNumber
@@ -18,12 +18,12 @@ namespace djinn::core {
     }
     
     LogMessage::~LogMessage() {
-    	if (mOwner)
-    		mOwner->flush(this);
+    	if (m_Owner)
+    		m_Owner->flush(this);
     }
     
     LogMessage& LogMessage::operator << (std::ostream& (*fn)(std::ostream&)) {
-    	(*fn)(mBuffer);
+    	(*fn)(m_Buffer);
     	return *this;
     }
 }

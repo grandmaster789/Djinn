@@ -1,6 +1,7 @@
 #pragma once
 
 #include "log_message.h"
+#include "preprocessor.h"
 #include <memory>
 #include <filesystem>
 
@@ -46,14 +47,18 @@ namespace djinn::core {
 			    const std::string& message
 		    ) override;
 
-		    T mImpl;
+		    T m_Impl;
 	    };
 
-	    std::unique_ptr<Concept> mWrapper;
+	    std::unique_ptr<Concept> m_Wrapper;
     };
 
     LogSink makeConsoleSink();												// [logLevel] [message][\n] to std::cout
     LogSink makeFileSink(const std::experimental::filesystem::path& path);	// [timestamp] [loglevel] [message] ([sourcefile]:[linenumber])[\n]
+
+#if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS
+	LogSink makeWindowsConsoleSink(); // [logLevel] [message][\n] to OutputDebugStringA
+#endif
 }
 
 #include "log_sink.inl"

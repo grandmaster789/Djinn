@@ -5,7 +5,7 @@
 namespace djinn::core {
     template <typename T>
     LogMessage& LogMessage::operator << (const T& message) {
-    	mBuffer << std::boolalpha << message;
+    	m_Buffer << std::boolalpha << message;
     	return *this;
     }
 }

@@ -10,24 +10,24 @@
 
 namespace djinn::core {
     LogSink::LogSink(LogSink&& sink):
-    	mWrapper(std::move(sink.mWrapper))
+    	m_Wrapper(std::move(sink.m_Wrapper))
     {
     }
     
     LogSink& LogSink::operator = (LogSink&& sink) {
-    	mWrapper = std::move(sink.mWrapper);
+    	m_Wrapper = std::move(sink.m_Wrapper);
     	return *this;
     }
     
     bool LogSink::operator == (const LogSink& sink) const {
-    	return (sink.mWrapper.get() == mWrapper.get());
+    	return (sink.m_Wrapper.get() == m_Wrapper.get());
     }
     
     void LogSink::write(
     	const LogMessage::MetaInfo& info,
     	const std::string& message
     ) {
-    	mWrapper->write(info, message);
+    	m_Wrapper->write(info, message);
     }
     
     LogSink makeConsoleSink() {
@@ -36,7 +36,7 @@ namespace djinn::core {
     			const LogMessage::MetaInfo& info, 
     			const std::string& message
     		) {
-    			switch (info.mCategory) {
+    			switch (info.m_Category) {
     			case eLogCategory::DEBUG:	std::cout << rang::fgB::green;						break;
     			case eLogCategory::WARNING: std::cout << rang::fgB::yellow;						break;
     			case eLogCategory::ERROR_:	std::cout << rang::fgB::red;						break;
@@ -44,11 +44,26 @@ namespace djinn::core {
     			// 'message' gets the default color/style scheme
     			}
     
-    			std::cout << info.mCategory << message << "\n";
+    			std::cout << info.m_Category << message << "\n";
     			std::cout << rang::style::reset;
     		}
     	);
     }
+
+#if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS
+	LogSink makeWindowsConsoleSink() {
+		return LogSink(
+			[](
+				const LogMessage::MetaInfo& info,
+				const std::string& message
+			) {
+				std::stringstream sstr;
+				sstr << info.m_Category << message << "\n";
+				OutputDebugStringA(sstr.str().c_str());
+			}
+		);
+	}
+#endif
     
     namespace {
     	struct FileSink {
@@ -82,12 +97,12 @@ namespace djinn::core {
     
     			(*mFile)
     				<< std::put_time(&localtime, "[%H:%M:%S] ")
-    				<< meta.mCategory
+    				<< meta.m_Category
     				<< message
     				<< " ("
-    				<< path(meta.mSourceFile).filename().string() // strip the source data to just the filename, disarding the rest of the path
+    				<< path(meta.m_SourceFile).filename().string() // strip the source data to just the filename, disarding the rest of the path
     				<< ":"
-    				<< meta.mSourceLine
+    				<< meta.m_SourceLine
     				<< ")\n";
     		}
     

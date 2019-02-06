@@ -28,7 +28,7 @@ namespace djinn::core {
     	static Logger& instance(); // this class is provided both as a singleton and a regular object; :instance() yields the singleton, obviously
     
     private:
-    	std::vector<LogSink> mSinks;
+    	std::vector<LogSink> m_Sinks;
     };
 }
 

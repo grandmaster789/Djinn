@@ -655,6 +655,14 @@ namespace djinn {
             .setWidth (m_Window->getWidth())
             .setHeight(m_Window->getHeight());
 
+		vk::CompositeAlphaFlagBitsKHR compositeAlpha;
+		     if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque)         compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
+		else if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eInherit)        compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eInherit;
+		else if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::ePreMultiplied)  compositeAlpha = vk::CompositeAlphaFlagBitsKHR::ePreMultiplied;
+		else if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::ePostMultiplied) compositeAlpha = vk::CompositeAlphaFlagBitsKHR::ePostMultiplied;
+		else
+			throw std::runtime_error("No composite alpha is supported");
+
         info
             .setSurface              (*m_Surface)
             .setMinImageCount        (std::max(caps.minImageCount, 2u)) 
@@ -668,7 +676,7 @@ namespace djinn {
             .setPQueueFamilyIndices  (&m_GraphicsFamilyIdx)
             .setPresentMode          (vk::PresentModeKHR::eFifo)
             .setOldSwapchain         (*m_Swapchain)
-            .setCompositeAlpha       (vk::CompositeAlphaFlagBitsKHR::eOpaque)
+            .setCompositeAlpha       (compositeAlpha)
             .setPreTransform         (caps.currentTransform);
 
         m_Swapchain = m_Device->createSwapchainKHRUnique(info);

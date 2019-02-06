@@ -14,7 +14,7 @@ namespace djinn::util::reflect {
 
 		template <typename T, size_t...Is>
 		constexpr auto is_brace_constructible_impl(std::index_sequence<Is...>, T*)
-			-> decltype(T{ Q<Is>... }, std::true_type{}); // comma expression, yield std::true_type iff the first part compiles
+			-> decltype(T{ g_Wildcard<Is>... }, std::true_type{}); // comma expression, yield std::true_type iff the first part compiles
 
 		template <size_t...Is>
 		constexpr std::false_type is_brace_constructible_impl(std::index_sequence<Is...>, ...); // use ... to force the lowest matching priority in the overload set

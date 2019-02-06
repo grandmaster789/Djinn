@@ -22,7 +22,7 @@ namespace djinn::util::reflect {
 		};
 
 		template <size_t N = 0>
-		static constexpr const Wildcard Q{};
+		static constexpr const Wildcard g_Wildcard{};
 	}
 
 	template <size_t N>

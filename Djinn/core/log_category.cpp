@@ -3,7 +3,7 @@
 
 namespace djinn::core {
     namespace {
-    	std::atomic<bool> gLogCategoryEnabled[5]{
+    	std::atomic<bool> g_LogCategoryEnabled[5]{
     		{ true }, // DEBUG
     		{ true }, // MESSAGE
     		{ true }, // WARNING
@@ -25,23 +25,23 @@ namespace djinn::core {
     }
     
     void enableAllLogCategories() {
-    	for (auto& cat : gLogCategoryEnabled)
+    	for (auto& cat : g_LogCategoryEnabled)
     		cat.store(true);
     }
     
     void disableAllLogCategories() {
-    	for (auto& cat : gLogCategoryEnabled)
+    	for (auto& cat : g_LogCategoryEnabled)
     		cat.store(false);
     }
     
     void setGlobalLogCategory(eLogCategory category, bool enabled) {
     	int idx = selectLogState(category);
-    	gLogCategoryEnabled[idx].store(enabled);
+    	g_LogCategoryEnabled[idx].store(enabled);
     }
     
     bool isGlobalLogCategoryEnabled(eLogCategory category) {
     	int idx = selectLogState(category);
-    	return gLogCategoryEnabled[idx].load();
+    	return g_LogCategoryEnabled[idx].load();
     }
     
     std::ostream& operator << (std::ostream& os, const eLogCategory& category) {

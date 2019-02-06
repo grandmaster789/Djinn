@@ -17,17 +17,17 @@ namespace djinn::core {
     	friend class Logger; // only allow Logger objects to construct a LogMessage object
     
     	LogMessage(
-    		Logger* owner, 
-    		eLogCategory category, 
+    		Logger*            owner, 
+    		eLogCategory       category, 
     		const std::string& sourceFile, 
-    		int sourceLineNumber
+    		int                sourceLineNumber
     	);
     
     	// no copy, no move
-    	LogMessage(const LogMessage&) = delete;
-    	LogMessage(LogMessage&&) = default;
+    	LogMessage             (const LogMessage&) = delete;
     	LogMessage& operator = (const LogMessage&) = delete;
-    	LogMessage& operator = (LogMessage&&) = default;
+    	LogMessage             (LogMessage&&)      = default;
+		LogMessage& operator = (LogMessage&&)      = default;
     
     public:
     	~LogMessage();
@@ -38,15 +38,15 @@ namespace djinn::core {
     
     	// MetaInfo is public so that any LogSink may make use of it
     	struct MetaInfo {
-    		eLogCategory mCategory;
-    		std::string  mSourceFile;
-    		int			 mSourceLine;
+    		eLogCategory m_Category;
+    		std::string  m_SourceFile;
+    		int			 m_SourceLine;
     	};
     
     private:
-    	std::ostringstream	mBuffer;
-    	Logger*				mOwner;
-    	MetaInfo			mMetaInfo;
+    	std::ostringstream	m_Buffer;
+    	Logger*				m_Owner;
+    	MetaInfo			m_MetaInfo;
     };
 }
 
