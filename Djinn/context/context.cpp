@@ -96,35 +96,33 @@ namespace {
         return result;
     }
 
-    // this will switch image layouts+access for a typical image:
-    // color aspect, all mip levels, all array layers,
-    // ignore queue families
-    vk::ImageMemoryBarrier imageBarrier(
-        vk::Image          image,
-        vk::AccessFlagBits srcAccess,
-        vk::ImageLayout    srcLayout,
-        vk::AccessFlagBits dstAccess,
-        vk::ImageLayout    dstLayout
-    ) {
-        vk::ImageMemoryBarrier result;
+    vk::Format selectSwapchainFormat(vk::PhysicalDevice physical, vk::SurfaceKHR surface) {
+        auto formats = physical.getSurfaceFormatsKHR(surface);
 
-        vk::ImageSubresourceRange range;
-        range
-            .setAspectMask(vk::ImageAspectFlagBits::eColor)
-            .setLevelCount(VK_REMAINING_MIP_LEVELS)
-            .setLayerCount(VK_REMAINING_ARRAY_LAYERS);
+        if (formats.empty())
+            throw std::runtime_error("No formats are supported for presentation");
 
-        result
-            .setImage              (image)
-            .setSubresourceRange   (range)
-            .setSrcAccessMask      (srcAccess)
-            .setOldLayout          (srcLayout)
-            .setDstAccessMask      (dstAccess)
-            .setNewLayout          (dstLayout)
-            .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-            .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+        // prefer 32-bits BGRA unorm, or RGBA unorm
+        // if neither is available, pick the first one in the supported set
+        if (
+            (formats.size() == 1) &&
+            (formats[0].format == vk::Format::eUndefined)
+            )
+            // this is a corner case, if only 1 undefined format is reported actually all formats are supported
+            return vk::Format::eB8G8R8A8Unorm;
+        else {
+            // prefer either BGRA32 or RGBA32 formats
+            for (const auto& fmt : formats) {
+                if (fmt.format == vk::Format::eB8G8R8A8Unorm)
+                    return vk::Format::eB8G8R8A8Unorm;
 
-        return result;
+                if (fmt.format == vk::Format::eR8G8B8A8Unorm)
+                    return vk::Format::eR8G8B8A8Unorm;
+            }
+        }
+
+        // if none of the preferred formats is available, pick the first one
+        return formats[0].format;
     }
 }
 
@@ -184,12 +182,18 @@ namespace djinn {
         if (!m_PhysicalDevice.getWin32PresentationSupportKHR(m_GraphicsFamilyIdx))
             throw std::runtime_error("Physical device does not support presenting to the surface");
 
-        selectSwapchainFormat();
-        m_Renderpass = createRenderpass(); // depends on the swapchain format
-        createSwapchain();
-
-        m_ImageAvailableSemaphore = m_Device->createSemaphoreUnique({});
-        m_PresentCompletedSemaphore = m_Device->createSemaphoreUnique({});
+        auto swapchainFormat = selectSwapchainFormat(m_PhysicalDevice, *m_Surface);
+        m_Renderpass = createSimpleRenderpass(swapchainFormat); // depends on the swapchain format                
+        m_Swapchain = std::make_unique<Swapchain>(
+            *m_Device,
+             m_PhysicalDevice,
+            *m_Surface,
+             swapchainFormat,
+             m_Window->getWidth(),
+             m_Window->getHeight(),
+             m_GraphicsFamilyIdx,
+            *m_Renderpass
+        );
 
         m_GraphicsQueue = m_Device->getQueue(m_GraphicsFamilyIdx, 0);
 
@@ -252,12 +256,7 @@ namespace djinn {
 
             // present an image
             if (m_Swapchain) {
-                uint32_t imageIndex = m_Device->acquireNextImageKHR(
-                    *m_Swapchain, 
-                    std::numeric_limits<uint64_t>::max(), // timeout
-                    *m_ImageAvailableSemaphore, 
-                    vk::Fence()
-                ).value;
+                uint32_t imageIndex = m_Swapchain->acquireNextImage(*m_Device);
 
                 m_Device->resetCommandPool(*m_CommandPool, vk::CommandPoolResetFlags());
 
@@ -272,8 +271,8 @@ namespace djinn {
                     vk::RenderPassBeginInfo passBeginInfo;
 
                     // set access to 'write', set layout to color attachment
-					auto renderBeginBarrier = imageBarrier(
-						m_SwapchainImages[imageIndex],
+					auto renderBeginBarrier = m_Swapchain->imageBarrier(
+						imageIndex,
 						vk::AccessFlagBits::eMemoryRead,
 						vk::ImageLayout   ::eUndefined,
 						vk::AccessFlagBits::eColorAttachmentWrite,
@@ -281,9 +280,9 @@ namespace djinn {
 					);
 
 					m_GraphicsCommands->pipelineBarrier(
-						vk::PipelineStageFlagBits::eBottomOfPipe,
 						vk::PipelineStageFlagBits::eColorAttachmentOutput,
-						vk::DependencyFlagBits   ::eByRegion,
+						vk::PipelineStageFlagBits::eColorAttachmentOutput,
+						vk::DependencyFlagBits(),
 						0,                    // memory barrier count
 						nullptr,              // pMemoryBarriers
 						0,                    // buffer memory barriers
@@ -308,7 +307,7 @@ namespace djinn {
 
                     // indicate the correct framebuffer, clear value and render area
                     passBeginInfo
-                        .setFramebuffer    (*m_Framebuffers[imageIndex])
+                        .setFramebuffer    (m_Swapchain->getFramebuffer(imageIndex))
                         .setRenderArea     (vk::Rect2D(
                             { 0, 0 }, 
                             { m_Window->getWidth(),
@@ -353,8 +352,8 @@ namespace djinn {
 
 					m_GraphicsCommands->endRenderPass();
 
-					auto renderEndBarrier = imageBarrier(
-						m_SwapchainImages[imageIndex],						
+					auto renderEndBarrier = m_Swapchain->imageBarrier(
+						imageIndex,
 						vk::AccessFlagBits::eColorAttachmentWrite,
 						vk::ImageLayout   ::eColorAttachmentOptimal,
 						vk::AccessFlagBits::eMemoryRead,
@@ -363,8 +362,8 @@ namespace djinn {
 
 					m_GraphicsCommands->pipelineBarrier(
 						vk::PipelineStageFlagBits::eColorAttachmentOutput,
-						vk::PipelineStageFlagBits::eTopOfPipe,
-						vk::DependencyFlagBits   ::eByRegion,
+						vk::PipelineStageFlagBits::eColorAttachmentOutput,
+						vk::DependencyFlagBits(),
 						0,                    // memory barrier count
 						nullptr,              // pMemoryBarriers
 						0,                    // buffer memory barriers
@@ -376,37 +375,11 @@ namespace djinn {
                     m_GraphicsCommands->end();
                 }
 
-                {
-                    vk::SubmitInfo info;
-
-                    vk::PipelineStageFlags stageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-
-                    info
-                        .setWaitSemaphoreCount  (1)
-                        .setPWaitSemaphores     (&*m_ImageAvailableSemaphore)
-                        .setPWaitDstStageMask   (&stageMask)
-                        .setCommandBufferCount  (1)
-                        .setPCommandBuffers     (&*m_GraphicsCommands)
-                        .setSignalSemaphoreCount(1)
-                        .setPSignalSemaphores   (&*m_PresentCompletedSemaphore);
-
-                    m_GraphicsQueue.submit({ info }, {});
-                }
-
-                {
-                    vk::PresentInfoKHR info;
-
-                    info
-                        .setSwapchainCount    (1)
-                        .setPSwapchains       (&*m_Swapchain)
-                        .setPImageIndices     (&imageIndex)
-                        .setWaitSemaphoreCount(1)
-                        .setPWaitSemaphores   (&*m_PresentCompletedSemaphore);
-
-                    m_GraphicsQueue.presentKHR(info);
-                }
-
-                m_Device->waitIdle();
+                m_Swapchain->present(
+                    *m_Device,
+                     m_GraphicsQueue,
+                    *m_GraphicsCommands
+                );
             }
         }
     }
@@ -686,124 +659,8 @@ namespace djinn {
         if (!m_PhysicalDevice.getSurfaceSupportKHR(m_GraphicsFamilyIdx, *m_Surface))
             throw std::runtime_error("Physical device does not support the created surface");
     }
-
-    void Context::selectSwapchainFormat() {
-        auto formats = m_PhysicalDevice.getSurfaceFormatsKHR(*m_Surface);
-
-		if (formats.empty())
-			throw std::runtime_error("No formats are supported for presentation");
-
-        // prefer 32-bits BGRA unorm, or RGBA unorm
-        // if neither is available, pick the first one in the supported set
-        if (
-            (formats.size() == 1) &&
-            (formats[0].format == vk::Format::eUndefined)
-        )
-			// this is a corner case, if only 1 undefined format is reported actually all formats are supported
-            m_SwapchainFormat = vk::Format::eB8G8R8A8Unorm;
-        else {
-			// prefer either BGRA32 or RGBA32 formats
-            for (const auto& fmt : formats) {
-                if (fmt.format == vk::Format::eB8G8R8A8Unorm) {
-                    m_SwapchainFormat = vk::Format::eB8G8R8A8Unorm;
-                    return;
-                }
-
-                if (fmt.format == vk::Format::eR8G8B8A8Unorm) {
-                    m_SwapchainFormat = vk::Format::eR8G8B8A8Unorm;
-                    return;
-                }
-            }
-        }
-
-		// if none of the preferred formats is available, pick the first one
-        m_SwapchainFormat = formats[0].format;
-    }
-
-    void Context::createSwapchain() {
-        vk::SwapchainCreateInfoKHR info;
-
-        auto caps = m_PhysicalDevice.getSurfaceCapabilitiesKHR(*m_Surface);
-        
-        vk::Extent2D extent;
-
-        extent
-            .setWidth (m_Window->getWidth())
-            .setHeight(m_Window->getHeight());
-
-		vk::CompositeAlphaFlagBitsKHR compositeAlpha;
-		     if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque)         compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-		else if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eInherit)        compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eInherit;
-		else if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::ePreMultiplied)  compositeAlpha = vk::CompositeAlphaFlagBitsKHR::ePreMultiplied;
-		else if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::ePostMultiplied) compositeAlpha = vk::CompositeAlphaFlagBitsKHR::ePostMultiplied;
-		else
-			throw std::runtime_error("No composite alpha is supported");
-
-        auto preferredPresentMode = *util::prefer(
-            m_PhysicalDevice.getSurfacePresentModesKHR(*m_Surface),
-            vk::PresentModeKHR::eMailbox,
-            vk::PresentModeKHR::eImmediate,
-            vk::PresentModeKHR::eFifoRelaxed,
-            vk::PresentModeKHR::eFifo
-        );
-
-        info
-            .setSurface              (*m_Surface)
-            .setMinImageCount        (std::max(caps.minImageCount, 2u)) 
-            .setImageFormat          (m_SwapchainFormat)
-            .setImageColorSpace      (vk::ColorSpaceKHR::eSrgbNonlinear)
-            .setImageExtent          (extent)
-            .setImageArrayLayers     (1)
-            .setImageUsage           (vk::ImageUsageFlagBits::eColorAttachment)
-            .setImageSharingMode     (vk::SharingMode::eExclusive)
-            .setQueueFamilyIndexCount(1)
-            .setPQueueFamilyIndices  (&m_GraphicsFamilyIdx)
-            .setPresentMode          (preferredPresentMode)
-            .setOldSwapchain         (*m_Swapchain)
-            .setCompositeAlpha       (compositeAlpha)
-            .setPreTransform         (caps.currentTransform);
-
-        m_Swapchain = m_Device->createSwapchainKHRUnique(info);
-
-        m_SwapchainImages = m_Device->getSwapchainImagesKHR(*m_Swapchain);
-
-        // views for all of the swapchain images
-        for (const auto& img : m_SwapchainImages) {
-            vk::ImageSubresourceRange range;
-
-            range
-                .setAspectMask    (vk::ImageAspectFlagBits::eColor)
-                .setBaseArrayLayer(0)
-                .setLayerCount    (1)
-                .setBaseMipLevel  (0)
-                .setLevelCount    (1);
-
-            vk::ImageViewCreateInfo view_info;
-
-            view_info
-                .setImage           (img)
-                .setViewType        (vk::ImageViewType::e2D)
-                .setFormat          (m_SwapchainFormat)
-                .setSubresourceRange(range);
-
-            m_SwapchainViews.push_back(m_Device->createImageViewUnique(view_info));
-        }
-
-        // framebuffers for all of the swapchain images
-        for (const auto& view : m_SwapchainViews) {
-            vk::FramebufferCreateInfo fb_info;
-
-            fb_info
-                .setWidth          (m_Window->getWidth())
-                .setHeight         (m_Window->getHeight())
-                .setLayers         (1)
-                .setAttachmentCount(1)
-                .setPAttachments   (&*view)
-                .setRenderPass     (*m_Renderpass);
-
-            m_Framebuffers.push_back(m_Device->createFramebufferUnique(fb_info));
-        }
-    }
+    
+    
 
     void Context::createCommandPool() {
         {
@@ -829,12 +686,12 @@ namespace djinn {
         }
     }
 
-    vk::UniqueRenderPass Context::createRenderpass() const {
+    vk::UniqueRenderPass Context::createSimpleRenderpass(vk::Format imageFormat) const {
         // for now, just use 1 subpass in a renderpass
         vk::AttachmentDescription attachment;
             
         attachment
-            .setFormat        (m_SwapchainFormat)
+            .setFormat        (imageFormat)
             .setSamples       (vk::SampleCountFlagBits::e1)
             .setLoadOp        (vk::AttachmentLoadOp::eClear)
             .setStoreOp       (vk::AttachmentStoreOp::eStore)

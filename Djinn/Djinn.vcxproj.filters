@@ -47,6 +47,9 @@
     <ClCompile Include="context\context.cpp">
       <Filter>context</Filter>
     </ClCompile>
+    <ClCompile Include="context\swapchain.cpp">
+      <Filter>context</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\engine.inl">
@@ -177,6 +180,9 @@
     </ClInclude>
     <ClInclude Include="util\reflect.h">
       <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="context\swapchain.h">
+      <Filter>context</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

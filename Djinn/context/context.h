@@ -5,6 +5,7 @@
 #include "core/mediator.h"
 
 #include "window.h"
+#include "swapchain.h"
 
 #include <memory>
 
@@ -20,9 +21,13 @@ namespace djinn {
     class Context :
         public core::System
     {
-    public:
+    public:        
         using Window    = context::Window;
-        using WindowPtr = std::unique_ptr<Window>;
+        using Swapchain = context::Swapchain;
+
+        // [TODO] currently using pointer wrapping here to control lifetime -- should be replaced with UniqueResource or something
+        using WindowPtr    = std::unique_ptr<Window>;        
+        using SwapchainPtr = std::unique_ptr<Swapchain>; 
 
         Context();
 
@@ -50,11 +55,9 @@ namespace djinn {
         void selectPhysicalDevice();
         void createDevice();
         void createSurface();
-        void selectSwapchainFormat();
-        void createSwapchain();
         void createCommandPool();
 
-        vk::UniqueRenderPass createRenderpass() const;
+        vk::UniqueRenderPass createSimpleRenderpass(vk::Format imageFormat) const;
         vk::UniqueFramebuffer createFramebuffer(
             vk::RenderPass pass,
             vk::ImageView  colorView
@@ -80,10 +83,7 @@ namespace djinn {
             bool m_Windowed      = true; // only supporting borderless fullscreen windows right now
         } m_MainWindowSettings;
 
-        // vulkan-related
         // [NOTE] the order is pretty specific, for proper destruction ordering
-        // [NOTE] some of these are more of a per-window thing (swapchain)
-        
         static constexpr uint32_t NOT_FOUND = ~0ul;
 
         uint32_t m_GraphicsFamilyIdx = NOT_FOUND;
@@ -99,13 +99,7 @@ namespace djinn {
         vk::PhysicalDevice                 m_PhysicalDevice;
         vk::PhysicalDeviceMemoryProperties m_PhysicalDeviceMemoryProperties;
 
-        vk::UniqueSemaphore m_ImageAvailableSemaphore;
-        vk::UniqueSemaphore m_PresentCompletedSemaphore;
-
-        vk::UniqueSwapchainKHR             m_Swapchain;
-        std::vector<vk::Image>             m_SwapchainImages;
-        std::vector<vk::UniqueImageView>   m_SwapchainViews;
-        std::vector<vk::UniqueFramebuffer> m_Framebuffers;
+        SwapchainPtr m_Swapchain;
 
         vk::UniqueRenderPass    m_Renderpass;
         vk::UniqueCommandPool   m_CommandPool;

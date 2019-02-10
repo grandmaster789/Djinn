@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClCompile Include="app\application.cpp" />
     <ClCompile Include="context\context.cpp" />
+    <ClCompile Include="context\swapchain.cpp" />
     <ClCompile Include="context\window.cpp" />
     <ClCompile Include="core\engine.cpp" />
     <ClCompile Include="core\logger.cpp" />
@@ -199,6 +200,7 @@
   <ItemGroup>
     <ClInclude Include="app\application.h" />
     <ClInclude Include="context\context.h" />
+    <ClInclude Include="context\swapchain.h" />
     <ClInclude Include="context\window.h" />
     <ClInclude Include="core\engine.h" />
     <ClInclude Include="core\logger.h" />
