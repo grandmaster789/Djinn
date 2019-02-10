@@ -131,7 +131,6 @@ namespace djinn::util {
 
 		See unit test for example usage
 	*/
-
 	template <
 		typename T,
 		typename tIterator = decltype(std::begin(std::declval<T>())),

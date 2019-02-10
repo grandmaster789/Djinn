@@ -85,9 +85,6 @@
     <None Include="shaders\triangle.frag.glsl">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shaders\triangle.vert.glsl">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="util\reflect.inl">
       <Filter>util</Filter>
     </None>
@@ -181,5 +178,10 @@
     <ClInclude Include="util\reflect.h">
       <Filter>util</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shaders\triangle.vert.glsl">
+      <Filter>shaders</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

@@ -95,6 +95,37 @@ namespace {
 
         return result;
     }
+
+    // this will switch image layouts+access for a typical image:
+    // color aspect, all mip levels, all array layers,
+    // ignore queue families
+    vk::ImageMemoryBarrier imageBarrier(
+        vk::Image          image,
+        vk::AccessFlagBits srcAccess,
+        vk::ImageLayout    srcLayout,
+        vk::AccessFlagBits dstAccess,
+        vk::ImageLayout    dstLayout
+    ) {
+        vk::ImageMemoryBarrier result;
+
+        vk::ImageSubresourceRange range;
+        range
+            .setAspectMask(vk::ImageAspectFlagBits::eColor)
+            .setLevelCount(VK_REMAINING_MIP_LEVELS)
+            .setLayerCount(VK_REMAINING_ARRAY_LAYERS);
+
+        result
+            .setImage              (image)
+            .setSubresourceRange   (range)
+            .setSrcAccessMask      (srcAccess)
+            .setOldLayout          (srcLayout)
+            .setDstAccessMask      (dstAccess)
+            .setNewLayout          (dstLayout)
+            .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+
+        return result;
+    }
 }
 
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugReportCallbackEXT(
@@ -182,6 +213,8 @@ namespace djinn {
             char current[MAX_PATH + 1];
             GetCurrentDirectory(MAX_PATH + 1, current);
         }
+#else
+    #error please set the path to the executable folder (resource loading occurs relative to the current folder)
 #endif
 
         // [NOTE] this currently relies on a post-build batch script to create correct locations
@@ -195,34 +228,6 @@ namespace djinn {
             *m_TrianglePipelineLayout
         );
     }
-
-	vk::ImageMemoryBarrier imageBarrier(
-		vk::Image          image,
-		vk::AccessFlagBits srcAccess,
-		vk::ImageLayout    srcLayout,
-		vk::AccessFlagBits dstAccess,
-		vk::ImageLayout    dstLayout
-	) {
-		vk::ImageMemoryBarrier result;
-
-		vk::ImageSubresourceRange range;
-		range
-			.setAspectMask(vk::ImageAspectFlagBits::eColor)
-			.setLevelCount(VK_REMAINING_MIP_LEVELS)
-			.setLayerCount(VK_REMAINING_ARRAY_LAYERS);
-
-		result
-			.setImage              (image)
-			.setSubresourceRange   (range)
-			.setSrcAccessMask      (srcAccess)
-			.setOldLayout          (srcLayout)
-			.setDstAccessMask      (dstAccess)
-			.setNewLayout          (dstLayout)
-			.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-			.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
-
-		return result;
-	}
 
     void Context::update() {
         if (m_Window) {
@@ -247,9 +252,7 @@ namespace djinn {
 
             // present an image
             if (m_Swapchain) {
-                uint32_t imageIndex = 0;
-
-                imageIndex = m_Device->acquireNextImageKHR(
+                uint32_t imageIndex = m_Device->acquireNextImageKHR(
                     *m_Swapchain, 
                     std::numeric_limits<uint64_t>::max(), // timeout
                     *m_ImageAvailableSemaphore, 
@@ -268,6 +271,7 @@ namespace djinn {
                     
                     vk::RenderPassBeginInfo passBeginInfo;
 
+                    // set access to 'write', set layout to color attachment
 					auto renderBeginBarrier = imageBarrier(
 						m_SwapchainImages[imageIndex],
 						vk::AccessFlagBits::eMemoryRead,
@@ -288,6 +292,7 @@ namespace djinn {
 						&renderBeginBarrier   // pImageMemoryBarriers
 					);
 
+                    // assemble a clear value
                     vk::ClearColorValue ccv;
                     ccv.setFloat32({ 0.2f, 0.0f, 0.0f, 1.0f }); // this is in RGBA format
 
@@ -301,6 +306,7 @@ namespace djinn {
                         .setDepthStencil(cdsv)
                         .setColor(ccv);
 
+                    // indicate the correct framebuffer, clear value and render area
                     passBeginInfo
                         .setFramebuffer    (*m_Framebuffers[imageIndex])
                         .setRenderArea     (vk::Rect2D(
@@ -517,10 +523,10 @@ namespace djinn {
 
             info
                 .setFlags(
-                    //vk::DebugReportFlagBitsEXT::eDebug |
+                    vk::DebugReportFlagBitsEXT::eDebug |
                     vk::DebugReportFlagBitsEXT::eError |
                     //vk::DebugReportFlagBitsEXT::eInformation | // this one is kinda spammy
-                    //vk::DebugReportFlagBitsEXT::ePerformanceWarning |
+                    vk::DebugReportFlagBitsEXT::ePerformanceWarning |
                     vk::DebugReportFlagBitsEXT::eWarning
                 )
                 .setPfnCallback(report_to_log);
@@ -733,6 +739,14 @@ namespace djinn {
 		else
 			throw std::runtime_error("No composite alpha is supported");
 
+        auto preferredPresentMode = *util::prefer(
+            m_PhysicalDevice.getSurfacePresentModesKHR(*m_Surface),
+            vk::PresentModeKHR::eMailbox,
+            vk::PresentModeKHR::eImmediate,
+            vk::PresentModeKHR::eFifoRelaxed,
+            vk::PresentModeKHR::eFifo
+        );
+
         info
             .setSurface              (*m_Surface)
             .setMinImageCount        (std::max(caps.minImageCount, 2u)) 
@@ -744,7 +758,7 @@ namespace djinn {
             .setImageSharingMode     (vk::SharingMode::eExclusive)
             .setQueueFamilyIndexCount(1)
             .setPQueueFamilyIndices  (&m_GraphicsFamilyIdx)
-            .setPresentMode          (vk::PresentModeKHR::eFifo)
+            .setPresentMode          (preferredPresentMode)
             .setOldSwapchain         (*m_Swapchain)
             .setCompositeAlpha       (compositeAlpha)
             .setPreTransform         (caps.currentTransform);
@@ -915,6 +929,8 @@ namespace djinn {
         vk::PipelineColorBlendStateCreateInfo    colorBlendState;
         vk::PipelineDynamicStateCreateInfo       dynamicState;
 
+        vk::PipelineColorBlendAttachmentState    colorBlendAttachment;
+
         stages[0]
             .setModule(vertexShader)
             .setPName("main")
@@ -938,7 +954,6 @@ namespace djinn {
         multisampleState
             .setRasterizationSamples(vk::SampleCountFlagBits::e1);
 
-        vk::PipelineColorBlendAttachmentState colorBlendAttachment;
         colorBlendAttachment
             .setColorWriteMask(
                 vk::ColorComponentFlagBits::eR |

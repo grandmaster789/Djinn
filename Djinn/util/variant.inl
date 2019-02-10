@@ -11,7 +11,7 @@ namespace djinn::util {
     }
 
     template <typename...Lambdas>
-    auto match(Lambdas&&... lambdas) {
+    constexpr auto match(Lambdas&&... lambdas) {
         return [visitor = OverloadSet(std::forward<Lambdas>(lambdas)...)] (auto&&... variants) {
 			return std::visit(visitor, std::forward<decltype(variants)>(variants)...);
         };

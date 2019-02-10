@@ -10,7 +10,9 @@
 
 /*
     Very marginal platform dependant stuff in here:
-    - the vulkan win32 surface extension name is in here    
+    - the vulkan win32 surface extension name is in here
+    - win32 surface creation
+    - win32 presentation support
     [TODO] multi-GPU support... don't have the hardware for that tho
 */
 
@@ -58,7 +60,11 @@ namespace djinn {
             vk::ImageView  colorView
         ) const;
 
+        // load a shader binary; which would typically have been compiled with GLSLvalidator to SPIRV
         vk::UniqueShaderModule loadShader(const std::filesystem::path& p) const;
+
+        // simple vertex+fragment shader, both with an entry point called 'main'
+        // accepting triangle lists, pretty much all 'default' settings (there are a lot though)
         vk::UniquePipeline createSimpleGraphicsPipeline(
             vk::ShaderModule   vertexShader,
             vk::ShaderModule   fragmentShader,
@@ -76,7 +82,7 @@ namespace djinn {
 
         // vulkan-related
         // [NOTE] the order is pretty specific, for proper destruction ordering
-        // [NOTE] some of these are more of a per-window thing
+        // [NOTE] some of these are more of a per-window thing (swapchain)
         
         static constexpr uint32_t NOT_FOUND = ~0ul;
 
