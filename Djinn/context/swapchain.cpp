@@ -12,9 +12,10 @@ namespace djinn::context {
         uint32_t           graphicsFamilyIdx,
         vk::RenderPass     renderpass,
         Swapchain*         oldSwapchain
-    ) {
-        
-
+    ):
+        m_ImageFormat(imageFormat),
+        m_Extent     (width, height)
+    {
         m_ImageAvailableSemaphore   = device.createSemaphoreUnique({});
         m_PresentCompletedSemaphore = device.createSemaphoreUnique({});
 
@@ -61,10 +62,10 @@ namespace djinn::context {
             .setPreTransform         (caps.currentTransform);
 
         m_Handle          = device.createSwapchainKHRUnique(info);
-        m_SwapchainImages = device.getSwapchainImagesKHR(*m_Handle);
+        m_Images = device.getSwapchainImagesKHR(*m_Handle);
 
         // views for all of the swapchain images
-        for (const auto& img : m_SwapchainImages) {
+        for (const auto& img : m_Images) {
             vk::ImageSubresourceRange range;
 
             range
@@ -82,11 +83,11 @@ namespace djinn::context {
                 .setFormat          (imageFormat)
                 .setSubresourceRange(range);
 
-            m_SwapchainViews.push_back(device.createImageViewUnique(view_info));
+            m_ImageViews.push_back(device.createImageViewUnique(view_info));
         }
 
         // framebuffers for all of the swapchain images
-        for (const auto& view : m_SwapchainViews) {
+        for (const auto& view : m_ImageViews) {
             vk::FramebufferCreateInfo fb_info;
 
             fb_info
@@ -107,6 +108,14 @@ namespace djinn::context {
 
     vk::Framebuffer Swapchain::getFramebuffer(uint32_t idx) const {
         return *m_Framebuffers[idx];
+    }
+
+    vk::Format Swapchain::getImageFormat() const {
+        return m_ImageFormat;
+    }
+
+    vk::Extent2D Swapchain::getExtent() const {
+        return m_Extent;
     }
 
     uint32_t Swapchain::acquireNextImage(vk::Device device) {
@@ -139,7 +148,7 @@ namespace djinn::context {
             .setLayerCount(VK_REMAINING_ARRAY_LAYERS);
 
         result
-            .setImage              (m_SwapchainImages[imageIndex])
+            .setImage              (m_Images[imageIndex])
             .setSubresourceRange   (range)
             .setSrcAccessMask      (srcAccess)
             .setOldLayout          (srcLayout)

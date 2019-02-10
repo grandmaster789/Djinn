@@ -256,6 +256,19 @@ namespace djinn {
 
             // present an image
             if (m_Swapchain) {
+                if (m_Swapchain->getExtent() != vk::Extent2D(m_Window->getWidth(), m_Window->getHeight()))
+                    m_Swapchain = std::make_unique<Swapchain>(
+                         *m_Device,
+                          m_PhysicalDevice,
+                         *m_Surface,
+                          m_Swapchain->getImageFormat(),
+                          m_Window->getWidth(),
+                          m_Window->getHeight(),
+                          m_GraphicsFamilyIdx,
+                         *m_Renderpass,
+                        &*m_Swapchain
+                    );
+
                 uint32_t imageIndex = m_Swapchain->acquireNextImage(*m_Device);
 
                 m_Device->resetCommandPool(*m_CommandPool, vk::CommandPoolResetFlags());

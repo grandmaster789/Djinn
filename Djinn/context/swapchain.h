@@ -20,6 +20,8 @@ namespace djinn::context {
 
         vk::SwapchainKHR getHandle() const;
         vk::Framebuffer  getFramebuffer(uint32_t idx) const;
+        vk::Format       getImageFormat() const;
+        vk::Extent2D     getExtent() const;
 
         uint32_t acquireNextImage(vk::Device device);
         
@@ -42,10 +44,13 @@ namespace djinn::context {
         vk::UniqueSemaphore m_PresentCompletedSemaphore;
 
         vk::UniqueSwapchainKHR             m_Handle;
-        std::vector<vk::Image>             m_SwapchainImages;
-        std::vector<vk::UniqueImageView>   m_SwapchainViews;
+
+        std::vector<vk::Image>             m_Images;
+        std::vector<vk::UniqueImageView>   m_ImageViews;
         std::vector<vk::UniqueFramebuffer> m_Framebuffers;
 
-        uint32_t m_ActiveImage;
+        uint32_t     m_ActiveImage;
+        vk::Format   m_ImageFormat;
+        vk::Extent2D m_Extent;
     };
 }

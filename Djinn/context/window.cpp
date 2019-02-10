@@ -431,6 +431,13 @@ namespace djinn::context {
             break; 
         }
 
+        case WM_SIZE: {
+            // NOTE this is a bit weaksauce
+            m_Width  = GET_X_LPARAM(lp);
+            m_Height = GET_Y_LPARAM(lp);
+            break;
+        }
+
         default:
             return DefWindowProc(handle, message, wp, lp);
         }
