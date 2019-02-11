@@ -412,9 +412,9 @@ namespace djinn::context {
         case WM_RBUTTONDOWN:   { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::right,  true); break; }
         case WM_MBUTTONDOWN:   { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::middle, true); break; }
 
-        case WM_LBUTTONUP:     {                       m_Mouse->setButtonState(eMouseButton::left,   false); break; }
-        case WM_RBUTTONUP:     {                       m_Mouse->setButtonState(eMouseButton::right,  false); break; }
-        case WM_MBUTTONUP:     {                       m_Mouse->setButtonState(eMouseButton::middle, false); break; }
+        case WM_LBUTTONUP:     { SetCapture(0);        m_Mouse->setButtonState(eMouseButton::left,   false); break; }
+        case WM_RBUTTONUP:     { SetCapture(0);        m_Mouse->setButtonState(eMouseButton::right,  false); break; }
+        case WM_MBUTTONUP:     { SetCapture(0);        m_Mouse->setButtonState(eMouseButton::middle, false); break; }
 
         case WM_LBUTTONDBLCLK: { SetCapture(m_Handle); m_Mouse->doDoubleClick(eMouseButton::left);           break; }
         case WM_RBUTTONDBLCLK: { SetCapture(m_Handle); m_Mouse->doDoubleClick(eMouseButton::right);          break; }
