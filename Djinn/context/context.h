@@ -45,10 +45,10 @@ namespace djinn {
 
     private:
         Window* createWindow(
-            int width         = 1280, 
-            int height        = 720,
-            bool windowed     = true, 
-            int displaydevice = 0
+            int  width         = 1280, 
+            int  height        = 720,
+            bool windowed      = true, 
+            int  displaydevice = 0
         );
 
         void initVulkan();

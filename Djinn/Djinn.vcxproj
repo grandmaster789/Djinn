@@ -174,10 +174,10 @@
     <None Include="core\system.inl" />
     <CustomBuild Include="shaders\triangle.frag.glsl">
       <FileType>Document</FileType>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Shaders\%(Filename).spv</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Shaders\%(Filename).spv</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)Shaders\%(Filename).spv"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)Shaders\%(Filename).spv"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)assets\shaders\%(Filename).spv"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)assets\shaders\%(Filename).spv"</Command>
     </CustomBuild>
     <CustomBuild Include="shaders\triangle.vert.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -185,10 +185,10 @@
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)Shaders\%(Filename).spv"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Shaders\%(Filename).spv</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)Shaders\%(Filename).spv"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Shaders\%(Filename).spv</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)assets\shaders\%(Filename).spv"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)assets\shaders\%(Filename).spv"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
     </CustomBuild>
     <None Include="util\algorithm.inl" />
     <None Include="util\flat_map.inl" />

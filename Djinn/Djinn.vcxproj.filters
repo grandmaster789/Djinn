@@ -85,9 +85,6 @@
     <None Include="util\variant.inl">
       <Filter>util</Filter>
     </None>
-    <None Include="shaders\triangle.frag.glsl">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="util\reflect.inl">
       <Filter>util</Filter>
     </None>
@@ -113,6 +110,9 @@
     </Filter>
     <Filter Include="shaders">
       <UniqueIdentifier>{174db6fa-5135-4519-80b5-4c1356181d2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scene">
+      <UniqueIdentifier>{ecea6bb2-553d-46df-ab94-0cc3695b74ca}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -187,6 +187,9 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="shaders\triangle.vert.glsl">
+      <Filter>shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\triangle.frag.glsl">
       <Filter>shaders</Filter>
     </CustomBuild>
   </ItemGroup>

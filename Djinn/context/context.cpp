@@ -218,12 +218,12 @@ namespace djinn {
             GetCurrentDirectory(MAX_PATH + 1, current);
         }
 #else
-    #error please set the path to the executable folder (resource loading occurs relative to the current folder)
+    #error Unsupported platform
 #endif
 
         // [NOTE] this currently relies on a post-build batch script to create correct locations
-        m_TriangleVertexShader   = loadShader("shaders/triangle.vert.spv");
-        m_TriangleFragmentShader = loadShader("shaders/triangle.frag.spv");
+        m_TriangleVertexShader   = loadShader("assets/shaders/triangle.vert.spv");
+        m_TriangleFragmentShader = loadShader("assets/shaders/triangle.frag.spv");
 		m_TrianglePipelineLayout = m_Device->createPipelineLayoutUnique({});
         
         m_TrianglePipeline = createSimpleGraphicsPipeline(
@@ -303,21 +303,11 @@ namespace djinn {
 						1,			          // image memory barriers
 						&renderBeginBarrier   // pImageMemoryBarriers
 					);
-
+                    
                     // assemble a clear value
-                    vk::ClearColorValue ccv;
-                    ccv.setFloat32({ 0.2f, 0.0f, 0.0f, 1.0f }); // this is in RGBA format
-
-                    vk::ClearDepthStencilValue cdsv;
-                    cdsv
-                        .setDepth(0.0f)
-                        .setStencil(0);
-
-                    vk::ClearValue clearValue;
-                    clearValue
-                        .setDepthStencil(cdsv)
-                        .setColor(ccv);
-
+                    vk::ClearColorValue ccv(std::array<float, 4>{ 0.2f, 0.0f, 0.0f, 1.0f }); // this is in RGBA format
+                    vk::ClearValue      clearValue(ccv);
+                    
                     // indicate the correct framebuffer, clear value and render area
                     passBeginInfo
                         .setFramebuffer    (m_Swapchain->getFramebuffer(imageIndex))
@@ -576,6 +566,7 @@ namespace djinn {
 #if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS
             return !!(pd.getWin32PresentationSupportKHR(graphicsFamily));
 #else
+    #error Unsupported platform
             return true; // TODO figure out what this is supposed to be on different platforms
 #endif
         };
