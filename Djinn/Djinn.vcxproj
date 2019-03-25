@@ -148,15 +148,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="app\application.cpp" />
-    <ClCompile Include="context\context.cpp" />
-    <ClCompile Include="context\swapchain.cpp" />
-    <ClCompile Include="context\window.cpp" />
     <ClCompile Include="core\engine.cpp" />
     <ClCompile Include="core\logger.cpp" />
     <ClCompile Include="core\log_category.cpp" />
     <ClCompile Include="core\log_message.cpp" />
     <ClCompile Include="core\log_sink.cpp" />
     <ClCompile Include="core\system.cpp" />
+    <ClCompile Include="graphics\graphics.cpp" />
+    <ClCompile Include="graphics\vk_command_buffer.cpp" />
+    <ClCompile Include="graphics\vk_command_manager.cpp" />
+    <ClCompile Include="graphics\vk_debug.cpp" />
+    <ClCompile Include="graphics\vk_device.cpp" />
+    <ClCompile Include="graphics\window.cpp" />
     <ClCompile Include="input\mouse.cpp" />
     <ClCompile Include="third_party.cpp" />
     <ClCompile Include="input\input.cpp" />
@@ -199,9 +202,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app\application.h" />
-    <ClInclude Include="context\context.h" />
-    <ClInclude Include="context\swapchain.h" />
-    <ClInclude Include="context\window.h" />
+    <ClInclude Include="compile_options.h" />
     <ClInclude Include="core\engine.h" />
     <ClInclude Include="core\logger.h" />
     <ClInclude Include="core\log_category.h" />
@@ -210,7 +211,19 @@
     <ClInclude Include="core\mediator.h" />
     <ClInclude Include="core\mediator_queue.h" />
     <ClInclude Include="core\system.h" />
+    <ClInclude Include="graphics\graphics.h" />
+    <ClInclude Include="graphics\queueFamilyIndices.h" />
+    <ClInclude Include="graphics\swapchainDetails.h" />
+    <ClInclude Include="graphics\vk_command_buffer.h" />
+    <ClInclude Include="graphics\vk_command_manager.h" />
+    <ClInclude Include="graphics\vk_debug.h" />
+    <ClInclude Include="graphics\vk_device.h" />
+    <ClInclude Include="graphics\vk_unique_memory.h" />
+    <ClInclude Include="graphics\window.h" />
     <ClInclude Include="input\mouse.h" />
+    <ClInclude Include="renderer\forwardRenderer.h" />
+    <ClInclude Include="renderer\renderer.h" />
+    <ClInclude Include="resources\resources.h" />
     <ClInclude Include="third_party.h" />
     <ClInclude Include="input\input.h" />
     <ClInclude Include="input\keyboard.h" />

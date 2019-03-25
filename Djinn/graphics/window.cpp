@@ -1,5 +1,5 @@
 #include "window.h"
-#include "context.h"
+#include "graphics.h"
 #include "input/input.h"
 #include "input/keyboard.h"
 #include "input/mouse.h"
@@ -28,7 +28,7 @@ namespace {
         if (ptr == NULL)
             return DefWindowProc(window, msg, wp, lp);
         else
-            return ((djinn::context::Window*)ptr)->winProc(window, msg, wp, lp);
+            return ((djinn::graphics::Window*)ptr)->winProc(window, msg, wp, lp);
     }
 
     struct WndClass {
@@ -70,14 +70,14 @@ namespace {
     };
 }
 
-namespace djinn::context {
+namespace djinn::graphics {
     Window::Window(
-        int      width, 
-        int      height, 
-        bool     windowed,
-        int      displayDevice,
-        Context* owner
-    ):
+        int       width,
+        int       height,
+        bool      windowed,
+        int       displayDevice,
+        Graphics* owner
+    ) :
         m_Owner(owner)
     {
         if (g_KeyMapping.empty())
@@ -96,7 +96,7 @@ namespace djinn::context {
         auto deviceMode = getCurrentDisplayMode(devices[displayDevice]);
 
         RECT rect;
-        DWORD style = 0; // https://docs.microsoft.com/en-us/windows/desktop/winmsg/window-styles
+        DWORD style   = 0; // https://docs.microsoft.com/en-us/windows/desktop/winmsg/window-styles
         DWORD exStyle = 0; // https://docs.microsoft.com/en-us/windows/desktop/winmsg/extended-window-styles
 
         if (windowed) {
@@ -106,10 +106,10 @@ namespace djinn::context {
             int device_width = deviceMode.dmPelsWidth;
             int device_height = deviceMode.dmPelsHeight;
 
-            rect.left = device_x + (device_width - width) / 2;
-            rect.top = device_y + (device_height - height) / 2;
-            rect.right = rect.left + width;
-            rect.bottom = rect.top + height;
+            rect.left   = device_x  + (device_width  - width)  / 2;
+            rect.top    = device_y  + (device_height - height) / 2;
+            rect.right  = rect.left + width;
+            rect.bottom = rect.top  + height;
 
             style =
                 WS_OVERLAPPEDWINDOW |
@@ -122,15 +122,15 @@ namespace djinn::context {
         }
         else {
             // fill up the entire device space
-            int device_x = deviceMode.dmPosition.x;
-            int device_y = deviceMode.dmPosition.y;
-            int device_width = deviceMode.dmPelsWidth;
+            int device_x      = deviceMode.dmPosition.x;
+            int device_y      = deviceMode.dmPosition.y;
+            int device_width  = deviceMode.dmPelsWidth;
             int device_height = deviceMode.dmPelsHeight;
 
-            rect.left = device_x;
-            rect.top = device_y;
-            rect.right = rect.left + device_width;
-            rect.bottom = rect.top + device_height;
+            rect.left   = device_x;
+            rect.top    = device_y;
+            rect.right  = rect.left + device_width;
+            rect.bottom = rect.top  + device_height;
 
             style =
                 WS_POPUP |
@@ -166,7 +166,7 @@ namespace djinn::context {
                 s_MainWindow = m_Handle;
 
             GetClientRect(m_Handle, &rect);
-            m_Width = rect.right - rect.left;
+            m_Width  = rect.right  - rect.left;
             m_Height = rect.bottom - rect.top;
 
             ShowWindow(m_Handle, SW_SHOW);
@@ -175,7 +175,7 @@ namespace djinn::context {
             auto inputSystem = m_Owner->getEngine()->get<Input>();
 
             m_Keyboard = std::make_unique<Keyboard>(inputSystem);
-            m_Mouse    = std::make_unique<Mouse>(inputSystem);
+            m_Mouse = std::make_unique<Mouse>(inputSystem);
         }
         else
             throw std::runtime_error("Failed to create window");
@@ -186,39 +186,7 @@ namespace djinn::context {
             DestroyWindow(m_Handle);
         }
     }
-
-    Window::Window(Window&& w):
-        m_Handle  (w.m_Handle),
-        m_Owner   (w.m_Owner),
-        m_Keyboard(std::move(w.m_Keyboard)),
-        m_Mouse   (std::move(w.m_Mouse))
-    {
-        SetWindowLongPtr(m_Handle, 0, (LONG_PTR)this);
-        w.m_Handle = nullptr;
-        w.m_Owner  = nullptr;
-    }
-
-    Window& Window::operator = (Window&& w) {
-        if (&w == this)
-            return *this;
-
-        if (m_Handle)
-            DestroyWindow(m_Handle);
-
-        m_Handle   = w.m_Handle;
-        m_Owner    = w.m_Owner;
-        m_Keyboard = std::move(w.m_Keyboard);
-        m_Mouse    = std::move(w.m_Mouse);
-
-        w.m_Handle = nullptr;
-        w.m_Owner  = nullptr;
-
-        if (m_Handle)
-            SetWindowLongPtr(m_Handle, 0, (LONG_PTR)this);
-
-        return *this;
-    }
-
+    
     HWND Window::getHandle() const {
         return m_Handle;
     }
@@ -227,7 +195,7 @@ namespace djinn::context {
         assert(g_KeyMapping.empty());
 
         using eKey = input::Keyboard::eKey;
-        // VK_ stuff can be found in <winuser.h>
+        // VK_ macros (virtual key codes) can be found in <winuser.h>
         // https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
 
         // letters * VK_A - VK_Z are the same as ASCII 'A' - 'Z' (0x41 - 0x5A)
@@ -295,19 +263,19 @@ namespace djinn::context {
         g_KeyMapping.insert({ VK_F12, eKey::f12 });
 
         // symbol keys (assuming US standard keyboard)
-        g_KeyMapping.insert({ VK_OEM_1,      eKey::semicolon     });
-        g_KeyMapping.insert({ VK_OEM_2,      eKey::questionmark  });
-        g_KeyMapping.insert({ VK_OEM_3,      eKey::tilde         });
-        g_KeyMapping.insert({ VK_OEM_4,      eKey::brace_open    });
+        g_KeyMapping.insert({ VK_OEM_1,      eKey::semicolon });
+        g_KeyMapping.insert({ VK_OEM_2,      eKey::questionmark });
+        g_KeyMapping.insert({ VK_OEM_3,      eKey::tilde });
+        g_KeyMapping.insert({ VK_OEM_4,      eKey::brace_open });
         g_KeyMapping.insert({ VK_OEM_5,      eKey::vertical_pipe });
-        g_KeyMapping.insert({ VK_OEM_6,      eKey::brace_close   });
-        g_KeyMapping.insert({ VK_OEM_7,      eKey::double_quote  });
-        g_KeyMapping.insert({ VK_OEM_8,      eKey::oem_8         });
+        g_KeyMapping.insert({ VK_OEM_6,      eKey::brace_close });
+        g_KeyMapping.insert({ VK_OEM_7,      eKey::double_quote });
+        g_KeyMapping.insert({ VK_OEM_8,      eKey::oem_8 });
 
-        g_KeyMapping.insert({ VK_OEM_PLUS,   eKey::plus   });
-        g_KeyMapping.insert({ VK_OEM_MINUS,  eKey::minus  });
-        g_KeyMapping.insert({ VK_OEM_COMMA,  eKey::comma  });
-        g_KeyMapping.insert({ VK_OEM_PERIOD, eKey::period });               
+        g_KeyMapping.insert({ VK_OEM_PLUS,   eKey::plus });
+        g_KeyMapping.insert({ VK_OEM_MINUS,  eKey::minus });
+        g_KeyMapping.insert({ VK_OEM_COMMA,  eKey::comma });
+        g_KeyMapping.insert({ VK_OEM_PERIOD, eKey::period });
 
         // navigational keys
         g_KeyMapping.insert({ VK_UP,    eKey::up });
@@ -324,14 +292,14 @@ namespace djinn::context {
         g_KeyMapping.insert({ VK_DELETE, eKey::del });
 
         // everything else
-        g_KeyMapping.insert({ VK_CONTROL, eKey::ctrl  });
-        g_KeyMapping.insert({ VK_MENU,    eKey::alt   });
+        g_KeyMapping.insert({ VK_CONTROL, eKey::ctrl });
+        g_KeyMapping.insert({ VK_MENU,    eKey::alt });
         g_KeyMapping.insert({ VK_SHIFT,   eKey::shift });
         g_KeyMapping.insert({ VK_SPACE,   eKey::space });
 
-        g_KeyMapping.insert({ VK_TAB,     eKey::tab       });
-        g_KeyMapping.insert({ VK_RETURN,  eKey::enter     });
-        g_KeyMapping.insert({ VK_ESCAPE,  eKey::escape    });
+        g_KeyMapping.insert({ VK_TAB,     eKey::tab });
+        g_KeyMapping.insert({ VK_RETURN,  eKey::enter });
+        g_KeyMapping.insert({ VK_ESCAPE,  eKey::escape });
         g_KeyMapping.insert({ VK_BACK,    eKey::backspace });
     }
 
@@ -351,89 +319,89 @@ namespace djinn::context {
             GetClientRect(m_Handle, &rect);
 
             // remap to [-1..1], flip the Y so that [-1, -1] is the bottom left of the window
-            float x = -1.0f + 2.0f * (screen_x - rect.left) / (rect.right  - rect.left);
-            float y =  1.0f - 2.0f * (screen_y - rect.top)  / (rect.bottom - rect.top);
+            float x = -1.0f + 2.0f * (screen_x - rect.left) / (rect.right - rect.left);
+            float y = 1.0f - 2.0f * (screen_y - rect.top) / (rect.bottom - rect.top);
 
             return std::make_pair(x, y);
         };
 
         switch (message) {
         case WM_DESTROY: {
-                if (isMainWindow())
-                    PostQuitMessage(0);
-                break;
-            }
+            if (isMainWindow())
+                PostQuitMessage(0);
+            break;
+        }
 
         case WM_CLOSE: {
-                m_Owner->close(this);
-                break;
-            }
+            m_Owner->close(this);
+            break;
+        }
 
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN: {
-                auto key = findKeyCode(wp);
-                m_Keyboard->setKeyState(key, true);
-                break;
-            }
+            auto key = findKeyCode(wp);
+            m_Keyboard->setKeyState(key, true);
+            break;
+        }
 
         case WM_PAINT: {
-                ValidateRect(m_Handle, nullptr); // this makes the entire client area redraw
-                break;
-            }
+            ValidateRect(m_Handle, nullptr); // this makes the entire client area redraw
+            break;
+        }
 
         case WM_KEYUP:
         case WM_SYSKEYUP: {
-                auto key = findKeyCode(wp);
-                m_Keyboard->setKeyState(key, false);
-                break;
-            }
+            auto key = findKeyCode(wp);
+            m_Keyboard->setKeyState(key, false);
+            break;
+        }
 
         case WM_MOUSEMOVE: {
-                auto [x, y] = getMouseCoords();
-                m_Mouse->setPosition(x, y);
+            auto[x, y] = getMouseCoords();
+            m_Mouse->setPosition(x, y);
 
-                if (!m_CursorTracked) {
-                    TRACKMOUSEEVENT tracker = {};
+            if (!m_CursorTracked) {
+                TRACKMOUSEEVENT tracker = {};
 
-                    tracker.cbSize    = sizeof(tracker);
-                    tracker.dwFlags   = TME_LEAVE;
-                    tracker.hwndTrack = m_Handle;
+                tracker.cbSize = sizeof(tracker);
+                tracker.dwFlags = TME_LEAVE;
+                tracker.hwndTrack = m_Handle;
 
-                    TrackMouseEvent(&tracker);
-                    m_CursorTracked = true;
+                TrackMouseEvent(&tracker);
+                m_CursorTracked = true;
 
-                    m_Mouse->doEnter(this);
-                }
-
-                break;
+                m_Mouse->doEnter(this);
             }
 
-        case WM_LBUTTONDOWN:   { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::left,   true); break; }
-        case WM_RBUTTONDOWN:   { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::right,  true); break; }
-        case WM_MBUTTONDOWN:   { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::middle, true); break; }
+            break;
+        }
 
-        case WM_LBUTTONUP:     { SetCapture(0);        m_Mouse->setButtonState(eMouseButton::left,   false); break; }
-        case WM_RBUTTONUP:     { SetCapture(0);        m_Mouse->setButtonState(eMouseButton::right,  false); break; }
-        case WM_MBUTTONUP:     { SetCapture(0);        m_Mouse->setButtonState(eMouseButton::middle, false); break; }
+        case WM_LBUTTONDOWN: { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::left, true); break; }
+        case WM_RBUTTONDOWN: { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::right, true); break; }
+        case WM_MBUTTONDOWN: { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::middle, true); break; }
+
+        case WM_LBUTTONUP: { SetCapture(0);        m_Mouse->setButtonState(eMouseButton::left, false); break; }
+        case WM_RBUTTONUP: { SetCapture(0);        m_Mouse->setButtonState(eMouseButton::right, false); break; }
+        case WM_MBUTTONUP: { SetCapture(0);        m_Mouse->setButtonState(eMouseButton::middle, false); break; }
 
         case WM_LBUTTONDBLCLK: { SetCapture(m_Handle); m_Mouse->doDoubleClick(eMouseButton::left);           break; }
         case WM_RBUTTONDBLCLK: { SetCapture(m_Handle); m_Mouse->doDoubleClick(eMouseButton::right);          break; }
         case WM_MBUTTONDBLCLK: { SetCapture(m_Handle); m_Mouse->doDoubleClick(eMouseButton::middle);         break; }
 
-        case WM_MOUSEWHEEL: { 
-            m_Mouse->doScroll(GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA); 
-            break; 
+        case WM_MOUSEWHEEL: {
+            m_Mouse->doScroll(GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA);
+            break;
         }
 
-        case WM_MOUSELEAVE: { 
-            m_CursorTracked = false; 
-            m_Mouse->doLeave(this); 
-            break; 
+        case WM_MOUSELEAVE: {
+            m_CursorTracked = false;
+            m_Mouse->doLeave(this);
+            break;
         }
 
         case WM_SIZE: {
             // NOTE this is a bit weaksauce
-            m_Width  = GET_X_LPARAM(lp);
+            m_Width = GET_X_LPARAM(lp);
             m_Height = GET_Y_LPARAM(lp);
             break;
         }
@@ -488,7 +456,7 @@ namespace djinn::context {
     DEVMODE Window::getCurrentDisplayMode(DISPLAY_DEVICE dd) {
         DEVMODE mode = {};
 
-        mode.dmSize        = sizeof(mode);
+        mode.dmSize = sizeof(mode);
         mode.dmDriverExtra = 0;
 
         if (!EnumDisplaySettings(dd.DeviceName, ENUM_CURRENT_SETTINGS, &mode))
