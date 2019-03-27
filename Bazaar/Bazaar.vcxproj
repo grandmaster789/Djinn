@@ -116,8 +116,9 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)/shaderc/build/install/lib;$(VULKAN_SDK)/lib;../ThirdParty/lib/$(Configuration)/$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent />
     <PostBuildEvent>
-      <Command>"$(SolutionDir)copyShaders.bat" $(PlatformTarget) $(Configuration) "$(SolutionDir)" "$(TargetDir)Shaders"</Command>
+      <Command>call "$(SolutionDir)copyAssets.bat" $(PlatformTarget) $(Configuration) "$(SolutionDir)" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -179,8 +180,9 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)/shaderc/build/install/lib;$(VULKAN_SDK)/lib;../ThirdParty/lib/$(Configuration)/$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent />
     <PostBuildEvent>
-      <Command>"$(SolutionDir)copyShaders.bat" $(PlatformTarget) $(Configuration) "$(SolutionDir)" "$(TargetDir)Shaders"</Command>
+      <Command>call "$(SolutionDir)copyAssets.bat" $(PlatformTarget) $(Configuration) "$(SolutionDir)" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

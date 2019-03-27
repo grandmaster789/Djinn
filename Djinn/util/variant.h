@@ -3,6 +3,10 @@
 #include <variant>
 
 namespace djinn::util {
+    /*
+        OverloadSet can be used to combine multiple lambda's in a single object;
+        see unit test for details (match too)
+    */
     template <typename...Lambdas>
     struct OverloadSet: 
         Lambdas... 
@@ -29,7 +33,7 @@ namespace djinn::util {
         (see unit tests for samples)
     */
     template <typename...Lambdas>
-    auto match(Lambdas&&... lambdas);
+    constexpr auto match(Lambdas&&... lambdas);
 }
 
 #include "variant.inl"

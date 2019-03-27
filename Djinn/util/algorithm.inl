@@ -181,7 +181,7 @@ namespace djinn::util {
 
     template <typename T, size_t N>
     constexpr uint32_t CountOf(T(&)[N]) {
-        assert(N < std::numeric_limits<uint32_t>::max());
+        static_assert(N < std::numeric_limits<uint32_t>::max());
         return static_cast<uint32_t>(N);
     }
 

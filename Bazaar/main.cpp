@@ -1,12 +1,13 @@
 #include "core/engine.h"
 #include "app/application.h"
-#include "context/context.h"
+#include "graphics/graphics.h"
 #include "input/input.h"
 #include "input/keyboard.h"
 #include "input/mouse.h"
 #include <iostream>
 
-#include "util/reflect.h"
+#include "core/mediator.h"
+#include "util/variant.h"
 
 using namespace djinn;
 
@@ -67,7 +68,7 @@ public:
 int main() {
 	auto& engine = Engine::instance();
 
-    engine.enable<Context>();
+    engine.enable<Graphics>();
     engine.enable<Input>();
 
     engine.setApplication<Bazaar>();
