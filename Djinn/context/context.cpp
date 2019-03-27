@@ -733,6 +733,15 @@ namespace djinn {
 		else
 			throw std::runtime_error("No composite alpha is supported");
 
+		auto supportedPresentModes = m_PhysicalDevice.getSurfacePresentModesKHR(*m_Surface);
+		auto presentMode = *util::prefer(
+			supportedPresentModes,
+			vk::PresentModeKHR::eMailbox,
+			vk::PresentModeKHR::eImmediate,
+			vk::PresentModeKHR::eFifoRelaxed,
+			vk::PresentModeKHR::eFifo
+		);
+
         info
             .setSurface              (*m_Surface)
             .setMinImageCount        (std::max(caps.minImageCount, 2u)) 
@@ -744,7 +753,7 @@ namespace djinn {
             .setImageSharingMode     (vk::SharingMode::eExclusive)
             .setQueueFamilyIndexCount(1)
             .setPQueueFamilyIndices  (&m_GraphicsFamilyIdx)
-            .setPresentMode          (vk::PresentModeKHR::eFifo)
+            .setPresentMode          (presentMode)
             .setOldSwapchain         (*m_Swapchain)
             .setCompositeAlpha       (compositeAlpha)
             .setPreTransform         (caps.currentTransform);
