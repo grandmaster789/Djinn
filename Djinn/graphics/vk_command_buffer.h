@@ -13,7 +13,7 @@ namespace djinn::graphics {
             VkCommandManager*      manager,
             vk::Device             device,
             vk::CommandBufferLevel level    = vk::CommandBufferLevel::ePrimary,
-            int                    threadID = 0
+            size_t                 threadID = 0
         );
 
         VkCommandBuffer             (const VkCommandBuffer& other) = default;
@@ -26,7 +26,7 @@ namespace djinn::graphics {
 
         vk::CommandBufferLevel getLevel() const;
 
-        int getThreadID() const;
+        size_t getThreadID() const;
 
     private:
         VkCommandManager*       m_Manager = nullptr;
@@ -34,6 +34,6 @@ namespace djinn::graphics {
         vk::UniqueCommandBuffer m_Buffer;
         vk::CommandBufferLevel  m_Level = vk::CommandBufferLevel::ePrimary;
 
-        int m_ThreadID = 0;
+        size_t m_ThreadID = 0;
     };
 }

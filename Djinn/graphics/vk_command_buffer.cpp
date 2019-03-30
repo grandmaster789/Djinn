@@ -6,7 +6,7 @@ namespace djinn::graphics {
         VkCommandManager*      manager,
         vk::Device             device,
         vk::CommandBufferLevel level,
-        int                    threadID
+        size_t                 threadID
     ):
         m_Manager (manager),
         m_Device  (device),
@@ -37,7 +37,7 @@ namespace djinn::graphics {
         return m_Level;
     }
 
-    int VkCommandBuffer::getThreadID() const {
+    size_t VkCommandBuffer::getThreadID() const {
         return m_ThreadID;
     }
 }

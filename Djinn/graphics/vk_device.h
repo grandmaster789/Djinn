@@ -1,8 +1,7 @@
 #pragma once
 
 #include "queueFamilyIndices.h"
-#include "swapchainDetails.h"
-#include "third_party.h"
+#include "swapchain.h"
 
 namespace djinn::graphics {
     /*
@@ -26,7 +25,6 @@ namespace djinn::graphics {
         vk::Queue& getTransferQueue();
 
         QueueFamilyIndices getQueueFamilyIndices() const;
-        SwapchainDetails getSwapchainDetails() const;
 
     private:
         vk::Instance   m_Instance;

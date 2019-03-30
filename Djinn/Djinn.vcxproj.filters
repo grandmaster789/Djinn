@@ -59,6 +59,18 @@
     <ClCompile Include="graphics\vk_command_manager.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="graphics\renderer.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\swapchain.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\queueFamilyIndices.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="util\dynamic_bitset.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\engine.inl">
@@ -203,9 +215,6 @@
     <ClInclude Include="graphics\queueFamilyIndices.h">
       <Filter>graphics</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\swapchainDetails.h">
-      <Filter>graphics</Filter>
-    </ClInclude>
     <ClInclude Include="graphics\vk_command_manager.h">
       <Filter>graphics</Filter>
     </ClInclude>
@@ -215,14 +224,23 @@
     <ClInclude Include="graphics\vk_unique_memory.h">
       <Filter>graphics</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\forwardRenderer.h">
-      <Filter>renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\renderer.h">
-      <Filter>renderer</Filter>
-    </ClInclude>
     <ClInclude Include="resources\resources.h">
       <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\renderer.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\swapchain.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\forwardRenderer.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="resources\allocator.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="util\dynamic_bitset.h">
+      <Filter>util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -4,10 +4,13 @@
 
 namespace djinn {
     /*
-        Provide methods for loading data from disk
+        Provide methods for loading data from disk; centralized
+		access for shared resource data
     */
     class Resources :
         public core::System 
     {
+	public:
+
     };
 }

@@ -5,6 +5,8 @@
 namespace djinn {
     namespace graphics {
         class Window;
+		class Renderer;
+
         class VkDebug;
         class VkDevice;
         class VkCommandManager;
@@ -23,6 +25,8 @@ namespace djinn {
     {
     public:
         using Window           = graphics::Window;
+		using Renderer         = graphics::Renderer;
+
         using VkDebug          = graphics::VkDebug;
         using VkDevice         = graphics::VkDevice;
         using VkCommandManager = graphics::VkCommandManager;

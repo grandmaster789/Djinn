@@ -82,45 +82,7 @@ namespace djinn::graphics {
 
         // find queue family indices
         {
-            auto props = m_PhysicalDevice.getQueueFamilyProperties();
-
-            int idx = 0;
-
-            for (const auto& family : props) {
-                auto presentSupport = m_PhysicalDevice.getSurfaceSupportKHR(idx, m_Surface);
-
-                if (family.queueCount > 0) {
-                    if (family.queueFlags & vk::QueueFlagBits::eGraphics)
-                        m_QueueFamilyIndices.m_GraphicsFamilyIdx = idx;
-
-                    // prefer a dedicated transfer queue
-                    if (!(family.queueFlags & vk::QueueFlagBits::eGraphics) &&
-                         (family.queueFlags & vk::QueueFlagBits::eTransfer)
-                    )
-                        m_QueueFamilyIndices.m_TransferFamilyIdx = idx;
-
-                    if (presentSupport)
-                        m_QueueFamilyIndices.m_PresentFamilyIdx = idx;
-                }
-
-                if (m_QueueFamilyIndices.isComplete())
-                    break;
-
-                ++idx;
-            }
-
-            // if no transfer queue was picked so far, try again without a preference for dedicated queues
-            idx = 0;
-            if (m_QueueFamilyIndices.m_TransferFamilyIdx == -1) {
-                for (const auto& family : props) {
-                    if (family.queueFlags & vk::QueueFlagBits::eTransfer) {
-                        m_QueueFamilyIndices.m_TransferFamilyIdx = idx;
-                        break;
-                    }
-
-                    ++idx;
-                }
-            }
+			m_QueueFamilyIndices = QueueFamilyIndices::findQueueFamilyIndices(m_PhysicalDevice, m_Surface);
 
             // verify that we have all required queue types available
             if (!m_QueueFamilyIndices.isComplete())
@@ -194,15 +156,5 @@ namespace djinn::graphics {
 
     QueueFamilyIndices VkDevice::getQueueFamilyIndices() const {
         return m_QueueFamilyIndices;
-    }
-    
-    SwapchainDetails VkDevice::getSwapchainDetails() const {
-        SwapchainDetails result;
-
-        result.m_Capabilities = m_PhysicalDevice.getSurfaceCapabilitiesKHR(m_Surface);
-        result.m_Formats      = m_PhysicalDevice.getSurfaceFormatsKHR(m_Surface);
-        result.m_PresentModes = m_PhysicalDevice.getSurfacePresentModesKHR(m_Surface);
-
-        return result;
     }
 }
