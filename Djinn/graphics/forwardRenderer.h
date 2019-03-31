@@ -15,5 +15,23 @@ namespace djinn::graphics {
 			int width,
 			int height
 		);
+
+        const vk::RenderPass& getColorPass() const;
+        const vk::RenderPass& getDepthPrepass() const;
+
+        vk::CommandBuffer getPrimaryCommandBuffer();
+
+        vk::DescriptorSet getDescriptorSet();
+
+    private:
+        struct RenderPasses {
+            vk::RenderPass m_ColorPass;
+            vk::RenderPass m_DepthPrepass;
+        } m_RenderPasses;
+
+        struct Semaphores {
+            vk::UniqueSemaphore m_DepthPrepassFinished;
+            vk::UniqueSemaphore m_ColorPassFinished;
+        };
 	};
 }

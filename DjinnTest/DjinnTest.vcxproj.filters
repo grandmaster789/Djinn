@@ -26,6 +26,9 @@
     <ClCompile Include="util\reflect.cpp">
       <Filter>util</Filter>
     </ClCompile>
+    <ClCompile Include="util\dynamic_bitset.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

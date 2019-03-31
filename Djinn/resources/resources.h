@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/system.h"
+#include "resource_allocator.h"
 
 namespace djinn {
     /*
@@ -11,6 +12,15 @@ namespace djinn {
         public core::System 
     {
 	public:
+        Resources();
+
+        void init() override;
+        void update() override;
+        void shutdown() override;
+
+        void unittest() override;
+
+    private:
 
     };
 }
