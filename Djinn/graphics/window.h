@@ -15,14 +15,14 @@
 */
 
 namespace djinn {
-    class Context;
+    class Graphics;
 
 	namespace input {
 		class Mouse;
 		class Keyboard;
 	}
 
-    namespace context {
+    namespace graphics {
         class Window {
         public:
             friend class Context;
@@ -31,11 +31,11 @@ namespace djinn {
 			using Keyboard = input::Keyboard;
 
             Window(
-                int      width,
-                int      height,
-                bool     windowed,
-                int      displayDevice,
-                Context* owner
+                int       width,
+                int       height,
+                bool      windowed,
+                int       displayDevice,
+				Graphics* owner
             );
             ~Window();
 
@@ -66,13 +66,13 @@ namespace djinn {
             uint32_t getHeight() const;
 
         private:
-            static std::vector<DISPLAY_DEVICE> enumerateDisplayDevices(); // https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_display_devicea
+            static std::vector<DISPLAY_DEVICE> enumerateDisplayDevices();                // https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_display_devicea
             static DEVMODE                     getCurrentDisplayMode(DISPLAY_DEVICE dd); // https://docs.microsoft.com/en-us/windows/desktop/api/Wingdi/ns-wingdi-_devicemodea
 
 			void initKeyMapping();
 
-            Context* m_Owner  = nullptr;
-            HWND     m_Handle = nullptr;
+            Graphics* m_Owner  = nullptr;
+            HWND      m_Handle = nullptr;
 
             int  m_Width  = 0;
             int  m_Height = 0;

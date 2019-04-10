@@ -18,18 +18,18 @@
 */
 
 namespace djinn {
-    class Context :
+    class Graphics :
         public core::System
     {
     public:        
-        using Window    = context::Window;
-        using Swapchain = context::Swapchain;
+        using Window    = graphics::Window;
+        using Swapchain = graphics::Swapchain;
 
         // [TODO] currently using pointer wrapping here to control lifetime -- should be replaced with UniqueResource or something
         using WindowPtr    = std::unique_ptr<Window>;        
         using SwapchainPtr = std::unique_ptr<Swapchain>; 
 
-        Context();
+		Graphics();
 
         void init()     override;
         void update()   override;

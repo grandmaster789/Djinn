@@ -3,7 +3,7 @@
 #include "third_party.h"
 #include <cstdint>
 
-namespace djinn::context {
+namespace djinn::graphics {
     class Swapchain {
     public:
         Swapchain(

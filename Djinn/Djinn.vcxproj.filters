@@ -41,14 +41,17 @@
     <ClCompile Include="input\mouse.cpp">
       <Filter>input</Filter>
     </ClCompile>
-    <ClCompile Include="context\window.cpp">
-      <Filter>context</Filter>
+    <ClCompile Include="util\dynamic_bitset.cpp">
+      <Filter>util</Filter>
     </ClCompile>
-    <ClCompile Include="context\context.cpp">
-      <Filter>context</Filter>
+    <ClCompile Include="graphics\graphics.cpp">
+      <Filter>graphics</Filter>
     </ClCompile>
-    <ClCompile Include="context\swapchain.cpp">
-      <Filter>context</Filter>
+    <ClCompile Include="graphics\swapchain.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\window.cpp">
+      <Filter>graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -99,20 +102,17 @@
     <Filter Include="app">
       <UniqueIdentifier>{1816d285-c2a0-44ae-ab2f-ea007e1cf6dc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="renderer">
-      <UniqueIdentifier>{7523aae1-64f9-4378-9ce4-f0358d7b662b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="input">
       <UniqueIdentifier>{fb76ab57-588f-42d1-b0a0-ca32bcdb7d93}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="context">
-      <UniqueIdentifier>{0c2a96fd-e93d-4f40-9723-0ce8fec61df4}</UniqueIdentifier>
     </Filter>
     <Filter Include="shaders">
       <UniqueIdentifier>{174db6fa-5135-4519-80b5-4c1356181d2f}</UniqueIdentifier>
     </Filter>
     <Filter Include="scene">
       <UniqueIdentifier>{ecea6bb2-553d-46df-ab94-0cc3695b74ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics">
+      <UniqueIdentifier>{08d89e26-08f2-4f42-bdb4-62d9e9572e21}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -172,17 +172,20 @@
     <ClInclude Include="input\mouse.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="context\window.h">
-      <Filter>context</Filter>
-    </ClInclude>
-    <ClInclude Include="context\context.h">
-      <Filter>context</Filter>
-    </ClInclude>
     <ClInclude Include="util\reflect.h">
       <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="context\swapchain.h">
-      <Filter>context</Filter>
+    <ClInclude Include="util\dynamic_bitset.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\graphics.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\swapchain.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\window.h">
+      <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

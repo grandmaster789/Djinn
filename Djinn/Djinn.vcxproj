@@ -148,19 +148,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="app\application.cpp" />
-    <ClCompile Include="context\context.cpp" />
-    <ClCompile Include="context\swapchain.cpp" />
-    <ClCompile Include="context\window.cpp" />
     <ClCompile Include="core\engine.cpp" />
     <ClCompile Include="core\logger.cpp" />
     <ClCompile Include="core\log_category.cpp" />
     <ClCompile Include="core\log_message.cpp" />
     <ClCompile Include="core\log_sink.cpp" />
     <ClCompile Include="core\system.cpp" />
+    <ClCompile Include="graphics\graphics.cpp" />
+    <ClCompile Include="graphics\swapchain.cpp" />
+    <ClCompile Include="graphics\window.cpp" />
     <ClCompile Include="input\mouse.cpp" />
     <ClCompile Include="third_party.cpp" />
     <ClCompile Include="input\input.cpp" />
     <ClCompile Include="input\keyboard.cpp" />
+    <ClCompile Include="util\dynamic_bitset.cpp" />
     <ClCompile Include="util\exception_windows.cpp" />
     <ClCompile Include="util\string_util.cpp" />
     <ClCompile Include="util\typemap.cpp" />
@@ -199,9 +200,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app\application.h" />
-    <ClInclude Include="context\context.h" />
-    <ClInclude Include="context\swapchain.h" />
-    <ClInclude Include="context\window.h" />
     <ClInclude Include="core\engine.h" />
     <ClInclude Include="core\logger.h" />
     <ClInclude Include="core\log_category.h" />
@@ -210,12 +208,16 @@
     <ClInclude Include="core\mediator.h" />
     <ClInclude Include="core\mediator_queue.h" />
     <ClInclude Include="core\system.h" />
+    <ClInclude Include="graphics\graphics.h" />
+    <ClInclude Include="graphics\swapchain.h" />
+    <ClInclude Include="graphics\window.h" />
     <ClInclude Include="input\mouse.h" />
     <ClInclude Include="third_party.h" />
     <ClInclude Include="input\input.h" />
     <ClInclude Include="input\keyboard.h" />
     <ClInclude Include="preprocessor.h" />
     <ClInclude Include="util\algorithm.h" />
+    <ClInclude Include="util\dynamic_bitset.h" />
     <ClInclude Include="util\exception_windows.h" />
     <ClInclude Include="util\flat_map.h" />
     <ClInclude Include="util\reflect.h" />

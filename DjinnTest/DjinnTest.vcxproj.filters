@@ -26,11 +26,11 @@
     <ClCompile Include="util\reflect.cpp">
       <Filter>util</Filter>
     </ClCompile>
+    <ClCompile Include="util\dynamic_bitset.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="core">
-      <UniqueIdentifier>{3c597ea8-bc12-4246-82b7-0bc271a6fdab}</UniqueIdentifier>
-    </Filter>
     <Filter Include="util">
       <UniqueIdentifier>{fda4f558-b013-4bbd-a785-b5068a8cefbe}</UniqueIdentifier>
     </Filter>

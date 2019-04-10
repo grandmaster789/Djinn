@@ -1,7 +1,7 @@
 #include "swapchain.h"
 #include "util/algorithm.h"
 
-namespace djinn::context {
+namespace djinn::graphics {
     Swapchain::Swapchain(
         vk::Device         device,
         vk::PhysicalDevice physical,

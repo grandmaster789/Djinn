@@ -1,4 +1,4 @@
-#include "context.h"
+#include "graphics.h"
 #include "core/engine.h"
 #include "util/flat_map.h"
 #include "util/algorithm.h"
@@ -153,8 +153,8 @@ VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
 }
 
 namespace djinn {
-    Context::Context() :
-        System("Display")
+    Graphics::Graphics() :
+        System("Graphics")
     {
         registerSetting("Width",         &m_MainWindowSettings.m_Width);
         registerSetting("Height",        &m_MainWindowSettings.m_Height);
@@ -162,7 +162,7 @@ namespace djinn {
         registerSetting("DisplayDevice", &m_MainWindowSettings.m_DisplayDevice);
     }
 
-    void Context::init() {
+    void Graphics::init() {
         System::init();
 
         initVulkan();
@@ -233,7 +233,7 @@ namespace djinn {
         );
     }
 
-    void Context::update() {
+    void Graphics::update() {
         if (m_Window) {
             MSG msg = {};
 
@@ -387,7 +387,7 @@ namespace djinn {
         }
     }
 
-    void Context::shutdown() {
+    void Graphics::shutdown() {
         System::shutdown();
 
         if (m_Device)
@@ -396,27 +396,27 @@ namespace djinn {
         m_Window.reset();
     }
 
-    void Context::unittest() {
+    void Graphics::unittest() {
     }
 
-    void Context::close(Window* w) {
+    void Graphics::close(Window* w) {
         if (w == m_Window.get())
             m_Window.reset();
     }
 
-    vk::Instance Context::getInstance() const {
+    vk::Instance Graphics::getInstance() const {
         return *m_Instance;
     }
 
-    vk::PhysicalDevice Context::getPhysicalDevice() const {
+    vk::PhysicalDevice Graphics::getPhysicalDevice() const {
         return m_PhysicalDevice;
     }
 
-    vk::Device Context::getDevice() const {
+    vk::Device Graphics::getDevice() const {
         return *m_Device;
     }
 
-    Context::Window* Context::createWindow(
+	Graphics::Window* Graphics::createWindow(
         int  width,
         int  height,
         bool windowed,
@@ -433,7 +433,7 @@ namespace djinn {
         return m_Window.get();
     }
 
-    void Context::initVulkan() {
+    void Graphics::initVulkan() {
         auto availableInstanceVersion        = vk::enumerateInstanceVersion();
         auto availableInstanceLayerProperies = vk::enumerateInstanceLayerProperties();
         auto availableInstanceExtensions     = vk::enumerateInstanceExtensionProperties();
@@ -512,7 +512,7 @@ namespace djinn {
 #endif
     }
 
-    void Context::selectPhysicalDevice() {
+    void Graphics::selectPhysicalDevice() {
         gLogDebug << "Available physical devices: ";
         auto available_physical_devices = m_Instance->enumeratePhysicalDevices();
 
@@ -622,7 +622,7 @@ namespace djinn {
         m_GraphicsFamilyIdx = getFamilyIdx(m_PhysicalDevice, vk::QueueFlagBits::eGraphics);
     }
 
-    void Context::createDevice() {
+    void Graphics::createDevice() {
         float queuePriorities = 1.0f;
 
         vk::DeviceQueueCreateInfo queueInfo;
@@ -647,7 +647,7 @@ namespace djinn {
         m_Device = m_PhysicalDevice.createDeviceUnique(devInfo);
     }
 
-    void Context::createSurface() {
+    void Graphics::createSurface() {
 #if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS
         vk::Win32SurfaceCreateInfoKHR info;
 
@@ -666,7 +666,7 @@ namespace djinn {
     
     
 
-    void Context::createCommandPool() {
+    void Graphics::createCommandPool() {
         {
             vk::CommandPoolCreateInfo info;
 
@@ -690,7 +690,7 @@ namespace djinn {
         }
     }
 
-    vk::UniqueRenderPass Context::createSimpleRenderpass(vk::Format imageFormat) const {
+    vk::UniqueRenderPass Graphics::createSimpleRenderpass(vk::Format imageFormat) const {
         // for now, just use 1 subpass in a renderpass
         vk::AttachmentDescription attachment;
             
@@ -727,7 +727,7 @@ namespace djinn {
         return m_Device->createRenderPassUnique(rp_info);
     }
 
-    vk::UniqueFramebuffer Context::createFramebuffer(
+    vk::UniqueFramebuffer Graphics::createFramebuffer(
         vk::RenderPass pass,
         vk::ImageView colorView
     ) const {
@@ -748,7 +748,7 @@ namespace djinn {
         return m_Device->createFramebufferUnique(fb_info);
     }
 
-    vk::UniqueShaderModule Context::loadShader(const std::filesystem::path& p) const {
+    vk::UniqueShaderModule Graphics::loadShader(const std::filesystem::path& p) const {
         std::ifstream in(p.string().c_str(), std::ios::binary);
         if (!in.good())
             throw std::runtime_error("Failed to open file");
@@ -771,7 +771,7 @@ namespace djinn {
         return m_Device->createShaderModuleUnique(info);
     }
 
-    vk::UniquePipeline Context::createSimpleGraphicsPipeline(
+    vk::UniquePipeline Graphics::createSimpleGraphicsPipeline(
         vk::ShaderModule   vertexShader,
         vk::ShaderModule   fragmentShader,
         vk::PipelineLayout layout

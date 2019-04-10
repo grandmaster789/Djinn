@@ -1,5 +1,5 @@
 #include "window.h"
-#include "context.h"
+#include "graphics.h"
 #include "input/input.h"
 #include "input/keyboard.h"
 #include "input/mouse.h"
@@ -28,7 +28,7 @@ namespace {
         if (ptr == NULL)
             return DefWindowProc(window, msg, wp, lp);
         else
-            return ((djinn::context::Window*)ptr)->winProc(window, msg, wp, lp);
+            return ((djinn::graphics::Window*)ptr)->winProc(window, msg, wp, lp);
     }
 
     struct WndClass {
@@ -70,13 +70,13 @@ namespace {
     };
 }
 
-namespace djinn::context {
+namespace djinn::graphics {
     Window::Window(
         int      width, 
         int      height, 
         bool     windowed,
         int      displayDevice,
-        Context* owner
+        Graphics* owner
     ):
         m_Owner(owner)
     {
