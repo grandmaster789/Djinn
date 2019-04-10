@@ -91,9 +91,6 @@
     <None Include="util\reflect.inl">
       <Filter>util</Filter>
     </None>
-    <None Include="resources\resource_allocator.inl">
-      <Filter>resources</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

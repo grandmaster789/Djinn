@@ -158,8 +158,6 @@
     <ClCompile Include="graphics\swapchain.cpp" />
     <ClCompile Include="graphics\window.cpp" />
     <ClCompile Include="input\mouse.cpp" />
-    <ClCompile Include="resources\resources.cpp" />
-    <ClCompile Include="resources\resource_allocator.cpp" />
     <ClCompile Include="third_party.cpp" />
     <ClCompile Include="input\input.cpp" />
     <ClCompile Include="input\keyboard.cpp" />
@@ -193,7 +191,6 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)assets\shaders\%(Filename).spv"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
     </CustomBuild>
-    <None Include="resources\resource_allocator.inl" />
     <None Include="util\algorithm.inl" />
     <None Include="util\flat_map.inl" />
     <None Include="util\reflect.inl" />
@@ -215,8 +212,6 @@
     <ClInclude Include="graphics\swapchain.h" />
     <ClInclude Include="graphics\window.h" />
     <ClInclude Include="input\mouse.h" />
-    <ClInclude Include="resources\resource_allocator.h" />
-    <ClInclude Include="resources\resources.h" />
     <ClInclude Include="third_party.h" />
     <ClInclude Include="input\input.h" />
     <ClInclude Include="input\keyboard.h" />
