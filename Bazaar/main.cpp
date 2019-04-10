@@ -6,6 +6,7 @@
 #include "input/mouse.h"
 #include <iostream>
 
+#include "core/mediator.h"
 #include "util/variant.h"
 
 using namespace djinn;
