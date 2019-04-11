@@ -1,0 +1,3 @@
+[submodule "Thirdparty/submodules/meshoptimizer"]
+	path = Thirdparty/submodules/meshoptimizer
+	url = https://github.com/zeux/meshoptimizer.git
