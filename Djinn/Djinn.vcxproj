@@ -86,7 +86,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.;..;..\ThirdParty\include;$(VULKAN_SDK)\include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;..\ThirdParty\submodules;..\ThirdParty\include;$(VULKAN_SDK)\include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -126,7 +126,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.;..;..\ThirdParty\include;$(VULKAN_SDK)\include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;..\ThirdParty\submodules;..\ThirdParty\include;$(VULKAN_SDK)\include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -154,6 +154,7 @@
     <ClCompile Include="core\log_message.cpp" />
     <ClCompile Include="core\log_sink.cpp" />
     <ClCompile Include="core\system.cpp" />
+    <ClCompile Include="graphics\extensions.cpp" />
     <ClCompile Include="graphics\graphics.cpp" />
     <ClCompile Include="graphics\swapchain.cpp" />
     <ClCompile Include="graphics\window.cpp" />
@@ -208,6 +209,7 @@
     <ClInclude Include="core\mediator.h" />
     <ClInclude Include="core\mediator_queue.h" />
     <ClInclude Include="core\system.h" />
+    <ClInclude Include="graphics\extensions.h" />
     <ClInclude Include="graphics\graphics.h" />
     <ClInclude Include="graphics\swapchain.h" />
     <ClInclude Include="graphics\window.h" />

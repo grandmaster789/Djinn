@@ -11,8 +11,6 @@ namespace djinn::graphics {
             vk::PhysicalDevice physical,
             vk::SurfaceKHR     surface,
             vk::Format         imageFormat,
-            uint32_t           width,
-            uint32_t           height,
             uint32_t           graphicsFamilyIdx,
             vk::RenderPass     renderpass,
             Swapchain*         oldSwapchain = nullptr

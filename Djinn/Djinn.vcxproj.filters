@@ -53,6 +53,9 @@
     <ClCompile Include="graphics\window.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="graphics\extensions.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\engine.inl">
@@ -113,6 +116,9 @@
     </Filter>
     <Filter Include="graphics">
       <UniqueIdentifier>{08d89e26-08f2-4f42-bdb4-62d9e9572e21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="submodules">
+      <UniqueIdentifier>{580a071e-0958-45a7-9474-07d5ffa497fd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -185,6 +191,9 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="graphics\window.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\extensions.h">
       <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>

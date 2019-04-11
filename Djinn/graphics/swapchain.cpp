@@ -7,14 +7,11 @@ namespace djinn::graphics {
         vk::PhysicalDevice physical,
         vk::SurfaceKHR     surface,
         vk::Format         imageFormat,
-        uint32_t           width,
-        uint32_t           height,
         uint32_t           graphicsFamilyIdx,
         vk::RenderPass     renderpass,
         Swapchain*         oldSwapchain
     ):
-        m_ImageFormat(imageFormat),
-        m_Extent     (width, height)
+        m_ImageFormat(imageFormat)
     {
         m_ImageAvailableSemaphore   = device.createSemaphoreUnique({});
         m_PresentCompletedSemaphore = device.createSemaphoreUnique({});
@@ -23,11 +20,7 @@ namespace djinn::graphics {
 
         auto caps = physical.getSurfaceCapabilitiesKHR(surface);
 
-        vk::Extent2D extent;
-
-        extent
-            .setWidth (width)
-            .setHeight(height);
+		m_Extent = caps.currentExtent;
 
         vk::CompositeAlphaFlagBitsKHR compositeAlpha;
              if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque)         compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
@@ -50,7 +43,7 @@ namespace djinn::graphics {
             .setMinImageCount        (std::max(caps.minImageCount, 2u))
             .setImageFormat          (imageFormat)
             .setImageColorSpace      (vk::ColorSpaceKHR::eSrgbNonlinear)
-            .setImageExtent          (extent)
+            .setImageExtent          (m_Extent)
             .setImageArrayLayers     (1)
             .setImageUsage           (vk::ImageUsageFlagBits::eColorAttachment)
             .setImageSharingMode     (vk::SharingMode::eExclusive)
@@ -91,8 +84,8 @@ namespace djinn::graphics {
             vk::FramebufferCreateInfo fb_info;
 
             fb_info
-                .setWidth          (width)
-                .setHeight         (height)
+                .setWidth          (m_Extent.width)
+                .setHeight         (m_Extent.height)
                 .setLayers         (1)
                 .setAttachmentCount(1)
                 .setPAttachments   (&*view)

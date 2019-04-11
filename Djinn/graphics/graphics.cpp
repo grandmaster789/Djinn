@@ -1,4 +1,5 @@
 #include "graphics.h"
+#include "extensions.h"
 #include "core/engine.h"
 #include "util/flat_map.h"
 #include "util/algorithm.h"
@@ -7,9 +8,6 @@
 
 // ------ Vulkan debug reports ------
 namespace {
-    PFN_vkCreateDebugReportCallbackEXT  pfn_vkCreateDebugReportCallbackEXT = nullptr;
-    PFN_vkDestroyDebugReportCallbackEXT pfn_vkDestroyDebugReportCallbackEXT = nullptr;
-
     using string = std::string;
     using ExtensionList = std::vector<vk::ExtensionProperties>;
     using LayerList = std::vector<vk::LayerProperties>;
@@ -126,32 +124,6 @@ namespace {
     }
 }
 
-VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugReportCallbackEXT(
-          VkInstance                          instance,
-    const VkDebugReportCallbackCreateInfoEXT* pCreateInfo,
-    const VkAllocationCallbacks*              pAllocator,
-          VkDebugReportCallbackEXT*           pCallback
-) {
-    if (pfn_vkCreateDebugReportCallbackEXT)
-        return pfn_vkCreateDebugReportCallbackEXT(instance, pCreateInfo, pAllocator, pCallback);
-    else
-        // [NOTE] this is expected to be nothrow + noexcept
-        //        so use an error code instead
-        return VkResult::VK_ERROR_EXTENSION_NOT_PRESENT;
-}
-
-VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
-          VkInstance               instance,
-          VkDebugReportCallbackEXT callback,
-    const VkAllocationCallbacks*   pAllocator
-) {
-    if (pfn_vkDestroyDebugReportCallbackEXT)
-        pfn_vkDestroyDebugReportCallbackEXT(instance, callback, pAllocator);
-
-    // [NOTE] this is expected to be nothrow + noexcept    
-    //        so silent fail because of the void return type
-}
-
 namespace djinn {
     Graphics::Graphics() :
         System("Graphics")
@@ -189,8 +161,6 @@ namespace djinn {
              m_PhysicalDevice,
             *m_Surface,
              swapchainFormat,
-             m_Window->getWidth(),
-             m_Window->getHeight(),
              m_GraphicsFamilyIdx,
             *m_Renderpass
         );
@@ -262,8 +232,6 @@ namespace djinn {
                           m_PhysicalDevice,
                          *m_Surface,
                           m_Swapchain->getImageFormat(),
-                          m_Window->getWidth(),
-                          m_Window->getHeight(),
                           m_GraphicsFamilyIdx,
                          *m_Renderpass,
                         &*m_Swapchain
@@ -487,14 +455,13 @@ namespace djinn {
                 .setPpEnabledExtensionNames(          requiredExtensions.data());
 
             m_Instance = vk::createInstanceUnique(info);
+
+			graphics::loadInstanceExtensions(*m_Instance);
         }
 
 #ifdef DJINN_DEBUG
         {
             // install vulkan debug callback
-            pfn_vkCreateDebugReportCallbackEXT  = (PFN_vkCreateDebugReportCallbackEXT) m_Instance->getProcAddr("vkCreateDebugReportCallbackEXT");
-            pfn_vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)m_Instance->getProcAddr("vkDestroyDebugReportCallbackEXT");
-
             vk::DebugReportCallbackCreateInfoEXT info = {};
 
             info
