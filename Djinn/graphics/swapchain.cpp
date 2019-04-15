@@ -7,6 +7,7 @@ namespace djinn::graphics {
         vk::PhysicalDevice physical,
         vk::SurfaceKHR     surface,
         vk::Format         imageFormat,
+        vk::ImageView      depthView,
         uint32_t           graphicsFamilyIdx,
         vk::RenderPass     renderpass,
         Swapchain*         oldSwapchain
@@ -80,15 +81,20 @@ namespace djinn::graphics {
         }
 
         // framebuffers for all of the swapchain images
-        for (const auto& view : m_ImageViews) {
+        for (const auto& colorView : m_ImageViews) {
             vk::FramebufferCreateInfo fb_info;
+
+            vk::ImageView colorDepth[] = {
+                *colorView,
+                 depthView
+            };
 
             fb_info
                 .setWidth          (m_Extent.width)
                 .setHeight         (m_Extent.height)
                 .setLayers         (1)
-                .setAttachmentCount(1)
-                .setPAttachments   (&*view)
+                .setAttachmentCount(2)
+                .setPAttachments   (colorDepth)
                 .setRenderPass     (renderpass);
 
             m_Framebuffers.push_back(device.createFramebufferUnique(fb_info));

@@ -57,11 +57,12 @@ namespace djinn {
         void createSurface();
         void createCommandPool();
 
-        vk::UniqueRenderPass createSimpleRenderpass(vk::Format imageFormat) const;
-        vk::UniqueFramebuffer createFramebuffer(
-            vk::RenderPass pass,
-            vk::ImageView  colorView
+        vk::UniqueRenderPass createSimpleRenderpass(
+            vk::Format imageFormat, 
+            vk::Format depthFormat
         ) const;
+
+        void createDepthImage(vk::Format depthFormat);
 
         // load a shader binary; which would typically have been compiled with GLSLvalidator to SPIRV
         vk::UniqueShaderModule loadShader(const std::filesystem::path& p) const;
@@ -99,7 +100,10 @@ namespace djinn {
         vk::PhysicalDevice                 m_PhysicalDevice;
         vk::PhysicalDeviceMemoryProperties m_PhysicalDeviceMemoryProperties;
 
-        SwapchainPtr m_Swapchain;
+        SwapchainPtr           m_Swapchain;
+        vk::UniqueImage        m_DepthImage;
+        vk::UniqueDeviceMemory m_DepthBuffer;
+        vk::UniqueImageView    m_DepthView;
 
         vk::UniqueRenderPass    m_Renderpass;
         vk::UniqueCommandPool   m_CommandPool;
