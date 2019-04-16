@@ -635,7 +635,7 @@ namespace djinn {
     }
 
     void Graphics::createDevice() {
-        float queuePriorities = 1.0f;
+        float queuePriorities = 1.0f; // range is [0..1], with 1.0 being the highest priority
 
         vk::DeviceQueueCreateInfo queueInfo;
 
