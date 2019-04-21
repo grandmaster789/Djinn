@@ -89,7 +89,7 @@ namespace {
         return result;
     }
 
-    vk::Format selectSwapchainFormat(vk::PhysicalDevice physical, vk::SurfaceKHR surface) {
+    vk::Format selectColorFormat(vk::PhysicalDevice physical, vk::SurfaceKHR surface) {
         auto formats = physical.getSurfaceFormatsKHR(surface);
 
         if (formats.empty())
@@ -139,24 +139,7 @@ namespace {
         return vk::Format::eD24UnormS8Uint;
     }
 
-    uint32_t selectMemoryTypeIndex(
-        vk::PhysicalDevice      gpu,
-        uint32_t                typeBits,
-        vk::MemoryPropertyFlags properties
-    ) {
-        auto props = gpu.getMemoryProperties();
-
-        for (uint32_t i = 0; i < props.memoryTypeCount; ++i) {
-            if ((typeBits & 1) == 1) {
-                if ((props.memoryTypes[i].propertyFlags & properties) == properties)
-                    return i;
-            }
-
-            typeBits >>= 1; // NOTE not entirely sure about this
-        }
-
-        return 0;
-    }
+    
 }
 
 namespace djinn {
@@ -189,19 +172,17 @@ namespace djinn {
         if (!m_PhysicalDevice.getWin32PresentationSupportKHR(m_GraphicsFamilyIdx))
             throw std::runtime_error("Physical device does not support presenting to the surface");
 
-        auto swapchainFormat = selectSwapchainFormat(m_PhysicalDevice, *m_Surface);
-        auto depthFormat     = selectDepthFormat(m_PhysicalDevice);
+        auto colorFormat = selectColorFormat(m_PhysicalDevice, *m_Surface);
+        auto depthFormat = selectDepthFormat(m_PhysicalDevice);
 
-        m_Renderpass = createSimpleRenderpass(swapchainFormat, depthFormat); // depends on the swapchain format                
+        m_Renderpass = createSimpleRenderpass(colorFormat, depthFormat); // depends on the swapchain format                
         
-        createDepthImage(depthFormat);
-
         m_Swapchain = std::make_unique<Swapchain>(
             *m_Device,
              m_PhysicalDevice,
             *m_Surface,
-             swapchainFormat,
-            *m_DepthView,
+             colorFormat,
+             depthFormat,
              m_GraphicsFamilyIdx,
             *m_Renderpass
         );
@@ -268,14 +249,12 @@ namespace djinn {
             // present an image
             if (m_Swapchain) {
                 if (m_Swapchain->getExtent() != vk::Extent2D(m_Window->getWidth(), m_Window->getHeight())) {
-                    createDepthImage(m_DepthFormat); // recreate depth buffer
-
                     m_Swapchain = std::make_unique<Swapchain>(
                          *m_Device,
                           m_PhysicalDevice,
                          *m_Surface,
                           m_Swapchain->getImageFormat(),
-                         *m_DepthView,
+                          m_Swapchain->getDepthFormat(),
                           m_GraphicsFamilyIdx,
                          *m_Renderpass,
                         &*m_Swapchain
@@ -757,103 +736,15 @@ namespace djinn {
             .setPColorAttachments      (&colorRefs)
             .setPDepthStencilAttachment(&depthRefs);
 
-        // list which subpasses can access which other subpasses
-        // NOTE - not sure about this, should check what this does exactly
-        std::vector<vk::SubpassDependency> dependencies; 
-
-        vk::SubpassDependency bottom, top;
-        
-        bottom
-            .setSrcSubpass     (~0U)
-            .setDstSubpass     (0)
-            .setSrcStageMask   (vk::PipelineStageFlagBits::eBottomOfPipe)
-            .setDstStageMask   (vk::PipelineStageFlagBits::eColorAttachmentOutput)
-            .setSrcAccessMask  (vk::AccessFlagBits::eMemoryRead)
-            .setDstAccessMask  (vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite)
-            .setDependencyFlags(vk::DependencyFlagBits::eByRegion);
-
-        top
-            .setSrcSubpass     (0)
-            .setDstSubpass     (~0U)
-            .setSrcStageMask   (vk::PipelineStageFlagBits::eColorAttachmentOutput)
-            .setDstStageMask   (vk::PipelineStageFlagBits::eBottomOfPipe)
-            .setSrcAccessMask  (vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite)
-            .setDstAccessMask  (vk::AccessFlagBits::eMemoryRead)
-            .setDependencyFlags(vk::DependencyFlagBits::eByRegion);
-
-        dependencies.push_back(std::move(bottom));
-        dependencies.push_back(std::move(top));
-
         vk::RenderPassCreateInfo rp_info;
 
         rp_info
             .setAttachmentCount(static_cast<uint32_t>(attachments.size()))
             .setPAttachments   (attachments.data())
             .setSubpassCount   (1)
-            .setPSubpasses     (&subpassDesc)
-            .setDependencyCount(static_cast<uint32_t>(dependencies.size()))
-            .setPDependencies  (dependencies.data());
+            .setPSubpasses     (&subpassDesc);
         
         return m_Device->createRenderPassUnique(rp_info);
-    }
-
-    void Graphics::createDepthImage(vk::Format depthFormat) {
-        vk::ImageCreateInfo imageInfo;
-
-        imageInfo
-            .setImageType            (vk::ImageType::e2D)
-            .setFormat               (depthFormat)
-            .setExtent               ({m_Window->getWidth(), m_Window->getHeight(), 1 }) // TODO this suggests it is sensitive to resizing...
-            .setArrayLayers          (1)
-            .setMipLevels            (1)
-            .setSamples              (vk::SampleCountFlagBits::e1)
-            .setTiling               (vk::ImageTiling::eOptimal)
-            .setUsage                (vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eTransferSrc)
-            .setSharingMode          (vk::SharingMode::eExclusive)
-            .setQueueFamilyIndexCount(1)
-            .setPQueueFamilyIndices  (&m_GraphicsFamilyIdx)
-            .setInitialLayout        (vk::ImageLayout::eUndefined);
-
-        m_DepthImage = m_Device->createImageUnique(imageInfo);
-
-        auto req = m_Device->getImageMemoryRequirements(*m_DepthImage);
-
-        vk::MemoryAllocateInfo allocInfo;
-
-        allocInfo
-            .setAllocationSize(req.size)
-            .setMemoryTypeIndex(
-                selectMemoryTypeIndex(
-                    m_PhysicalDevice, 
-                    req.memoryTypeBits, 
-                    vk::MemoryPropertyFlagBits::eDeviceLocal
-                )
-            );
-
-        m_DepthBuffer = m_Device->allocateMemoryUnique(allocInfo);
-        m_Device->bindImageMemory(
-            *m_DepthImage, 
-            *m_DepthBuffer, 
-            0 // offset
-        );
-
-        vk::ImageViewCreateInfo viewInfo;
-        vk::ImageSubresourceRange range;
-
-        range
-            .setAspectMask(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil)
-            .setBaseArrayLayer(0)
-            .setLayerCount    (1)
-            .setBaseMipLevel  (0)
-            .setLevelCount    (1);
-
-        viewInfo
-            .setImage           (*m_DepthImage)
-            .setViewType        (vk::ImageViewType::e2D)
-            .setFormat          (depthFormat)
-            .setSubresourceRange(range);
-
-        m_DepthView = m_Device->createImageViewUnique(viewInfo);
     }
 
     vk::UniqueShaderModule Graphics::loadShader(const std::filesystem::path& p) const {

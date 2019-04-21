@@ -1,18 +1,40 @@
 #include "swapchain.h"
 #include "util/algorithm.h"
 
+namespace {
+    uint32_t selectMemoryTypeIndex(
+        vk::PhysicalDevice      gpu,
+        uint32_t                typeBits,
+        vk::MemoryPropertyFlags properties
+    ) {
+        auto props = gpu.getMemoryProperties();
+
+        for (uint32_t i = 0; i < props.memoryTypeCount; ++i) {
+            if ((typeBits & 1) == 1) {
+                if ((props.memoryTypes[i].propertyFlags & properties) == properties)
+                    return i;
+            }
+
+            typeBits >>= 1; // NOTE not entirely sure about this
+        }
+
+        return 0;
+    }
+}
+
 namespace djinn::graphics {
     Swapchain::Swapchain(
         vk::Device         device,
         vk::PhysicalDevice physical,
         vk::SurfaceKHR     surface,
         vk::Format         imageFormat,
-        vk::ImageView      depthView,
+        vk::Format         depthFormat,
         uint32_t           graphicsFamilyIdx,
         vk::RenderPass     renderpass,
         Swapchain*         oldSwapchain
     ):
-        m_ImageFormat(imageFormat)
+        m_ImageFormat(imageFormat),
+        m_DepthFormat(depthFormat)
     {
         m_ImageAvailableSemaphore   = device.createSemaphoreUnique({});
         m_PresentCompletedSemaphore = device.createSemaphoreUnique({});
@@ -56,11 +78,11 @@ namespace djinn::graphics {
             .setCompositeAlpha       (compositeAlpha)
             .setPreTransform         (caps.currentTransform);
 
-        m_Handle = device.createSwapchainKHRUnique(info);
-        m_Images = device.getSwapchainImagesKHR(*m_Handle);
+        m_Handle      = device.createSwapchainKHRUnique(info);
+        m_ColorImages = device.getSwapchainImagesKHR(*m_Handle);
 
         // views for all of the swapchain images
-        for (const auto& img : m_Images) {
+        for (const auto& img : m_ColorImages) {
             vk::ImageSubresourceRange range;
 
             range
@@ -78,23 +100,30 @@ namespace djinn::graphics {
                 .setFormat          (imageFormat)
                 .setSubresourceRange(range);
 
-            m_ImageViews.push_back(device.createImageViewUnique(view_info));
+            m_ColorViews.push_back(device.createImageViewUnique(view_info));
         }
 
+        // create a depth buffer
+        createDepthBuffer(
+            device,
+            physical,
+            graphicsFamilyIdx
+        );
+
         // framebuffers for all of the swapchain images
-        for (const auto& colorView : m_ImageViews) {
+        for (const auto& colorView : m_ColorViews) {
             vk::FramebufferCreateInfo fb_info;
 
             const vk::ImageView colorDepth[] = {
                 *colorView,
-                 depthView
+                *m_DepthView
             };
 
             fb_info
                 .setWidth          (m_Extent.width)
                 .setHeight         (m_Extent.height)
                 .setLayers         (1)
-                .setAttachmentCount(2)
+                .setAttachmentCount(2) // color and depth
                 .setPAttachments   (colorDepth)
                 .setRenderPass     (renderpass);
 
@@ -112,6 +141,11 @@ namespace djinn::graphics {
 
     vk::Format Swapchain::getImageFormat() const noexcept {
         return m_ImageFormat;
+    }
+
+    vk::Format Swapchain::getDepthFormat() const noexcept
+    {
+        return m_DepthFormat;
     }
 
     vk::Extent2D Swapchain::getExtent() const noexcept {
@@ -148,7 +182,7 @@ namespace djinn::graphics {
             .setLayerCount(VK_REMAINING_ARRAY_LAYERS);
 
         result
-            .setImage              (m_Images[imageIndex])
+            .setImage              (m_ColorImages[imageIndex])
             .setSubresourceRange   (range)
             .setSrcAccessMask      (srcAccess)
             .setOldLayout          (srcLayout)
@@ -196,5 +230,68 @@ namespace djinn::graphics {
         }
 
         device.waitIdle();
+    }
+
+    void Swapchain::createDepthBuffer(
+        vk::Device         device,
+        vk::PhysicalDevice gpu,
+        uint32_t           graphicsFamilyIdx
+    ) {
+        vk::ImageCreateInfo imageInfo;
+
+        imageInfo
+            .setImageType            (vk::ImageType::e2D)
+            .setFormat               (m_DepthFormat)
+            .setExtent               ({ m_Extent.width, m_Extent.height, 1 })
+            .setArrayLayers          (1)
+            .setMipLevels            (1)
+            .setSamples              (vk::SampleCountFlagBits::e1)
+            .setTiling               (vk::ImageTiling::eOptimal)
+            .setUsage                (vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eTransferSrc)
+            .setSharingMode          (vk::SharingMode::eExclusive)
+            .setQueueFamilyIndexCount(1)
+            .setPQueueFamilyIndices  (&graphicsFamilyIdx)
+            .setInitialLayout        (vk::ImageLayout::eUndefined);
+
+        m_DepthImage = device.createImageUnique(imageInfo);
+
+        auto req = device.getImageMemoryRequirements(*m_DepthImage);
+
+        vk::MemoryAllocateInfo allocInfo;
+
+        allocInfo
+            .setAllocationSize(req.size)
+            .setMemoryTypeIndex(
+                selectMemoryTypeIndex(
+                    gpu,
+                    req.memoryTypeBits,
+                    vk::MemoryPropertyFlagBits::eDeviceLocal
+                )
+            );
+
+        m_DepthBuffer = device.allocateMemoryUnique(allocInfo);
+        device.bindImageMemory(
+            *m_DepthImage,
+            *m_DepthBuffer,
+            0 // offset
+        );
+
+        vk::ImageViewCreateInfo viewInfo;
+        vk::ImageSubresourceRange range;
+
+        range
+            .setAspectMask    (vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil)
+            .setBaseArrayLayer(0)
+            .setLayerCount    (1)
+            .setBaseMipLevel  (0)
+            .setLevelCount    (1);
+
+        viewInfo
+            .setImage           (*m_DepthImage)
+            .setViewType        (vk::ImageViewType::e2D)
+            .setFormat          (m_DepthFormat)
+            .setSubresourceRange(range);
+
+        m_DepthView = device.createImageViewUnique(viewInfo);
     }
 }
