@@ -43,7 +43,7 @@ namespace {
 namespace DjinnTest {
 	TEST_CLASS(Reflect) {
 	public:
-		TEST_METHOD(is_brace_constructible) {
+		TEST_METHOD(is_brace_constructible) noexcept {
 			// Foo has no constructor generated, but still should be aggregate
 			// initializable with 0-3 arguments
 			static_assert( detail::is_brace_constructible<Foo, 0>());
@@ -81,12 +81,12 @@ namespace DjinnTest {
 			static_assert(!detail::is_brace_constructible<Niz, 2>());
 		}
 		
-		TEST_METHOD(fieldCount) {
-			Foo foo;
-			Bar bar;
-			Baz baz;
-			Frob frob;
-			Niz niz;
+		TEST_METHOD(fieldCount) noexcept {
+            Foo foo = {};
+            Bar bar = {};
+            Baz baz = {};
+            Frob frob = {};
+            Niz niz = {};
 
 			static_assert(getFieldCount(foo).value == 3);
 			static_assert(getFieldCount(bar).value == 4);

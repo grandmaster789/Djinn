@@ -23,7 +23,8 @@ namespace djinn::graphics {
 
 		m_Extent = caps.currentExtent;
 
-        vk::CompositeAlphaFlagBitsKHR compositeAlpha;
+        vk::CompositeAlphaFlagBitsKHR compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
+
              if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque)         compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
         else if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eInherit)        compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eInherit;
         else if (caps.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::ePreMultiplied)  compositeAlpha = vk::CompositeAlphaFlagBitsKHR::ePreMultiplied;
@@ -55,7 +56,7 @@ namespace djinn::graphics {
             .setCompositeAlpha       (compositeAlpha)
             .setPreTransform         (caps.currentTransform);
 
-        m_Handle          = device.createSwapchainKHRUnique(info);
+        m_Handle = device.createSwapchainKHRUnique(info);
         m_Images = device.getSwapchainImagesKHR(*m_Handle);
 
         // views for all of the swapchain images
@@ -84,7 +85,7 @@ namespace djinn::graphics {
         for (const auto& colorView : m_ImageViews) {
             vk::FramebufferCreateInfo fb_info;
 
-            vk::ImageView colorDepth[] = {
+            const vk::ImageView colorDepth[] = {
                 *colorView,
                  depthView
             };
@@ -109,11 +110,11 @@ namespace djinn::graphics {
         return *m_Framebuffers[idx];
     }
 
-    vk::Format Swapchain::getImageFormat() const {
+    vk::Format Swapchain::getImageFormat() const noexcept {
         return m_ImageFormat;
     }
 
-    vk::Extent2D Swapchain::getExtent() const {
+    vk::Extent2D Swapchain::getExtent() const noexcept {
         return m_Extent;
     }
 
@@ -167,7 +168,7 @@ namespace djinn::graphics {
         {
             vk::SubmitInfo info;
 
-            vk::PipelineStageFlags stageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+            const vk::PipelineStageFlags stageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
             info
                 .setWaitSemaphoreCount  (1)

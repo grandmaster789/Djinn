@@ -20,7 +20,7 @@ namespace djinn::util {
         if (it == end(m_Keys))
             return nullptr;
         else {
-            auto index = distance(begin(m_Keys), it);
+            const auto index = distance(begin(m_Keys), it);
             return &m_Values[index];
         }
     }
@@ -103,7 +103,7 @@ namespace djinn::util {
             //   or
             // 2) the insertion point where it should be
             //
-            auto index = distance(begin(m_Keys), lower);
+            const auto index = distance(begin(m_Keys), lower);
 
             if (*lower == key)
                 m_Values[index] = std::forward<V>(value);
@@ -210,35 +210,35 @@ namespace djinn::util {
         if (it == end(m_Keys))
             return;
 
-        auto index = distance(begin(m_Keys), it);
+        const auto index = distance(begin(m_Keys), it);
 
         m_Keys.erase(it);
         m_Values.erase(begin(m_Values) + index);
     }
 
     template <typename K, typename V>
-    void FlatMap<K, V>::clear() {
+    void FlatMap<K, V>::clear() noexcept {
         m_Keys.clear();
         m_Values.clear();
     }
 
     template <typename K, typename V>
-    size_t FlatMap<K, V>::size() const {
+    size_t FlatMap<K, V>::size() const noexcept {
         return m_Keys.size();
     }
 
     template <typename K, typename V>
-    const std::vector<K>& FlatMap<K, V>::getKeys() const {
+    const std::vector<K>& FlatMap<K, V>::getKeys() const noexcept {
         return m_Keys;
     }
 
     template <typename K, typename V>
-    const std::vector<V>& FlatMap<K, V>::getValues() const {
+    const std::vector<V>& FlatMap<K, V>::getValues() const noexcept{
         return m_Values;
     }
 
     template <typename K, typename V>
-    void FlatMap<K, V>::foreach(KeyValueCallback&& callback) {
+    void FlatMap<K, V>::foreach(const KeyValueCallback& callback) const {
         for (size_t i = 0; i < m_Keys.size(); ++i)
             callback(m_Keys[i], m_Values[i]);
     }

@@ -4,9 +4,10 @@
 
 struct Indicator {
     Indicator() = default; // -> m_Val == 1
+    ~Indicator() = default;
 
-    Indicator             (const Indicator&);
-    Indicator& operator = (const Indicator&);
+    Indicator             (const Indicator&) noexcept;
+    Indicator& operator = (const Indicator&) noexcept; 
     Indicator             (Indicator&& i) noexcept;
     Indicator& operator = (Indicator&& i) noexcept;
 

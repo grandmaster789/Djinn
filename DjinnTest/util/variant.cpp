@@ -11,15 +11,15 @@ namespace DjinnTest {
     TEST_CLASS(Variant) {
     public:
         TEST_METHOD(overload_set) {
-            auto oset = djinn::util::OverloadSet(
+            const auto oset = djinn::util::OverloadSet(
                 [](int)      { return 123; },
                 [](double)   { return 456; },
                 [](uint64_t) { return 789; }
             );
 
-            auto xn = oset(2);
-            auto yn = oset(2.0);
-            auto zn = oset(2ull);
+            const auto xn = oset(2);
+            const auto yn = oset(2.0);
+            const auto zn = oset(2ull);
 
             Assert::IsTrue(xn == 123);
             Assert::IsTrue(yn == 456);
@@ -27,7 +27,7 @@ namespace DjinnTest {
         }
 
         TEST_METHOD(matcher) {
-            auto matcher = djinn::util::match(
+            const auto matcher = djinn::util::match(
                 [](int)      { return 123; },
                 [](double)   { return 456; },
                 [](uint64_t) { return 789; }
@@ -52,7 +52,7 @@ namespace DjinnTest {
 
 			using VarType = std::variant<int, double, uint64_t>;
 
-			auto matcher = djinn::util::match(
+			const auto matcher = djinn::util::match(
 				[&](int,      int)      { state = 1; },
 				[&](double,   int)      { state = 2; },
 				[&](uint64_t, int)      { state = 3; },

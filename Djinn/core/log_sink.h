@@ -18,8 +18,8 @@ namespace djinn::core {
 	    // contains a std::unique_ptr, so move-only
 	    LogSink             (const LogSink& sink) = delete;
 	    LogSink& operator = (const LogSink& sink) = delete;
-	    LogSink             (LogSink&& sink);
-	    LogSink& operator = (LogSink&& sink);
+	    LogSink             (LogSink&& sink) noexcept;
+	    LogSink& operator = (LogSink&& sink) noexcept;
 
 	    bool operator == (const LogSink& sink) const; // implemented so that Logger can detect duplicate sinks
 

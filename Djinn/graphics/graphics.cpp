@@ -267,7 +267,9 @@ namespace djinn {
 
             // present an image
             if (m_Swapchain) {
-                if (m_Swapchain->getExtent() != vk::Extent2D(m_Window->getWidth(), m_Window->getHeight()))
+                if (m_Swapchain->getExtent() != vk::Extent2D(m_Window->getWidth(), m_Window->getHeight())) {
+                    createDepthImage(m_DepthFormat); // recreate depth buffer
+
                     m_Swapchain = std::make_unique<Swapchain>(
                          *m_Device,
                           m_PhysicalDevice,
@@ -278,6 +280,7 @@ namespace djinn {
                          *m_Renderpass,
                         &*m_Swapchain
                     );
+                }
 
                 uint32_t imageIndex = m_Swapchain->acquireNextImage(*m_Device);
 

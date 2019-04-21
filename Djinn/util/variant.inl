@@ -5,7 +5,7 @@
 namespace djinn::util {
     template <typename...Lambdas>
     template <typename...Ts>
-    constexpr OverloadSet<Lambdas...>::OverloadSet(Ts&&...ts):
+    constexpr OverloadSet<Lambdas...>::OverloadSet(Ts&&...ts) noexcept:
         Ts{ std::forward<Ts>(ts) }...
     {
     }

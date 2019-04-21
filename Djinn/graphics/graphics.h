@@ -89,8 +89,8 @@ namespace djinn {
 
         uint32_t m_GraphicsFamilyIdx = NOT_FOUND;
 
-        vk::Format m_SwapchainFormat;
-        vk::Format m_DepthFormat = vk::Format::eD32Sfloat;
+        vk::Format m_SwapchainFormat = vk::Format::eB8G8R8A8Unorm;
+        vk::Format m_DepthFormat     = vk::Format::eD32Sfloat;
 
         vk::UniqueInstance                 m_Instance;
         vk::UniqueDebugReportCallbackEXT   m_DebugReportCallback;

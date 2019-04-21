@@ -36,14 +36,14 @@ namespace djinn::util {
 
         bool contains(const K& key) const;
         void erase(const K& key);
-        void clear();
+        void clear() noexcept;
 
-        size_t size() const;
+        size_t size() const noexcept;
 
-        const std::vector<K>& getKeys() const;
-        const std::vector<V>& getValues() const;
+        const std::vector<K>& getKeys() const noexcept;
+        const std::vector<V>& getValues() const noexcept;
 
-        void foreach(KeyValueCallback&& callback);
+        void foreach(const KeyValueCallback& callback) const;
 
     private:
         std::vector<Key>   m_Keys;

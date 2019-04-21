@@ -183,10 +183,10 @@ namespace djinn {
                 auto serializer = entry.m_SerializeFn();
                 assert(serializer.size() == 1);
 
-                settings.emplace(
-                    serializer.begin().key(),
-                    *serializer.begin()
-                );
+                nlohmann::json setting;
+                setting[serializer.begin().key()] = *serializer.begin();
+
+                settings.push_back(std::move(setting));
             }
 
             // merge with the other system settings
@@ -236,10 +236,10 @@ namespace djinn {
                 auto serializer = entry.m_SerializeFn();
                 assert(serializer.size() == 1);
 
-                m_ApplicationSettings.emplace(
-                    serializer.begin().key(),
-                    *serializer.begin()
-                );
+                nlohmann::json setting;
+                setting[serializer.begin().key()] = *serializer.begin();
+
+                m_ApplicationSettings.push_back(std::move(setting));
             }
 
             std::string   applicationName = m_Application->getName();

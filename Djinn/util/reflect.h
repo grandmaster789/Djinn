@@ -33,14 +33,14 @@ namespace djinn::util::reflect {
 	// [NOTE] could also do copies or pointers I guess, but references
 	//        seem most general-purpose
 	template <typename T> 
-	auto toTuple(T& obj);
+	auto toTuple(T& obj) noexcept;
 
 	// ---------------- forEachField ---------------------
 	template <typename T, typename Fn>
 	void forEachField(T& obj, Fn&& callback);
 
 	template <typename T, typename Fn>
-	void forEachField(Fn&& callback); // default-constructs an object to apply the callback to
+    void forEachField(Fn&& callback); // default-constructs an object to apply the callback to
 }
 
 #include "reflect.inl"

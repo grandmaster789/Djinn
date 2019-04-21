@@ -19,8 +19,8 @@ namespace djinn::graphics {
 
         vk::SwapchainKHR getHandle() const;
         vk::Framebuffer  getFramebuffer(uint32_t idx) const;
-        vk::Format       getImageFormat() const;
-        vk::Extent2D     getExtent() const;
+        vk::Format       getImageFormat() const noexcept;
+        vk::Extent2D     getExtent()      const noexcept;
 
         uint32_t acquireNextImage(vk::Device device);
         
@@ -48,8 +48,8 @@ namespace djinn::graphics {
         std::vector<vk::UniqueImageView>   m_ImageViews;
         std::vector<vk::UniqueFramebuffer> m_Framebuffers;
 
-        uint32_t     m_ActiveImage;
-        vk::Format   m_ImageFormat;
-        vk::Extent2D m_Extent;
+        uint32_t     m_ActiveImage = 0;
+        vk::Format   m_ImageFormat = vk::Format::eB8G8R8A8Unorm;
+        vk::Extent2D m_Extent      = vk::Extent2D(0, 0);
     };
 }

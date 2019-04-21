@@ -9,12 +9,12 @@
 #include <filesystem>
 
 namespace djinn::core {
-    LogSink::LogSink(LogSink&& sink):
+    LogSink::LogSink(LogSink&& sink) noexcept:
     	m_Wrapper(std::move(sink.m_Wrapper))
     {
     }
     
-    LogSink& LogSink::operator = (LogSink&& sink) {
+    LogSink& LogSink::operator = (LogSink&& sink) noexcept {
     	m_Wrapper = std::move(sink.m_Wrapper);
     	return *this;
     }

@@ -376,13 +376,13 @@ namespace djinn::graphics {
             break;
         }
 
-        case WM_LBUTTONDOWN: { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::left, true); break; }
-        case WM_RBUTTONDOWN: { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::right, true); break; }
-        case WM_MBUTTONDOWN: { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::middle, true); break; }
+        case WM_LBUTTONDOWN:   { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::left,   true);  break; }
+        case WM_RBUTTONDOWN:   { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::right,  true);  break; }
+        case WM_MBUTTONDOWN:   { SetCapture(m_Handle); m_Mouse->setButtonState(eMouseButton::middle, true);  break; }
 
-        case WM_LBUTTONUP: { SetCapture(0);        m_Mouse->setButtonState(eMouseButton::left, false); break; }
-        case WM_RBUTTONUP: { SetCapture(0);        m_Mouse->setButtonState(eMouseButton::right, false); break; }
-        case WM_MBUTTONUP: { SetCapture(0);        m_Mouse->setButtonState(eMouseButton::middle, false); break; }
+        case WM_LBUTTONUP:     { ReleaseCapture();     m_Mouse->setButtonState(eMouseButton::left,   false); break; }
+        case WM_RBUTTONUP:     { ReleaseCapture();     m_Mouse->setButtonState(eMouseButton::right,  false); break; }
+        case WM_MBUTTONUP:     { ReleaseCapture();     m_Mouse->setButtonState(eMouseButton::middle, false); break; }
 
         case WM_LBUTTONDBLCLK: { SetCapture(m_Handle); m_Mouse->doDoubleClick(eMouseButton::left);           break; }
         case WM_RBUTTONDBLCLK: { SetCapture(m_Handle); m_Mouse->doDoubleClick(eMouseButton::right);          break; }

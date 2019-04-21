@@ -2,12 +2,12 @@
 #include "indicator.h"
 #include <ostream>
 
-Indicator::Indicator(const Indicator&):
+Indicator::Indicator(const Indicator&) noexcept:
     m_Val(2)
 {
 }
 
-Indicator& Indicator::operator = (const Indicator&) {
+Indicator& Indicator::operator = (const Indicator&) noexcept {
     m_Val = 3;
     return *this;
 }

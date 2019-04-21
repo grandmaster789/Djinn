@@ -212,11 +212,11 @@ namespace djinn::util {
 		struct IteratorWrapper {
 			T m_Iterable;
 
-			auto begin() {
+			auto begin() noexcept {
 				return Iterator{ 0, std::begin(m_Iterable) };
 			}
 
-			auto end() {
+			auto end() noexcept {
 				return Iterator{ 0, std::end(m_Iterable) };
 			}
 		};

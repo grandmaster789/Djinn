@@ -21,7 +21,7 @@ namespace djinn::util {
         // although still not in a constexpr context.
 
         template <typename...Ts>
-        constexpr OverloadSet(Ts&&... ts);
+        constexpr OverloadSet(Ts&&... ts) noexcept;
     };
 
     template <typename...Ts>
