@@ -4,6 +4,7 @@
 #include "core/engine.h"
 #include "util/flat_map.h"
 #include "util/algorithm.h"
+#include "math/trigonometry.h"
 
 #include <fstream>
 
@@ -180,6 +181,20 @@ namespace djinn {
     #error Unsupported platform
 #endif
 
+        // right now, just one pool should suffice
+        vk::DescriptorPoolSize simplePoolSize;
+        
+        simplePoolSize
+            .setDescriptorCount(1);
+
+        vk::DescriptorPoolCreateInfo dpci;
+        dpci
+            .setMaxSets      (1)
+            .setPoolSizeCount(1)
+            .setPPoolSizes   (&simplePoolSize);
+
+        m_DescriptorPool = m_Device->createDescriptorPoolUnique(dpci);
+
         // create a vertex buffer for a cube
         // 6 (faces) * 2 (triangles) * 3 (vertices) * 3 (coords) = 108 floats
         {
@@ -290,15 +305,163 @@ namespace djinn {
         }
 
         // [NOTE] this currently relies on a post-build batch script to create correct locations
-        m_TriangleVertexShader   = loadShader("assets/shaders/triangle.vert.spv");
-        m_TriangleFragmentShader = loadShader("assets/shaders/triangle.frag.spv");
-		m_TrianglePipelineLayout = m_Device->createPipelineLayoutUnique({});
+        // Triangle shader doesn't have a uniform buffer, nor vertex inputs so it doesn't require anything else
+        {
+            m_TriangleVertexShader   = loadShader("assets/shaders/triangle.vert.spv");
+            m_TriangleFragmentShader = loadShader("assets/shaders/triangle.frag.spv");
+		    m_TrianglePipelineLayout = m_Device->createPipelineLayoutUnique({});
         
-        m_TrianglePipeline = createSimpleGraphicsPipeline(
-            *m_TriangleVertexShader,
-            *m_TriangleFragmentShader,
-            *m_TrianglePipelineLayout
-        );
+            m_TrianglePipeline = createSimpleGraphicsPipeline(
+                *m_TriangleVertexShader,
+                *m_TriangleFragmentShader,
+                *m_TrianglePipelineLayout
+            );
+        }
+
+        /*
+        // simple shader set assumes:
+        // - a single uniform object with model/view/projection matrices
+        // - vertex buffer input (in XYZW RGB vertex format)
+        // - single output       (in RGBA format)
+        //
+        // the uniform buffer part is encoded here
+        {
+            // [NOTE] this currently relies on a post-build batch script to create correct locations
+            m_SimpleVertexShader   = loadShader("assets/shaders/simple.vert.spv");
+            m_SimpleFragmentShader = loadShader("assets/shaders/simple.frag.spv");
+
+            // setup uniform
+            {
+                float zNear  = 0.1f;
+                float zFar   = 1000.0f; // this might be pushing it; at this range we'll probably start to see Z-fighting
+                float aspect = 
+                    static_cast<float>(m_MainWindowSettings.m_Width) / 
+                    static_cast<float>(m_MainWindowSettings.m_Height);
+
+                auto projectionMatrix = glm::perspective(
+                    math::deg2rad(45.0f), 
+                    aspect, 
+                    zNear, 
+                    zFar
+                );
+
+                // TODO make this a lookAt matrix
+                glm::mat4 viewMatrix(1.0f); //this constructor makes it an identity matrix
+                  
+                // TODO this is a per-model thingie
+                auto modelMatrix = glm::translate(
+                    glm::mat4(1.0f), 
+                    glm::vec3(0, 2, 10)
+                );
+
+                vk::BufferCreateInfo bci;
+
+                // should equal sizeof(float) * (4x4 matrix) * (mvp)
+                //           == 4             * 16           * 3 = 192
+                constexpr vk::DeviceSize bufferSize =
+                    sizeof(projectionMatrix) +
+                    sizeof(viewMatrix)       +
+                    sizeof(modelMatrix);
+
+                bci
+                    .setSize       (bufferSize)
+                    .setUsage      (vk::BufferUsageFlagBits::eUniformBuffer)
+                    .setSharingMode(vk::SharingMode::eExclusive);
+                    
+                m_SimpleUniform = m_Device->createBufferUnique(bci);
+
+                auto req = m_Device->getBufferMemoryRequirements(*m_SimpleUniform);
+
+                auto memoryIdx = graphics::selectMemoryTypeIndex(
+                    m_PhysicalDevice,
+                    req.memoryTypeBits,
+                    vk::MemoryPropertyFlagBits::eHostVisible
+                );
+
+                vk::MemoryAllocateInfo mai;
+
+                mai
+                    .setAllocationSize(req.size)
+                    .setMemoryTypeIndex(memoryIdx);
+
+                m_SimpleUniformBuffer = m_Device->allocateMemoryUnique(mai);
+
+                // map, transfer and bind
+                glm::mat4* mapped = static_cast<glm::mat4*>(
+                    m_Device->mapMemory(*m_SimpleUniformBuffer, 0, VK_WHOLE_SIZE)
+                );
+
+                mapped[0] = modelMatrix;
+                mapped[1] = viewMatrix;
+                mapped[2] = projectionMatrix;
+
+                m_Device->unmapMemory(*m_SimpleUniformBuffer);
+
+                m_Device->bindBufferMemory(*m_SimpleUniform, *m_SimpleUniformBuffer, 0);
+            }
+
+            vk::DescriptorSetLayoutBinding dslb;
+
+            dslb
+                .setBinding(0)
+                .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                .setDescriptorCount(1)
+                .setStageFlags(vk::ShaderStageFlagBits::eVertex);
+
+            vk::DescriptorSetLayoutCreateInfo dsci;
+
+            dsci
+                .setBindingCount(1)
+                .setPBindings(&dslb);
+
+            m_SimpleDescriptorLayout = m_Device->createDescriptorSetLayoutUnique(dsci);
+
+            vk::DescriptorSetAllocateInfo dsai;
+            
+            dsai
+                .setDescriptorPool    (*m_DescriptorPool)
+                .setDescriptorSetCount(1)
+                .setPSetLayouts       (&*m_SimpleDescriptorLayout);
+
+            m_SimpleDescriptorSet = std::move(m_Device->allocateDescriptorSetsUnique(dsai).back()); // this returns a vector, but we just want the one
+
+            vk::DescriptorBufferInfo dbi;
+
+            dbi
+                .setBuffer(*m_SimpleUniform)
+                .setRange (VK_WHOLE_SIZE);
+
+            vk::WriteDescriptorSet wds;
+            wds
+                .setDstSet         (*m_SimpleDescriptorSet)
+                .setDstBinding     (0)
+                .setDstArrayElement(0)
+                .setDescriptorCount(1)
+                .setDescriptorType (vk::DescriptorType::eUniformBuffer)
+                .setPBufferInfo    (&dbi);
+
+            m_Device->updateDescriptorSets(
+                1,      // write descriptor count
+                &wds,   // pWriteDescriptors
+                0,      // descriptor copy count
+                nullptr // pDescriptorCopies
+            );
+
+            vk::PipelineLayoutCreateInfo pli;
+
+            pli
+                .setSetLayoutCount(1)
+                .setPSetLayouts   (&*m_SimpleDescriptorLayout);
+
+            m_SimplePipelineLayout = m_Device->createPipelineLayoutUnique(pli);
+
+            m_SimplePipeline = createSimpleGraphicsPipeline(
+                *m_SimpleVertexShader,
+                *m_SimpleFragmentShader,
+                *m_SimplePipelineLayout
+            );
+        }
+        */
     }
 
     void Graphics::update() {

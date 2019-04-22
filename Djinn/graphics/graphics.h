@@ -103,14 +103,24 @@ namespace djinn {
         vk::UniqueRenderPass    m_Renderpass;
         vk::UniqueCommandPool   m_CommandPool;
 
-        vk::Queue               m_GraphicsQueue;
-        vk::UniqueCommandBuffer m_GraphicsCommands;
-        vk::UniquePipelineCache m_PipelineCache;
+        vk::Queue                m_GraphicsQueue;
+        vk::UniqueCommandBuffer  m_GraphicsCommands;
+        vk::UniquePipelineCache  m_PipelineCache;
+        vk::UniqueDescriptorPool m_DescriptorPool;
 
         vk::UniqueShaderModule   m_TriangleVertexShader;
         vk::UniqueShaderModule   m_TriangleFragmentShader;
         vk::UniquePipelineLayout m_TrianglePipelineLayout;
         vk::UniquePipeline       m_TrianglePipeline;
+
+        vk::UniqueShaderModule        m_SimpleVertexShader;
+        vk::UniqueShaderModule        m_SimpleFragmentShader;
+        vk::UniqueBuffer              m_SimpleUniform;
+        vk::UniqueDeviceMemory        m_SimpleUniformBuffer;
+        vk::UniqueDescriptorSetLayout m_SimpleDescriptorLayout;
+        vk::UniqueDescriptorSet       m_SimpleDescriptorSet;
+        vk::UniquePipelineLayout      m_SimplePipelineLayout;
+        vk::UniquePipeline            m_SimplePipeline;
 
         // temporary buffering storage
         vk::UniqueBuffer       m_Cube;

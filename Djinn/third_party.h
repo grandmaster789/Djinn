@@ -8,6 +8,19 @@
 #include <vulkan/spirv.hpp>
 #include <shaderc/shaderc.hpp>
 
+#pragma warning(push)
+    #define GLM_FORCE_RADIANS
+
+    #pragma warning(disable: 4201) // nonstandard extension used: nameless struct/union
+    #pragma warning(disable: 4127) // conditional expression is constant
+
+    #include <glm/glm.hpp>
+    #include <glm/ext.hpp>
+    #include <glm/gtc/matrix_transform.hpp>
+
+    #undef GLM_FORCE_RADIANS
+#pragma warning(pop)
+
 // ~~ make sure to link with vulkan-1.lib in the application project...
 // ~~ please follow https://vulkan.lunarg.com/doc/sdk/1.1.92.1/windows/spirv_toolchain.html to obtain debug-compatible shaderc library builds
 #if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS

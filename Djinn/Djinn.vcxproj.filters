@@ -97,6 +97,9 @@
     <None Include="util\reflect.inl">
       <Filter>util</Filter>
     </None>
+    <None Include="math\trigonometry.inl">
+      <Filter>math</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
@@ -122,6 +125,9 @@
     </Filter>
     <Filter Include="submodules">
       <UniqueIdentifier>{580a071e-0958-45a7-9474-07d5ffa497fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="math">
+      <UniqueIdentifier>{4f51f587-c908-4a9d-a5e3-6e1c21cf9f54}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -201,6 +207,9 @@
     </ClInclude>
     <ClInclude Include="graphics\graphicsUtility.h">
       <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="math\trigonometry.h">
+      <Filter>math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

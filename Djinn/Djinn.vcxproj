@@ -207,6 +207,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
     </CustomBuild>
+    <None Include="math\trigonometry.inl" />
     <None Include="util\algorithm.inl" />
     <None Include="util\flat_map.inl" />
     <None Include="util\reflect.inl" />
@@ -230,6 +231,7 @@
     <ClInclude Include="graphics\swapchain.h" />
     <ClInclude Include="graphics\window.h" />
     <ClInclude Include="input\mouse.h" />
+    <ClInclude Include="math\trigonometry.h" />
     <ClInclude Include="third_party.h" />
     <ClInclude Include="input\input.h" />
     <ClInclude Include="input\keyboard.h" />
