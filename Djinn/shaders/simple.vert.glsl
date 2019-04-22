@@ -22,20 +22,13 @@ out gl_PerVertex {
 };
 
 void main() {
-	outColor = vec4(inColor, 1.0);
-
-	gl_Position =
-		ubo.m_Projection *
-		ubo.m_View       *
-		ubo.m_Model      * 
-		vec4(inPos.xyz, 1.0); // this allows us to switch to vec3 input at any given time
-
-	// alternatively (the slightly more traditional MVP variant)
-	/*
-	gl_Position =
-		inpos       *
+	mat4 mvp =
 		ubo.m_Model *
-		ubo.m_View  * 
+		ubo.m_View *
 		ubo.m_Projection;
-	*/
+
+	//outColor = vec4(inColor, 1.0);
+	outColor = vec4(1, 0, 0, 1);
+
+	gl_Position = vec4(inPos.xyz, 1) * mvp;
 }

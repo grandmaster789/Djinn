@@ -117,7 +117,7 @@ namespace djinn {
         vk::UniqueShaderModule        m_SimpleFragmentShader;
         vk::UniqueBuffer              m_SimpleUniform;
         vk::UniqueDeviceMemory        m_SimpleUniformBuffer;
-        vk::UniqueDescriptorSetLayout m_SimpleDescriptorLayout;
+        vk::UniqueDescriptorSetLayout m_SimpleDescriptorLayout;        
         vk::UniqueDescriptorSet       m_SimpleDescriptorSet;
         vk::UniquePipelineLayout      m_SimplePipelineLayout;
         vk::UniquePipeline            m_SimplePipeline;

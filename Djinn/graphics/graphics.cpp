@@ -189,6 +189,7 @@ namespace djinn {
 
         vk::DescriptorPoolCreateInfo dpci;
         dpci
+            .setFlags        (vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
             .setMaxSets      (1)
             .setPoolSizeCount(1)
             .setPPoolSizes   (&simplePoolSize);
@@ -249,13 +250,15 @@ namespace djinn {
             };
 
             // some typical vertex format
+            // NOTE this needs to correspond to what's being specified
+            //      at pipeline creation
             struct Vertex {
                 float x, y, z, w;
                 float r, g, b;
             };
 
-            constexpr size_t vtxSize = sizeof(Vertex); // might contain some padding! ofc, not in this case
-            constexpr size_t numVertices = sizeof(vertices) / (3 * sizeof(float));
+            constexpr size_t vtxSize      = sizeof(Vertex); // might contain some padding! ofc, not in this case
+            constexpr size_t numVertices  = sizeof(vertices) / (3 * sizeof(float));
             constexpr size_t numTriangles = numVertices / 3;
 
             // allocate buffer on the GPU
@@ -304,21 +307,6 @@ namespace djinn {
             m_Device->bindBufferMemory(*m_Cube, *m_CubeBuffer, 0);
         }
 
-        // [NOTE] this currently relies on a post-build batch script to create correct locations
-        // Triangle shader doesn't have a uniform buffer, nor vertex inputs so it doesn't require anything else
-        {
-            m_TriangleVertexShader   = loadShader("assets/shaders/triangle.vert.spv");
-            m_TriangleFragmentShader = loadShader("assets/shaders/triangle.frag.spv");
-		    m_TrianglePipelineLayout = m_Device->createPipelineLayoutUnique({});
-        
-            m_TrianglePipeline = createSimpleGraphicsPipeline(
-                *m_TriangleVertexShader,
-                *m_TriangleFragmentShader,
-                *m_TrianglePipelineLayout
-            );
-        }
-
-        /*
         // simple shader set assumes:
         // - a single uniform object with model/view/projection matrices
         // - vertex buffer input (in XYZW RGB vertex format)
@@ -338,21 +326,35 @@ namespace djinn {
                     static_cast<float>(m_MainWindowSettings.m_Width) / 
                     static_cast<float>(m_MainWindowSettings.m_Height);
 
-                auto projectionMatrix = glm::perspective(
+                /*auto projectionMatrix = glm::perspective(
                     math::deg2rad(45.0f), 
                     aspect, 
                     zNear, 
                     zFar
                 );
+                */
+
+                float fov     = math::deg2rad(45.0f);
+                float t       = 1.0f / tanf(fov * 0.5f);
+                float nearFar = zNear - zFar;
+
+                glm::mat4 projectionMatrix = {
+                    t / aspect, 0, 0, 0,
+                    0, t, 0, 0,
+                    0, 0, (-zNear - zFar) / nearFar, (2 * zNear * zFar) / nearFar,
+                    0, 0, 1, 0
+                };
 
                 // TODO make this a lookAt matrix
                 glm::mat4 viewMatrix(1.0f); //this constructor makes it an identity matrix
                   
                 // TODO this is a per-model thingie
-                auto modelMatrix = glm::translate(
-                    glm::mat4(1.0f), 
-                    glm::vec3(0, 2, 10)
-                );
+                glm::mat4 modelMatrix = {
+                    1, 0, 0, 0,
+                    0, 1, 0, 2,
+                    0, 0, 1, 10,
+                    0, 0, 0, 1
+                };
 
                 vk::BufferCreateInfo bci;
 
@@ -461,7 +463,6 @@ namespace djinn {
                 *m_SimplePipelineLayout
             );
         }
-        */
     }
 
     void Graphics::update() {
@@ -577,14 +578,37 @@ namespace djinn {
                     m_GraphicsCommands->setScissor (0, 1, &scissor);
                     m_GraphicsCommands->setViewport(0, 1, &viewport);
 
-                    m_GraphicsCommands->bindPipeline(vk::PipelineBindPoint::eGraphics, *m_TrianglePipeline);
+                    //m_GraphicsCommands->bindPipeline(vk::PipelineBindPoint::eGraphics, *m_TrianglePipeline);
+                    m_GraphicsCommands->bindPipeline(
+                        vk::PipelineBindPoint::eGraphics, 
+                        *m_SimplePipeline
+                    );
 
+                    /*
                     // draw calls go here
                     m_GraphicsCommands->draw(
                         3, // vertex count
                         1, // instance count
                         0, // first vertex
                         0  // first instance
+                    );
+                    */
+                    m_GraphicsCommands->bindDescriptorSets(
+                        vk::PipelineBindPoint::eGraphics,
+                        *m_SimplePipelineLayout,
+                        0,                       // first set
+                        1,                       // number of descriptors
+                        &*m_SimpleDescriptorSet, // the uniform descriptor set
+                        0,                       // number of dynamic offsets
+                        nullptr                  // pDynamicOffsets
+                    );
+
+                    vk::DeviceSize offsets = 0;
+                    m_GraphicsCommands->bindVertexBuffers(
+                        0, // first set
+                        1, // number of bindings
+                        &*m_Cube,
+                        &offsets
                     );
 
 					m_GraphicsCommands->endRenderPass();
@@ -1023,6 +1047,8 @@ namespace djinn {
 
         vk::PipelineColorBlendAttachmentState    colorBlendAttachment;
 
+        vk::VertexInputBindingDescription vertexDescription;
+
         stages[0]
             .setModule(vertexShader)
             .setPName("main")
@@ -1035,6 +1061,41 @@ namespace djinn {
 
         inputAssembly
             .setTopology(vk::PrimitiveTopology::eTriangleList);
+
+        // this corresponds to the data spec we used during initialization,
+        // but here we provide description details, where before we focused
+        // on cpu-gpu data transfer
+        struct Vertex {
+            float x, y, z, w;
+            float r, g, b;
+        };
+
+        constexpr uint32_t vertexSize = sizeof(Vertex);
+
+        vertexDescription
+            .setBinding  (0)
+            .setStride   (vertexSize)
+            .setInputRate(vk::VertexInputRate::eVertex);
+
+        vk::VertexInputAttributeDescription vertexAttributes[2];
+
+        vertexAttributes[0]
+            .setLocation(0)
+            .setBinding (0)
+            .setFormat  (vk::Format::eR32G32B32A32Sfloat) // ~~ xyzw floats
+            .setOffset  (0);
+
+        vertexAttributes[1]
+            .setLocation(1)
+            .setBinding (0)
+            .setFormat  (vk::Format::eR32G32B32Sfloat) // ~~ rgb floats
+            .setOffset  (4 * sizeof(float));           // offset by xyzw
+
+        vertexInputState
+            .setVertexBindingDescriptionCount  (1)
+            .setPVertexBindingDescriptions     (&vertexDescription)
+            .setVertexAttributeDescriptionCount(2)
+            .setPVertexAttributeDescriptions   (vertexAttributes);
 
         viewportState
             .setScissorCount(1)
