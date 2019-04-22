@@ -1,26 +1,6 @@
 #include "swapchain.h"
+#include "graphicsUtility.h"
 #include "util/algorithm.h"
-
-namespace {
-    uint32_t selectMemoryTypeIndex(
-        vk::PhysicalDevice      gpu,
-        uint32_t                typeBits,
-        vk::MemoryPropertyFlags properties
-    ) {
-        auto props = gpu.getMemoryProperties();
-
-        for (uint32_t i = 0; i < props.memoryTypeCount; ++i) {
-            if ((typeBits & 1) == 1) {
-                if ((props.memoryTypes[i].propertyFlags & properties) == properties)
-                    return i;
-            }
-
-            typeBits >>= 1; // NOTE not entirely sure about this
-        }
-
-        return 0;
-    }
-}
 
 namespace djinn::graphics {
     Swapchain::Swapchain(

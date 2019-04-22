@@ -98,7 +98,7 @@ namespace djinn {
         vk::PhysicalDevice                 m_PhysicalDevice;
         vk::PhysicalDeviceMemoryProperties m_PhysicalDeviceMemoryProperties;
 
-        SwapchainPtr           m_Swapchain;
+        SwapchainPtr            m_Swapchain;
         
         vk::UniqueRenderPass    m_Renderpass;
         vk::UniqueCommandPool   m_CommandPool;
@@ -111,5 +111,9 @@ namespace djinn {
         vk::UniqueShaderModule   m_TriangleFragmentShader;
         vk::UniquePipelineLayout m_TrianglePipelineLayout;
         vk::UniquePipeline       m_TrianglePipeline;
+
+        // temporary buffering storage
+        vk::UniqueBuffer       m_Cube;
+        vk::UniqueDeviceMemory m_CubeBuffer;
     };
 }

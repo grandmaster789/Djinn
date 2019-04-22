@@ -56,6 +56,9 @@
     <ClCompile Include="graphics\extensions.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="graphics\graphicsUtility.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\engine.inl">
@@ -194,6 +197,9 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="graphics\extensions.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\graphicsUtility.h">
       <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>

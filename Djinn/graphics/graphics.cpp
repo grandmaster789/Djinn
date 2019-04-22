@@ -1,5 +1,6 @@
 #include "graphics.h"
 #include "extensions.h"
+#include "graphicsUtility.h"
 #include "core/engine.h"
 #include "util/flat_map.h"
 #include "util/algorithm.h"
@@ -8,40 +9,6 @@
 
 // ------ Vulkan debug reports ------
 namespace {
-    using string = std::string;
-    using ExtensionList = std::vector<vk::ExtensionProperties>;
-    using LayerList = std::vector<vk::LayerProperties>;
-
-    bool isExtensionAvailable(
-        const string&        name,
-        const ExtensionList& availableExtensions
-    ) {
-        using djinn::util::contains_if;
-        using vk::ExtensionProperties;
-
-        return contains_if(
-            availableExtensions,
-            [&](const ExtensionProperties& extension) {
-                return (name == extension.extensionName);
-            }
-        );
-    }
-
-    bool isLayerAvailable(
-        const string&    name,
-        const LayerList& availableLayers
-    ) {
-        using djinn::util::contains_if;
-        using vk::LayerProperties;
-
-        return contains_if(
-            availableLayers,
-            [&](const LayerProperties& layer) {
-                return (name == layer.layerName);
-            }
-        );
-    }
-
     VKAPI_ATTR VkBool32 VKAPI_CALL report_to_log(
               VkDebugReportFlagsEXT      flags,
               VkDebugReportObjectTypeEXT /* objectType */,
@@ -212,6 +179,115 @@ namespace djinn {
 #else
     #error Unsupported platform
 #endif
+
+        // create a vertex buffer for a cube
+        // 6 (faces) * 2 (triangles) * 3 (vertices) * 3 (coords) = 108 floats
+        {
+            static const float vertices[] = {
+                -1.0f, -1.0f, -1.0f,
+                -1.0f, -1.0f,  1.0f,
+                -1.0f,  1.0f,  1.0f,
+
+                 1.0f,  1.0f, -1.0f,
+                -1.0f, -1.0f, -1.0f,
+                -1.0f,  1.0f, -1.0f,
+
+                 1.0f, -1.0f,  1.0f,
+                -1.0f, -1.0f, -1.0f,
+                 1.0f, -1.0f, -1.0f,
+
+                 1.0f,  1.0f, -1.0f,
+                 1.0f, -1.0f, -1.0f,
+                -1.0f, -1.0f, -1.0f,
+
+                -1.0f, -1.0f, -1.0f,
+                -1.0f,  1.0f,  1.0f,
+                -1.0f,  1.0f, -1.0f,
+
+                 1.0f, -1.0f,  1.0f,
+                -1.0f, -1.0f,  1.0f,
+                -1.0f, -1.0f, -1.0f,
+
+                -1.0f,  1.0f,  1.0f,
+                -1.0f, -1.0f,  1.0f,
+                 1.0f, -1.0f,  1.0f,
+
+                 1.0f,  1.0f,  1.0f,
+                 1.0f, -1.0f, -1.0f,
+                 1.0f,  1.0f, -1.0f,
+
+                 1.0f, -1.0f, -1.0f,
+                 1.0f,  1.0f,  1.0f,
+                 1.0f, -1.0f,  1.0f,
+
+                 1.0f,  1.0f,  1.0f,
+                 1.0f,  1.0f, -1.0f,
+                -1.0f,  1.0f, -1.0f,
+
+                 1.0f,  1.0f,  1.0f,
+                -1.0f,  1.0f, -1.0f,
+                -1.0f,  1.0f,  1.0f,
+
+                 1.0f,  1.0f,  1.0f,
+                -1.0f,  1.0f,  1.0f,
+                 1.0f, -1.0f,  1.0f
+            };
+
+            // some typical vertex format
+            struct Vertex {
+                float x, y, z, w;
+                float r, g, b;
+            };
+
+            constexpr size_t vtxSize = sizeof(Vertex); // might contain some padding! ofc, not in this case
+            constexpr size_t numVertices = sizeof(vertices) / (3 * sizeof(float));
+            constexpr size_t numTriangles = numVertices / 3;
+
+            // allocate buffer on the GPU
+            vk::BufferCreateInfo bci;
+
+            bci
+                .setSize       (vtxSize* numVertices) // we need space for the colors as well
+                .setUsage      (vk::BufferUsageFlagBits::eVertexBuffer)
+                .setSharingMode(vk::SharingMode::eExclusive);
+
+            m_Cube = m_Device->createBufferUnique(bci);
+
+            auto req = m_Device->getBufferMemoryRequirements(*m_Cube);
+
+            auto memoryIdx = graphics::selectMemoryTypeIndex(
+                m_PhysicalDevice,
+                req.memoryTypeBits,
+                vk::MemoryPropertyFlagBits::eHostVisible
+            );
+
+            vk::MemoryAllocateInfo mai;
+
+            mai
+                .setAllocationSize (req.size)
+                .setMemoryTypeIndex(memoryIdx);
+
+            m_CubeBuffer = m_Device->allocateMemoryUnique(mai);
+
+            // transfer the vertex data and bind to the handle
+            Vertex* mapped = static_cast<Vertex*>(
+                m_Device->mapMemory(*m_CubeBuffer, 0, VK_WHOLE_SIZE)
+            );
+
+            for (int i = 0; i < numVertices; ++i) {
+                mapped[i].x = vertices[i * 3 + 0];
+                mapped[i].y = vertices[i * 3 + 1];
+                mapped[i].z = vertices[i * 3 + 2];
+                mapped[i].w = 1.0f;
+
+                mapped[i].r = mapped[i].x;
+                mapped[i].g = (i % 10) * 0.1f;
+                mapped[i].b = mapped[i].z;
+            }
+
+            m_Device->unmapMemory(*m_CubeBuffer);
+            m_Device->bindBufferMemory(*m_Cube, *m_CubeBuffer, 0);
+        }
 
         // [NOTE] this currently relies on a post-build batch script to create correct locations
         m_TriangleVertexShader   = loadShader("assets/shaders/triangle.vert.spv");
@@ -430,8 +506,6 @@ namespace djinn {
 
     void Graphics::initVulkan() {
         auto availableInstanceVersion        = vk::enumerateInstanceVersion();
-        auto availableInstanceLayerProperies = vk::enumerateInstanceLayerProperties();
-        auto availableInstanceExtensions     = vk::enumerateInstanceExtensionProperties();
 
         gLog << "Vulkan version "
             << VK_VERSION_MAJOR(availableInstanceVersion) << "."
@@ -452,13 +526,11 @@ namespace djinn {
 #endif
         {
             // verify the required layers/extensions are available
-            for (const auto& layerName : requiredLayers)
-                if (!isLayerAvailable(layerName, availableInstanceLayerProperies))
-                    throw std::runtime_error("Required layer not available");
+            if (!graphics::areInstanceLayersAvailable(requiredLayers))
+                throw std::runtime_error("Required layer not available");
 
-            for (const auto& extensionName : requiredExtensions)
-                if (!isExtensionAvailable(extensionName, availableInstanceExtensions))
-                    throw std::runtime_error("Required extension not available");
+            if (!graphics::areInstanceExtensionsAvailable(requiredExtensions))
+                throw std::runtime_error("Required extension not available");
         }
 
 
@@ -566,12 +638,9 @@ namespace djinn {
         };
 
         auto hasRequirements = [=](const vk::PhysicalDevice& device) {
-            auto availableDeviceExtensions = device.enumerateDeviceExtensionProperties();
+            if (!graphics::areDeviceExtensionsAvailable(requiredDeviceExtensions, device))
+                return false;
             
-            for (const auto& requirement : requiredDeviceExtensions)
-                if (!isExtensionAvailable(requirement, availableDeviceExtensions))
-                    return false;
-
             uint32_t graphicsFamily = getFamilyIdx(device, vk::QueueFlagBits::eGraphics);
             if (graphicsFamily == NOT_FOUND)
                 return false;
