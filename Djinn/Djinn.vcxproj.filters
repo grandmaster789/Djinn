@@ -129,6 +129,9 @@
     <Filter Include="math">
       <UniqueIdentifier>{4f51f587-c908-4a9d-a5e3-6e1c21cf9f54}</UniqueIdentifier>
     </Filter>
+    <Filter Include="vulkan">
+      <UniqueIdentifier>{3ba4b92f-cc04-46a5-9f5d-5a2a93b39cd5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\engine.h">
@@ -210,6 +213,9 @@
     </ClInclude>
     <ClInclude Include="math\trigonometry.h">
       <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkan\buffer.h">
+      <Filter>vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

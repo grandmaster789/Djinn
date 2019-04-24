@@ -326,24 +326,12 @@ namespace djinn {
                     static_cast<float>(m_MainWindowSettings.m_Width) / 
                     static_cast<float>(m_MainWindowSettings.m_Height);
 
-                /*auto projectionMatrix = glm::perspective(
+                auto projectionMatrix = glm::perspective(
                     math::deg2rad(45.0f), 
                     aspect, 
                     zNear, 
                     zFar
                 );
-                */
-
-                float fov     = math::deg2rad(45.0f);
-                float t       = 1.0f / tanf(fov * 0.5f);
-                float nearFar = zNear - zFar;
-
-                glm::mat4 projectionMatrix = {
-                    t / aspect, 0, 0, 0,
-                    0, t, 0, 0,
-                    0, 0, (-zNear - zFar) / nearFar, (2 * zNear * zFar) / nearFar,
-                    0, 0, 1, 0
-                };
 
                 // TODO make this a lookAt matrix
                 glm::mat4 viewMatrix(1.0f); //this constructor makes it an identity matrix
