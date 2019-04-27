@@ -100,6 +100,9 @@
     <None Include="math\trigonometry.inl">
       <Filter>math</Filter>
     </None>
+    <None Include="math\math.inl">
+      <Filter>math</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
@@ -216,6 +219,9 @@
     </ClInclude>
     <ClInclude Include="vulkan\buffer.h">
       <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="math\math.h">
+      <Filter>math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

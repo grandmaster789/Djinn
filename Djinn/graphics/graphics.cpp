@@ -411,9 +411,10 @@ namespace djinn {
             dsai
                 .setDescriptorPool    (*m_DescriptorPool)
                 .setDescriptorSetCount(1)
-                .setPSetLayouts       (&*m_SimpleDescriptorLayout);
+                .setPSetLayouts       (&m_SimpleDescriptorLayout.get());
 
-            m_SimpleDescriptorSet = std::move(m_Device->allocateDescriptorSetsUnique(dsai).back()); // this returns a vector, but we just want the one
+			auto descriptorSets = m_Device->allocateDescriptorSets(dsai);
+            m_SimpleDescriptorSet.reset(descriptorSets.back()); // this returns a vector, but we just want the one
 
             vk::DescriptorBufferInfo dbi;
 
