@@ -94,6 +94,9 @@
     <None Include="math\trigonometry.inl">
       <Filter>math</Filter>
     </None>
+    <None Include="math\math.inl">
+      <Filter>math</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

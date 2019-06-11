@@ -195,6 +195,7 @@
     <ClInclude Include="graphics\graphics.h" />
     <ClInclude Include="graphics\window.h" />
     <ClInclude Include="input\mouse.h" />
+    <ClInclude Include="math\math.h" />
     <ClInclude Include="math\trigonometry.h" />
     <ClInclude Include="third_party.h" />
     <ClInclude Include="input\input.h" />

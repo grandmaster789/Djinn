@@ -29,10 +29,16 @@
     <ClCompile Include="util\dynamic_bitset.cpp">
       <Filter>util</Filter>
     </ClCompile>
+    <ClCompile Include="math\math.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="util">
       <UniqueIdentifier>{fda4f558-b013-4bbd-a785-b5068a8cefbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="math">
+      <UniqueIdentifier>{922b5b84-971a-4191-a395-8cd2aeaf747a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
