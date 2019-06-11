@@ -156,8 +156,6 @@
     <ClCompile Include="core\system.cpp" />
     <ClCompile Include="graphics\extensions.cpp" />
     <ClCompile Include="graphics\graphics.cpp" />
-    <ClCompile Include="graphics\graphicsUtility.cpp" />
-    <ClCompile Include="graphics\swapchain.cpp" />
     <ClCompile Include="graphics\window.cpp" />
     <ClCompile Include="input\mouse.cpp" />
     <ClCompile Include="third_party.cpp" />
@@ -175,38 +173,6 @@
     <None Include="core\mediator.inl" />
     <None Include="core\mediator_queue.inl" />
     <None Include="core\system.inl" />
-    <CustomBuild Include="shaders\triangle.frag.glsl">
-      <FileType>Document</FileType>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)assets\shaders\%(Filename).spv"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)assets\shaders\%(Filename).spv"</Command>
-    </CustomBuild>
-    <CustomBuild Include="shaders\triangle.vert.glsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-      <FileType>Document</FileType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)assets\shaders\%(Filename).spv"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)assets\shaders\%(Filename).spv"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="shaders\simple.vert.glsl">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)assets\shaders\%(Filename).spv"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)assets\shaders\%(Filename).spv"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="shaders\simple.frag.glsl">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)assets\shaders\%(Filename).spv"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(VULKAN_SDK)\Bin\glslangvalidator.exe "%(FullPath)" -V -o "$(OutDir)assets\shaders\%(Filename).spv"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)assets\shaders\%(Filename).spv</Outputs>
-    </CustomBuild>
     <None Include="math\trigonometry.inl" />
     <None Include="util\algorithm.inl" />
     <None Include="util\flat_map.inl" />
@@ -227,8 +193,6 @@
     <ClInclude Include="core\system.h" />
     <ClInclude Include="graphics\extensions.h" />
     <ClInclude Include="graphics\graphics.h" />
-    <ClInclude Include="graphics\graphicsUtility.h" />
-    <ClInclude Include="graphics\swapchain.h" />
     <ClInclude Include="graphics\window.h" />
     <ClInclude Include="input\mouse.h" />
     <ClInclude Include="math\trigonometry.h" />
@@ -244,7 +208,6 @@
     <ClInclude Include="util\string_util.h" />
     <ClInclude Include="util\typemap.h" />
     <ClInclude Include="util\variant.h" />
-    <ClInclude Include="vulkan\buffer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
