@@ -4,3 +4,15 @@
 [submodule "Thirdparty/submodules/meshoptimizer"]
 	path = Thirdparty/submodules/meshoptimizer
 	url = https://github.com/zeux/meshoptimizer.git
+[submodule "Thirdparty/submodules/abseil"]
+	path = Thirdparty/submodules/abseil
+	url = https://github.com/abseil/abseil-cpp.git
+[submodule "Thirdparty/submodules/concurrentqueue"]
+	path = Thirdparty/submodules/concurrentqueue
+	url = https://github.com/cameron314/concurrentqueue.git
+[submodule "Thirdparty/submodules/glm"]
+	path = Thirdparty/submodules/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "Thirdparty/submodules/stxxl"]
+	path = Thirdparty/submodules/stxxl
+	url = https://github.com/stxxl/stxxl.git
