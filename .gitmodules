@@ -1,9 +1,6 @@
 [submodule "Thirdparty/submodules/VulkanMemoryAllocator"]
 	path = Thirdparty/submodules/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-[submodule "Thirdparty/submodules/meshoptimizer"]
-	path = Thirdparty/submodules/meshoptimizer
-	url = https://github.com/zeux/meshoptimizer.git
 [submodule "Thirdparty/submodules/abseil"]
 	path = Thirdparty/submodules/abseil
 	url = https://github.com/abseil/abseil-cpp.git
@@ -13,6 +10,9 @@
 [submodule "Thirdparty/submodules/glm"]
 	path = Thirdparty/submodules/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "Thirdparty/submodules/stxxl"]
-	path = Thirdparty/submodules/stxxl
-	url = https://github.com/stxxl/stxxl.git
+[submodule "Thirdparty/submodules/cpp-std-fwd"]
+	path = Thirdparty/submodules/cpp-std-fwd
+	url = https://github.com/Philip-Trettner/cpp-std-fwd.git
+[submodule "Thirdparty/submodules/wil"]
+	path = Thirdparty/submodules/wil
+	url = https://github.com/microsoft/wil.git
