@@ -3,7 +3,7 @@
 #include "third_party.h"
 
 namespace djinn::graphics {
-	void loadInstanceExtensions(vk::Instance instance);
+    void loadInstanceExtensions(vk::Instance instance);
 }
 
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugReportCallbackEXT(

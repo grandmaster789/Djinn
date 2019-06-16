@@ -57,7 +57,7 @@ IncludeBlocks: Preserve
 IncludeCategories: []
 IndentCaseLabels: false
 
-IndentWidth: 2
+IndentWidth: 4
 IndentWrappedFunctionNames: true
 KeepEmptyLinesAtTheStartOfBlocks: false
 Language: Cpp
@@ -86,4 +86,4 @@ SpacesInSquareBrackets: false
 Standard: Cpp11
 
 TabWidth: 2
-UseTab: ForIndentation
+UseTab: Never
