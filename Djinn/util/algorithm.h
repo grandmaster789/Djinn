@@ -23,7 +23,8 @@ namespace djinn::util {
 	// yield an iterator to the location of the searched-for element
 	// or std::end(container) if it wasn't found
 	template <typename tContainer, typename tElement>
-	typename tContainer::const_iterator find(const tContainer& container, const tElement& value);
+	typename tContainer::const_iterator
+	    find(const tContainer& container, const tElement& value);
 
 	// yield an iterator to the first location where the given predicate
 	// resulted in true when evaluating it with the element at the indicated
@@ -54,7 +55,10 @@ namespace djinn::util {
 	void copy(const tContainer& source, tContainer& destination);
 
 	template <typename tContainer, typename tPredicateFn>
-	void copy_if(const tContainer& source, tContainer& destination, tPredicateFn&& predicate);
+	void copy_if(
+	    const tContainer& source,
+	    tContainer&       destination,
+	    tPredicateFn&&    predicate);
 
 	template <typename tContainer>
 	void sort(tContainer& c);

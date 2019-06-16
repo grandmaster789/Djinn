@@ -14,7 +14,7 @@ namespace djinn {
 namespace djinn::core {
 	// mwh.. considering renaming 'System' to 'EngineModule' or something
 	class System {
-	private:
+private:
 		struct VariableEntry {
 			using SerializeFn   = std::function<nlohmann::json()>;
 			using DeserializeFn = std::function<void(const nlohmann::json&)>;
@@ -24,7 +24,7 @@ namespace djinn::core {
 			DeserializeFn m_DeserializeFn;  // JSON -> runtime
 		};
 
-	public:
+public:
 		friend class Engine;
 		friend class Settings;
 
@@ -43,8 +43,6 @@ namespace djinn::core {
 		virtual void update();
 		virtual void shutdown();
 
-		virtual void unittest() = 0;  // ehhh... really considering getting rid of this
-
 		const std::string&  getName() const;
 		const Dependencies& getDependencies() const;
 		const Settings&     getSettings() const;
@@ -52,7 +50,7 @@ namespace djinn::core {
 
 		Engine* getEngine() const;
 
-	protected:
+protected:
 		void addDependency(const std::string& systemName);
 
 		template <typename T>
@@ -60,7 +58,7 @@ namespace djinn::core {
 
 		Engine* m_Engine = nullptr;
 
-	private:
+private:
 		std::string  m_Name;
 		Dependencies m_Dependencies;
 		Settings     m_Settings;

@@ -23,7 +23,7 @@ namespace djinn {
 
 	namespace graphics {
 		class Window {
-		public:
+	public:
 			friend class Context;
 
 			using Mouse    = input::Mouse;
@@ -50,12 +50,14 @@ namespace djinn {
 			uint32_t getWidth() const;
 			uint32_t getHeight() const;
 
-		private:
-			static std::vector<DISPLAY_DEVICE>
-			               enumerateDisplayDevices();  // https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_display_devicea
-			static DEVMODE getCurrentDisplayMode(
-			    DISPLAY_DEVICE
-			        dd);  // https://docs.microsoft.com/en-us/windows/desktop/api/Wingdi/ns-wingdi-_devicemodea
+			vk::SurfaceKHR getSurface() const;
+
+	private:
+			// https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_display_devicea
+			static std::vector<DISPLAY_DEVICE> enumerateDisplayDevices();
+
+			// https://docs.microsoft.com/en-us/windows/desktop/api/Wingdi/ns-wingdi-_devicemodea
+			static DEVMODE getCurrentDisplayMode(DISPLAY_DEVICE dd);
 
 			void initKeyMapping();
 
@@ -71,6 +73,8 @@ namespace djinn {
 
 			std::unique_ptr<Keyboard> m_Keyboard;
 			std::unique_ptr<Mouse>    m_Mouse;
+
+			vk::UniqueSurfaceKHR m_Surface;
 		};
 	}  // namespace graphics
 }  // namespace djinn

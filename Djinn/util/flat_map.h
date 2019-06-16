@@ -18,7 +18,7 @@ namespace djinn::util {
 	//
 	template <typename K, typename V>
 	class FlatMap {
-	public:
+public:
 		using Key              = K;
 		using Value            = V;
 		using KeyValueCallback = std::function<void(const K&, const V&)>;
@@ -29,12 +29,14 @@ namespace djinn::util {
 		const V*        operator[](const K& k) const;  // will return nullptr if not found
 		std::pair<K, V> at(int index) const;           // will throw if index is out of bounds
 
-		void assign(const K& key, const V& value);
-		void assign(const K& key, V&& value);
-		[[nodiscard]] bool
-		    insert(const K& key, const V& value);  // returns false if this would overwrite an entry
-		[[nodiscard]] bool
-		    insert(const K& key, V&& value);  // returns false if this would overwrite an entry
+		void               assign(const K& key, const V& value);
+		void               assign(const K& key, V&& value);
+		[[nodiscard]] bool insert(
+		    const K& key,
+		    const V& value);  // returns false if this would overwrite an entry
+		[[nodiscard]] bool insert(
+		    const K& key,
+		    V&&      value);  // returns false if this would overwrite an entry
 
 		bool contains(const K& key) const;
 		void erase(const K& key);
@@ -47,7 +49,7 @@ namespace djinn::util {
 
 		void foreach (const KeyValueCallback& callback) const;
 
-	private:
+private:
 		std::vector<Key>   m_Keys;
 		std::vector<Value> m_Values;
 	};

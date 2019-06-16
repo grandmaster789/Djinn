@@ -12,7 +12,9 @@ namespace djinn::core {
 	LogSink::Model<T>::Model(T impl): m_Impl(std::forward<T>(impl)) {}
 
 	template <typename T>
-	void LogSink::Model<T>::write(const LogMessage::MetaInfo& meta, const std::string& message) {
+	void LogSink::Model<T>::write(
+	    const LogMessage::MetaInfo& meta,
+	    const std::string&          message) {
 		m_Impl(meta, message);
 	}
 }  // namespace djinn::core

@@ -78,8 +78,8 @@ namespace djinn::input {
 	}
 
 	std::ostream& operator<<(std::ostream& os, const Mouse::OnMoved& mm) {
-		os << '(' << mm.m_X << ", " << mm.m_Y << ") " << '[' << mm.m_DeltaX << ", " << mm.m_DeltaY
-		   << ')';
+		os << '(' << mm.m_X << ", " << mm.m_Y << ") " << '[' << mm.m_DeltaX << ", "
+		   << mm.m_DeltaY << ')';
 
 		return os;
 	}

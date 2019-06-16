@@ -128,7 +128,8 @@ namespace djinn::util {
 		if (toBit != 0) {
 			Piece mask = (Piece(1) << toBit) - 1;
 
-			if ((value && (*raw & mask) != Piece(0)) || (!value && (~*raw & mask) != Piece(0))) {
+			if ((value && (*raw & mask) != Piece(0))
+			    || (!value && (~*raw & mask) != Piece(0))) {
 				from = (raw - m_Bits.get()) * bitsPerPiece;
 
 				while (test(from) != value) ++from;

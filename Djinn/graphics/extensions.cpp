@@ -23,7 +23,8 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugReportCallbackEXT(
     const VkAllocationCallbacks*              pAllocator,
     VkDebugReportCallbackEXT*                 pCallback) {
 	if (pfn_vkCreateDebugReportCallbackEXT)
-		return pfn_vkCreateDebugReportCallbackEXT(instance, pCreateInfo, pAllocator, pCallback);
+		return pfn_vkCreateDebugReportCallbackEXT(
+		    instance, pCreateInfo, pAllocator, pCallback);
 	else
 		// [NOTE] this is expected to be nothrow + noexcept
 		//        so use an error code instead

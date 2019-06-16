@@ -7,6 +7,7 @@
 #include "window.h"
 
 #include <memory>
+#include <vector>
 
 /*
     Very marginal platform dependant stuff in here:
@@ -18,7 +19,7 @@
 
 namespace djinn {
 	class Graphics: public core::System {
-	public:
+public:
 		using Window = graphics::Window;
 
 		using WindowPtr = std::unique_ptr<Window>;
@@ -29,24 +30,31 @@ namespace djinn {
 		void update() override;
 		void shutdown() override;
 
-		void unittest() override;
+		Window*       getMainWindow();
+		const Window* getMainWindow() const;
 
 		void close(Window* w);
 
-	private:
+		vk::Instance getInstance();
+
+private:
+		// WSI integration
 		Window* createWindow(
 		    int  width         = 1280,
 		    int  height        = 720,
 		    bool windowed      = true,
 		    int  displaydevice = 0);
 
-		WindowPtr m_Window;
+		std::vector<WindowPtr> m_Windows;  // first window is the main one
 
 		struct WindowSettings {
 			int  m_Width         = 1280;
 			int  m_Height        = 720;
 			int  m_DisplayDevice = 0;
-			bool m_Windowed      = true;  // only supporting borderless fullscreen windows right now
+			bool m_Windowed = true;  // only supporting borderless fullscreen windows right now
 		} m_MainWindowSettings;
+
+		// vulkan-related items
+		vk::UniqueInstance m_Instance;
 	};
 }  // namespace djinn

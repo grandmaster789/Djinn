@@ -40,7 +40,8 @@ namespace djinn::util::reflect {
 	void forEachField(T& obj, Fn&& callback);
 
 	template <typename T, typename Fn>
-	void forEachField(Fn&& callback);  // default-constructs an object to apply the callback to
+	void forEachField(
+	    Fn&& callback);  // default-constructs an object to apply the callback to
 }  // namespace djinn::util::reflect
 
 #include "reflect.inl"

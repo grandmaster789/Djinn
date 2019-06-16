@@ -11,8 +11,9 @@ namespace djinn::core {
 #endif
 	}
 
-	LogMessage Logger::operator()(eLogCategory category, const std::string& filename, int line) {
-		return LogMessage(this, category, filename, line);
+	LogMessage Logger::
+	           operator()(eLogCategory category, const std::string& filename, int line) {
+    return LogMessage(this, category, filename, line);
 	}
 
 	void Logger::add(LogSink sink) {
@@ -42,7 +43,8 @@ namespace djinn::core {
 	}
 
 	void Logger::flush(const LogMessage* message) {
-		std::string msg = message->m_Buffer.str();  // collapse the buffer into a regular string
+		std::string msg
+		    = message->m_Buffer.str();  // collapse the buffer into a regular string
 
 		for (auto& sink : m_Sinks) sink.write(message->m_MetaInfo, msg);
 	}

@@ -52,7 +52,8 @@ namespace djinn::core {
 
 		os << "Settings: \n";
 		for (const auto& setting : s.getSettings())
-			os << "\t" << setting.m_SerializeFn().dump() << "\n";  // should print { "key": value }
+			os << "\t" << setting.m_SerializeFn().dump()
+			   << "\n";  // should print { "key": value }
 
 		return os;
 	}

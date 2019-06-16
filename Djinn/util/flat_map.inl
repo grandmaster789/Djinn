@@ -214,8 +214,9 @@ namespace djinn::util {
 	std::ostream& operator<<(std::ostream& os, const FlatMap<K, V>& fm) {
 		os << "[FlatMap]:\n";
 
-		fm.foreach (
-		    [&](const K& key, const V& value) { os << "\t" << key << " = " << value << "\n"; });
+		fm.foreach ([&](const K& key, const V& value) {
+			os << "\t" << key << " = " << value << "\n";
+		});
 
 		return os;
 	}

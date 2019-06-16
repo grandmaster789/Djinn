@@ -35,7 +35,7 @@ namespace {
 			return m_WindowClass;
 		}
 
-	private:
+private:
 		WndClass() {
 			m_WindowClass = {};
 
@@ -43,8 +43,8 @@ namespace {
 			m_WindowClass.style       = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
 			m_WindowClass.lpfnWndProc = deferWinProc;
 			m_WindowClass.cbClsExtra  = 0;
-			m_WindowClass.cbWndExtra
-			    = sizeof(void*);  // we're going to associate a single pointer to the window object
+			m_WindowClass.cbWndExtra  = sizeof(
+          void*);  // we're going to associate a single pointer to the window object
 			m_WindowClass.hInstance
 			    = GetModuleHandle(NULL);  // could also propagate from program entry point
 			m_WindowClass.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
@@ -67,7 +67,12 @@ namespace {
 }  // namespace
 
 namespace djinn::graphics {
-	Window::Window(int width, int height, bool windowed, int displayDevice, Graphics* owner):
+	Window::Window(
+	    int       width,
+	    int       height,
+	    bool      windowed,
+	    int       displayDevice,
+	    Graphics* owner):
 	    m_Owner(owner) {
 		if (g_KeyMapping.empty()) initKeyMapping();
 
@@ -83,10 +88,13 @@ namespace djinn::graphics {
 
 		auto deviceMode = getCurrentDisplayMode(devices[displayDevice]);
 
-		RECT  rect;
-		DWORD style = 0;  // https://docs.microsoft.com/en-us/windows/desktop/winmsg/window-styles
-		DWORD exStyle
-		    = 0;  // https://docs.microsoft.com/en-us/windows/desktop/winmsg/extended-window-styles
+		RECT rect;
+
+		// https://docs.microsoft.com/en-us/windows/desktop/winmsg/window-styles
+		DWORD style = 0;
+
+		// https://docs.microsoft.com/en-us/windows/desktop/winmsg/extended-window-styles
+		DWORD exStyle = 0;
 
 		if (windowed) {
 			// center the rect
@@ -157,6 +165,18 @@ namespace djinn::graphics {
 			m_Mouse    = std::make_unique<Mouse>(inputSystem);
 		} else
 			throw std::runtime_error("Failed to create window");
+
+		{
+			// setup vulkan surface
+			// NOTE currently this is platform specific, like the rest of this class
+
+			vk::Win32SurfaceCreateInfoKHR info;
+			info.setHinstance(GetModuleHandle(NULL)).setHwnd(m_Handle);
+
+			m_Surface = owner->getInstance().createWin32SurfaceKHRUnique(info);
+
+			if (!m_Surface) throw std::runtime_error("Failed to create vulkan surface");
+		}
 	}
 
 	Window::~Window() {
@@ -436,6 +456,10 @@ namespace djinn::graphics {
 
 	uint32_t Window::getHeight() const {
 		return m_Height;
+	}
+
+	vk::SurfaceKHR Window::getSurface() const {
+		return m_Surface.get();
 	}
 
 	std::vector<DISPLAY_DEVICE> Window::enumerateDisplayDevices() {

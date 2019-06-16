@@ -25,8 +25,9 @@ namespace djinn::util::reflect {
 
 		// this will end up either as std::true_type or std::false_type
 		template <typename T, size_t N>
-		constexpr auto is_brace_constructible() -> decltype(
-		    is_brace_constructible_impl(std::make_index_sequence<N>(), static_cast<T*>(nullptr))) {
+		constexpr auto is_brace_constructible() -> decltype(is_brace_constructible_impl(
+		    std::make_index_sequence<N>(),
+		    static_cast<T*>(nullptr))) {
 			return {};
 		}
 	}  // namespace detail
@@ -41,147 +42,168 @@ namespace djinn::util::reflect {
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 0>() && !detail::is_brace_constructible<T, 1>()>>
+	        detail::is_brace_constructible<T, 0>()
+	        && !detail::is_brace_constructible<T, 1>()>>
 	constexpr NumFields<0> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 1>() && !detail::is_brace_constructible<T, 2>()>>
+	        detail::is_brace_constructible<T, 1>()
+	        && !detail::is_brace_constructible<T, 2>()>>
 	constexpr NumFields<1> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 2>() && !detail::is_brace_constructible<T, 3>()>>
+	        detail::is_brace_constructible<T, 2>()
+	        && !detail::is_brace_constructible<T, 3>()>>
 	constexpr NumFields<2> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 3>() && !detail::is_brace_constructible<T, 4>()>>
+	        detail::is_brace_constructible<T, 3>()
+	        && !detail::is_brace_constructible<T, 4>()>>
 	constexpr NumFields<3> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 4>() && !detail::is_brace_constructible<T, 5>()>>
+	        detail::is_brace_constructible<T, 4>()
+	        && !detail::is_brace_constructible<T, 5>()>>
 	constexpr NumFields<4> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 5>() && !detail::is_brace_constructible<T, 6>()>>
+	        detail::is_brace_constructible<T, 5>()
+	        && !detail::is_brace_constructible<T, 6>()>>
 	constexpr NumFields<5> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 6>() && !detail::is_brace_constructible<T, 7>()>>
+	        detail::is_brace_constructible<T, 6>()
+	        && !detail::is_brace_constructible<T, 7>()>>
 	constexpr NumFields<6> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 7>() && !detail::is_brace_constructible<T, 8>()>>
+	        detail::is_brace_constructible<T, 7>()
+	        && !detail::is_brace_constructible<T, 8>()>>
 	constexpr NumFields<7> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 8>() && !detail::is_brace_constructible<T, 9>()>>
+	        detail::is_brace_constructible<T, 8>()
+	        && !detail::is_brace_constructible<T, 9>()>>
 	constexpr NumFields<8> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 9>() && !detail::is_brace_constructible<T, 10>()>>
+	        detail::is_brace_constructible<T, 9>()
+	        && !detail::is_brace_constructible<T, 10>()>>
 	constexpr NumFields<9> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 10>() && !detail::is_brace_constructible<T, 11>()>>
+	        detail::is_brace_constructible<T, 10>()
+	        && !detail::is_brace_constructible<T, 11>()>>
 	constexpr NumFields<10> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 11>() && !detail::is_brace_constructible<T, 12>()>>
+	        detail::is_brace_constructible<T, 11>()
+	        && !detail::is_brace_constructible<T, 12>()>>
 	constexpr NumFields<11> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 12>() && !detail::is_brace_constructible<T, 13>()>>
+	        detail::is_brace_constructible<T, 12>()
+	        && !detail::is_brace_constructible<T, 13>()>>
 	constexpr NumFields<12> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 13>() && !detail::is_brace_constructible<T, 14>()>>
+	        detail::is_brace_constructible<T, 13>()
+	        && !detail::is_brace_constructible<T, 14>()>>
 	constexpr NumFields<13> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 14>() && !detail::is_brace_constructible<T, 15>()>>
+	        detail::is_brace_constructible<T, 14>()
+	        && !detail::is_brace_constructible<T, 15>()>>
 	constexpr NumFields<14> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 15>() && !detail::is_brace_constructible<T, 16>()>>
+	        detail::is_brace_constructible<T, 15>()
+	        && !detail::is_brace_constructible<T, 16>()>>
 	constexpr NumFields<15> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 16>() && !detail::is_brace_constructible<T, 17>()>>
+	        detail::is_brace_constructible<T, 16>()
+	        && !detail::is_brace_constructible<T, 17>()>>
 	constexpr NumFields<16> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 17>() && !detail::is_brace_constructible<T, 18>()>>
+	        detail::is_brace_constructible<T, 17>()
+	        && !detail::is_brace_constructible<T, 18>()>>
 	constexpr NumFields<17> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 18>() && !detail::is_brace_constructible<T, 19>()>>
+	        detail::is_brace_constructible<T, 18>()
+	        && !detail::is_brace_constructible<T, 19>()>>
 	constexpr NumFields<18> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 19>() && !detail::is_brace_constructible<T, 20>()>>
+	        detail::is_brace_constructible<T, 19>()
+	        && !detail::is_brace_constructible<T, 20>()>>
 	constexpr NumFields<19> getFieldCount(const T&) {
 		return {};
 	}
 	template <
 	    typename T,
 	    typename = std::enable_if_t<
-	        detail::is_brace_constructible<T, 20>() && !detail::is_brace_constructible<T, 21>()>>
+	        detail::is_brace_constructible<T, 20>()
+	        && !detail::is_brace_constructible<T, 21>()>>
 	constexpr NumFields<20> getFieldCount(const T&) {
 		return {};
 	}
@@ -289,8 +311,10 @@ namespace djinn::util::reflect {
 
 	template <typename T>
 	auto toTuple(T& obj, NumFields<17>) noexcept {
-		auto& [f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16] = obj;
-		return std::tie(f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16);
+		auto& [f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16]
+		    = obj;
+		return std::tie(
+		    f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16);
 	}
 
 	template <typename T>
@@ -303,16 +327,54 @@ namespace djinn::util::reflect {
 
 	template <typename T>
 	auto toTuple(T& obj, NumFields<19>) noexcept {
-		auto& [f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18]
+		auto
+		    & [f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17,
+		       f18]
 		    = obj;
 		return std::tie(
-		    f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18);
+		    f0,
+		    f1,
+		    f2,
+		    f3,
+		    f4,
+		    f5,
+		    f6,
+		    f7,
+		    f8,
+		    f9,
+		    f10,
+		    f11,
+		    f12,
+		    f13,
+		    f14,
+		    f15,
+		    f16,
+		    f17,
+		    f18);
 	}
 
 	template <typename T>
 	auto toTuple(T& obj, NumFields<20>) noexcept {
 		auto
-		    & [f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18,
+		    & [f0,
+		       f1,
+		       f2,
+		       f3,
+		       f4,
+		       f5,
+		       f6,
+		       f7,
+		       f8,
+		       f9,
+		       f10,
+		       f11,
+		       f12,
+		       f13,
+		       f14,
+		       f15,
+		       f16,
+		       f17,
+		       f18,
 		       f19]
 		    = obj;
 		return std::tie(

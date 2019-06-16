@@ -19,19 +19,46 @@ namespace {
 	    const char* message,
 	    void* /* userdata   */
 	) {
-		if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
-			gLogDebug << "[" << layerPrefix << "] Code " << code << " : " << message;
-		else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT)
-			gLogWarning << "[" << layerPrefix << "] Code " << code << " : " << message;
-		else if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
-			gLogError << "[" << layerPrefix << "] Code " << code << " : " << message;
-		else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
-			gLogWarning << "[" << layerPrefix << "] Code " << code << " : " << message;
-		else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
-			gLog << "[" << layerPrefix << "] Code " << code << " : " << message;
+		// clang-format off
+		     if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)               gLogDebug   << "[" << layerPrefix << "] Code " << code << " : " << message;
+		else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT)             gLogWarning << "[" << layerPrefix << "] Code " << code << " : " << message;
+		else if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)               gLogError   << "[" << layerPrefix << "] Code " << code << " : " << message;
+		else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) gLogWarning << "[" << layerPrefix << "] Code " << code << " : " << message;
+		else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)         gLog        << "[" << layerPrefix << "] Code " << code << " : " << message;
+		// clang-format on
 
 		return VK_FALSE;
 	}
+
+	// moderately accurate method for getting the surface extension names
+	std::vector<const char*> getAvailableWSIExtensions() {
+		std::vector<const char*> extensions;
+
+		extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+		extensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+#endif
+
+#if defined(VK_USE_PLATFORM_MIR_KHR)
+		extensions.push_back(VK_KHR_MIR_SURFACE_EXTENSION_NAME);
+#endif
+
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+		extensions.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
+#endif
+
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+		extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+#endif
+
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+		extensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
+#endif
+
+		return extensions;
+	}
+
 }  // namespace
 
 namespace djinn {
@@ -44,6 +71,8 @@ namespace djinn {
 
 	void Graphics::init() {
 		System::init();
+
+		initVulkan();
 
 		createWindow(
 		    m_MainWindowSettings.m_Width,
@@ -73,7 +102,7 @@ namespace djinn {
 	}
 
 	void Graphics::update() {
-		if (m_Window) {
+		if (!m_Windows.empty()) {
 			MSG msg = {};
 
 			while (PeekMessage(
@@ -89,26 +118,59 @@ namespace djinn {
 				DispatchMessage(&msg);
 			}
 
-			if (!m_Window) return;
+			if (m_Windows.empty()) return;
 		}
 	}
 
 	void Graphics::shutdown() {
 		System::shutdown();
 
-		m_Window.reset();
+		m_Windows.clear();
 	}
 
-	void Graphics::unittest() {}
+	Graphics::Window* Graphics::getMainWindow() {
+		assert(!m_Windows.empty());
+		return m_Windows.front().get();
+	}
+
+	const Graphics::Window* Graphics::getMainWindow() const {
+		assert(!m_Windows.empty());
+		return m_Windows.front().get();
+	}
 
 	void Graphics::close(Window* w) {
-		if (w == m_Window.get()) m_Window.reset();
+		util::erase_if(m_Windows, [=](const WindowPtr& wp) { return wp.get() == w; });
 	}
 
 	Graphics::Window*
 	    Graphics::createWindow(int width, int height, bool windowed, int displayDevice) {
-		m_Window = std::make_unique<Window>(width, height, windowed, displayDevice, this);
+		m_Windows.push_back(
+		    std::make_unique<Window>(width, height, windowed, displayDevice, this));
 
-		return m_Window.get();
+		return m_Windows.back().get();
+	}
+
+	void Graphics::initVulkan() {
+		std::vector<const char*> layers;
+		std::vector<const char*> extensions = getAvailableWSIExtensions();
+
+		vk::ApplicationInfo           appInfo;
+		vk::InstanceCreateInfo        instInfo;
+		vk::Win32SurfaceCreateInfoKHR surfaceInfo;
+
+		appInfo.setPApplicationName("Vulkan program")
+		    .setApplicationVersion(1)
+		    .setPEngineName(nullptr)
+		    .setEngineVersion(1)
+		    .setApiVersion(VK_API_VERSION_1_0);
+
+		instInfo.setFlags(vk::InstanceCreateFlags())
+		    .setPApplicationInfo(&appInfo)
+		    .setEnabledExtensionCount(static_cast<uint32_t>(extensions.size()))
+		    .setPpEnabledExtensionNames(extensions.data())
+		    .setEnabledLayerCount(static_cast<uint32_t>(layers.size()))
+		    .setPpEnabledLayerNames(layers.data());
+
+		m_Instance = vk::createInstanceUnique(instInfo);
 	}
 }  // namespace djinn

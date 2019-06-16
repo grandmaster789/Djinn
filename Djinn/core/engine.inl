@@ -32,7 +32,8 @@ namespace djinn {
 		if (it == end(m_Systems))
 			throw std::runtime_error("System list and mapping are out of sync");
 
-		if (!raw->isInitialized()) --m_UninitializedSystems;  // disabled before it was initialized
+		if (!raw->isInitialized())
+			--m_UninitializedSystems;  // disabled before it was initialized
 
 		m_SystemMap.remove<T>();
 		m_Systems.erase(it);

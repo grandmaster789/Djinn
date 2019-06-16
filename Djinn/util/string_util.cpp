@@ -4,7 +4,8 @@
 #include <locale>
 
 namespace djinn::util {
-	std::string concat(const std::vector<std::string>& parts, const std::string& separator) {
+	std::string
+	    concat(const std::vector<std::string>& parts, const std::string& separator) {
 		size_t total = 0;
 		for (const auto& part : parts) total += part.size();
 
@@ -19,7 +20,8 @@ namespace djinn::util {
 		return result;
 	}
 
-	std::string concat(const std::vector<const char*>& parts, const std::string& separator) {
+	std::string
+	    concat(const std::vector<const char*>& parts, const std::string& separator) {
 		size_t total = 0;
 		for (const auto& part : parts) total += strlen(part);  // kind of icky, but still
 
@@ -57,7 +59,8 @@ namespace djinn::util {
 		return result;
 	}
 
-	std::vector<std::string> split(const std::string& source, const std::string& delimiter) {
+	std::vector<std::string>
+	    split(const std::string& source, const std::string& delimiter) {
 		using namespace std;
 
 		if (delimiter.size() == 0) return {source};
@@ -154,8 +157,10 @@ namespace djinn::util {
 		return result;
 	}
 
-	std::string
-	    columnize(const std::string& source_string, const int column_width, const char separator) {
+	std::string columnize(
+	    const std::string& source_string,
+	    const int          column_width,
+	    const char         separator) {
 		std::string result;
 		result.reserve(source_string.size() + source_string.size() / column_width);
 
