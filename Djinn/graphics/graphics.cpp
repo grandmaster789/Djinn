@@ -142,6 +142,10 @@ namespace djinn {
 		util::erase_if(m_Windows, [=](const WindowPtr& wp) { return wp.get() == w; });
 	}
 
+	vk::Instance Graphics::getInstance() const {
+		return *m_Instance;
+	}
+
 	Graphics::Window*
 	    Graphics::createWindow(int width, int height, bool windowed, int displayDevice) {
 		m_Windows.push_back(

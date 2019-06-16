@@ -35,7 +35,7 @@ public:
 
 		void close(Window* w);
 
-		vk::Instance getInstance();
+		vk::Instance getInstance() const;
 
 private:
 		// WSI integration
@@ -55,6 +55,8 @@ private:
 		} m_MainWindowSettings;
 
 		// vulkan-related items
+		void initVulkan();
+
 		vk::UniqueInstance m_Instance;
 	};
 }  // namespace djinn
