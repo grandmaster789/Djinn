@@ -45,7 +45,8 @@ namespace djinn::graphics {
             .setImageColorSpace(vk::ColorSpaceKHR::eSrgbNonlinear)
             .setImageExtent(m_Extent)
             .setImageArrayLayers(1)
-            .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
+            .setImageUsage(
+                vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc)
             .setImageSharingMode(vk::SharingMode::eExclusive)
             .setQueueFamilyIndexCount(1)
             .setPQueueFamilyIndices(&presentFamilyIdx)

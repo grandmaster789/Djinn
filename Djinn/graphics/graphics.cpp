@@ -98,6 +98,7 @@ namespace djinn {
 
         initLogicalDevice();  // depends on having an output surface
         initUniformBuffer();
+        initPipelineLayouts();
 
         // [NOTE] this doesn't really belong here, but it's the first time this has come up
 #if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS
@@ -481,6 +482,36 @@ namespace djinn {
             m_Device->unmapMemory(*m_UniformMemory);
             m_Device->bindBufferMemory(*m_UniformBuffer, *m_UniformMemory, 0);
         }
+    }
+
+    void Graphics::initPipelineLayouts() {
+        vk::DescriptorSetLayoutBinding bindings[2];
+
+        bindings[0]
+            .setBinding(0)
+            .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+            .setDescriptorCount(1)
+            .setStageFlags(vk::ShaderStageFlagBits::eVertex);
+
+        bindings[1]
+            .setBinding(1)
+            .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+            .setDescriptorCount(1)
+            .setStageFlags(vk::ShaderStageFlagBits::eFragment);
+
+        vk::DescriptorSetLayoutCreateInfo dsli;
+        dsli.setBindingCount(2).setPBindings(bindings);
+
+        // [NOTE] not sure how to do this with multiple descriptor set layouts
+        m_DescriptorSetLayout = m_Device->createDescriptorSetLayoutUnique(dsli);
+
+        vk::PipelineLayoutCreateInfo pli;
+        pli.setPushConstantRangeCount(0)
+            .setPPushConstantRanges(nullptr)
+            .setSetLayoutCount(1)
+            .setPSetLayouts(&*m_DescriptorSetLayout);  // seems sketchy
+
+        m_PipelineLayout = m_Device->createPipelineLayoutUnique(pli);
     }
 
     namespace graphics {

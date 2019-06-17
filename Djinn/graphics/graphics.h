@@ -68,6 +68,7 @@ namespace djinn {
         void initVulkan();
         void initLogicalDevice();  // [NOTE] depends on the existance of a window surface
         void initUniformBuffer();
+        void initPipelineLayouts();
 
         vk::UniqueInstance                 m_Instance;
         vk::UniqueDebugReportCallbackEXT   m_DebugCallback;
@@ -98,6 +99,9 @@ namespace djinn {
 
         vk::UniqueBuffer       m_UniformBuffer;
         vk::UniqueDeviceMemory m_UniformMemory;  // [NOTE] store capacity somewhere?
+
+        vk::UniqueDescriptorSetLayout m_DescriptorSetLayout;
+        vk::UniquePipelineLayout      m_PipelineLayout;
     };
 
     namespace graphics {
