@@ -28,7 +28,7 @@ goto :end
 
 :format
 echo %1
-"%appdata%\..\Local\Microsoft\VisualStudio\16.0_9ca5a9df\Extensions\4yequj44.hvd\clang-format.exe" -i %1
+"%LocalAppData%\Microsoft\VisualStudio\16.0_9ca5a9df\Extensions\4yequj44.hvd\clang-format.exe" -i %1
 goto :end
 
 :end
