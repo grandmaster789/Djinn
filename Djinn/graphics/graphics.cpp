@@ -38,18 +38,21 @@ namespace {
         bool valid = true;
 
         // log all missing layers
-        for (const auto& name : requiredLayerNames) {
+        for (const auto& name : requiredLayerNames)
+        {
             std::string s(name);
 
             if (!contains_if(availableLayers, [s](const vk::LayerProperties& prop) {
                     return (s == prop.layerName);
-                })) {
+                }))
+            {
                 valid = false;
                 gLogError << "Missing required layer: " << name;
             }
         }
 
-        if (!valid) throw std::runtime_error("Missing required layer(s)");
+        if (!valid)
+            throw std::runtime_error("Missing required layer(s)");
     }
 
     void checkInstanceExtensions(
@@ -60,19 +63,21 @@ namespace {
         bool valid = true;
 
         // log all missing layers
-        for (const auto& name : requiredExtensions) {
+        for (const auto& name : requiredExtensions)
+        {
             std::string s(name);
 
-            if (!contains_if(
-                    availableExtensions, [s](const vk::ExtensionProperties& prop) {
-                        return (s == prop.extensionName);
-                    })) {
+            if (!contains_if(availableExtensions, [s](const vk::ExtensionProperties& prop) {
+                    return (s == prop.extensionName);
+                }))
+            {
                 valid = false;
                 gLogError << "Missing required layer: " << name;
             }
         }
 
-        if (!valid) throw std::runtime_error("Missing required layer(s)");
+        if (!valid)
+            throw std::runtime_error("Missing required layer(s)");
     }
 }  // namespace
 
@@ -94,6 +99,8 @@ namespace djinn {
             m_MainWindowSettings.m_Height,
             m_MainWindowSettings.m_Windowed,
             m_MainWindowSettings.m_DisplayDevice);
+
+        initLogicalDevice();  // depends on having an output surface
 
         // [NOTE] this doesn't really belong here, but it's the first time this has come up
 #if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS
@@ -117,7 +124,8 @@ namespace djinn {
     }
 
     void Graphics::update() {
-        if (!m_Windows.empty()) {
+        if (!m_Windows.empty())
+        {
             MSG msg = {};
 
             while (PeekMessage(
@@ -126,14 +134,17 @@ namespace djinn {
                 0,         // msg filter min
                 0,         // msg filter max
                 PM_REMOVE  // remove message
-                )) {
-                if (msg.message == WM_QUIT) m_Engine->stop();
+                ))
+            {
+                if (msg.message == WM_QUIT)
+                    m_Engine->stop();
 
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
             }
 
-            if (m_Windows.empty()) return;
+            if (m_Windows.empty())
+                return;
         }
     }
 
@@ -177,10 +188,24 @@ namespace djinn {
         return *m_CommandBuffer;
     }
 
+    uint32_t Graphics::getGraphicsFamilyIdx() const {
+        return m_GraphicsFamilyIdx;
+    }
+
+    uint32_t Graphics::getPresentFamilyIdx() const {
+        return m_PresentFamilyIdx;
+    }
+
+    vk::SurfaceFormatKHR Graphics::getSurfaceFormat() const {
+        return m_SurfaceFormat;
+    }
+
     Graphics::Window*
         Graphics::createWindow(int width, int height, bool windowed, int displayDevice) {
-        m_Windows.push_back(
-            std::make_unique<Window>(width, height, windowed, displayDevice, this));
+        m_Windows.push_back(std::make_unique<Window>(width, height, windowed, displayDevice, this));
+
+        if (m_Windows.size() > 1)
+            m_Windows.back()->initSwapchain();
 
         return m_Windows.back().get();
     }
@@ -193,11 +218,10 @@ namespace djinn {
 
             // [NOTE] possibly the debug report should be optional
 
-            std::vector<const char*> requiredLayers = {};
-            std::vector<const char*> requiredExtensions
-                = {VK_KHR_SURFACE_EXTENSION_NAME,
-                   VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
-                   VK_EXT_DEBUG_REPORT_EXTENSION_NAME};
+            std::vector<const char*> requiredLayers     = {};
+            std::vector<const char*> requiredExtensions = {VK_KHR_SURFACE_EXTENSION_NAME,
+                                                           VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+                                                           VK_EXT_DEBUG_REPORT_EXTENSION_NAME};
 
             checkInstanceLayers(requiredLayers, availableLayers);
             checkInstanceExtensions(requiredExtensions, availableExtensions);
@@ -214,8 +238,7 @@ namespace djinn {
 
             instInfo.setFlags(vk::InstanceCreateFlags())
                 .setPApplicationInfo(&appInfo)
-                .setEnabledExtensionCount(
-                    static_cast<uint32_t>(requiredExtensions.size()))
+                .setEnabledExtensionCount(static_cast<uint32_t>(requiredExtensions.size()))
                 .setPpEnabledExtensionNames(requiredExtensions.data())
                 .setEnabledLayerCount(static_cast<uint32_t>(requiredLayers.size()))
                 .setPpEnabledLayerNames(requiredLayers.data());
@@ -231,10 +254,10 @@ namespace djinn {
             vk::DebugReportCallbackCreateInfoEXT info;
 
             info.setFlags(
-                    vk::DebugReportFlagBitsEXT::ePerformanceWarning
-                    | vk::DebugReportFlagBitsEXT::eError
+                    vk::DebugReportFlagBitsEXT::eError
                     //| vk::DebugReportFlagBitsEXT::eInformation // very spammy
                     | vk::DebugReportFlagBitsEXT::eWarning
+                    | vk::DebugReportFlagBitsEXT::ePerformanceWarning
                     | vk::DebugReportFlagBitsEXT::eDebug)
                 .setPfnCallback(report_to_log);
 
@@ -265,8 +288,7 @@ namespace djinn {
             auto driver_minor = VK_VERSION_MINOR(props.driverVersion);
             auto driver_patch = VK_VERSION_PATCH(props.driverVersion);
 
-            gLog << "Driver v" << driver_major << "." << driver_minor << "."
-                 << driver_patch;
+            gLog << "Driver v" << driver_major << "." << driver_minor << "." << driver_patch;
 
             auto api_major = VK_VERSION_MAJOR(props.apiVersion);
             auto api_minor = VK_VERSION_MINOR(props.apiVersion);
@@ -277,7 +299,9 @@ namespace djinn {
             // fetch memory properties
             m_MemoryProps = m_PhysicalDevice.getMemoryProperties();
         }
+    }
 
+    void Graphics::initLogicalDevice() {
         // setup a draw queue, init logical device
         // [TODO] add compute, transfer queues etc
         {
@@ -285,17 +309,28 @@ namespace djinn {
             if (queueFamilyProps.empty())
                 throw std::runtime_error("No queue family properties available");
 
-            auto hasFlags
-                = [](const vk::QueueFamilyProperties& prop, vk::QueueFlags flags) {
-                      return (prop.queueFlags & flags) == flags;
-                  };
+            auto hasFlags = [](const vk::QueueFamilyProperties& prop, vk::QueueFlags flags) {
+                return (prop.queueFlags & flags) == flags;
+            };
 
-            for (uint32_t i = 0; i < queueFamilyProps.size(); ++i) {
-                if (hasFlags(queueFamilyProps[i], vk::QueueFlagBits::eGraphics)) {
+            // [NOTE] there is also a getWin32PresentationSupportKHR, but this seems better
+            auto supportsPresent = [this](uint32_t queueFamilyIdx, vk::SurfaceKHR surface) {
+                return m_PhysicalDevice.getSurfaceSupportKHR(queueFamilyIdx, surface);
+            };
+
+            // try to find a graphics queue family that also supports presenting
+            for (uint32_t i = 0; i < queueFamilyProps.size(); ++i)
+            {
+                if (hasFlags(queueFamilyProps[i], vk::QueueFlagBits::eGraphics)
+                    && supportsPresent(i, getMainWindow()->getSurface()))
+                {
                     m_GraphicsFamilyIdx = i;
+                    m_PresentFamilyIdx  = i;
                     break;
                 }
             }
+
+            // TODO: fallback when separate queues are required
 
             if (m_GraphicsFamilyIdx == NOT_FOUND)
                 throw std::runtime_error("No graphics queue family was found");
@@ -338,6 +373,32 @@ namespace djinn {
 
             // [NOTE] allocateCommandBuffersUnique yields a vector...
             m_CommandBuffer = std::move(m_Device->allocateCommandBuffersUnique(cbai)[0]);
+        }
+
+        // try and select an appropriate format, colorspace
+        // [NOTE] again, we're using the primary window surface here; prefer BGRA32
+        {
+            auto allFormats = m_PhysicalDevice.getSurfaceFormatsKHR(getMainWindow()->getSurface());
+
+            if (allFormats.empty())
+                throw std::runtime_error("No surface formats available");
+
+            // special case -- when the driver reports 1 undefined format it actually supports all of them
+            if (allFormats.size() == 1)
+            {
+                m_SurfaceFormat = {vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear};
+            }
+            else
+            {
+                vk::SurfaceFormatKHR preferred
+                    = {vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear};
+
+                if (util::contains(allFormats, preferred))
+                    m_SurfaceFormat = preferred;
+                else
+                    // if the preferred format is not available, just pick the first reported
+                    m_SurfaceFormat = allFormats.front();
+            }
         }
     }
 }  // namespace djinn

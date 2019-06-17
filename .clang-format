@@ -9,6 +9,7 @@
 # AllowShortLambdasOnASingleLine: Empty
 # IndentPPDirectives: BeforeHash
 # SpaceAfterLogicalNot: false
+# BraceWrapping.AfterCaseLabel: false
 
 BasedOnStyle: LLVM
 AccessModifierOffset: -4
@@ -20,11 +21,11 @@ AlignOperands: true
 AlignTrailingComments: true
 
 AllowAllParametersOfDeclarationOnNextLine: false
-AllowShortBlocksOnASingleLine: true
+AllowShortBlocksOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Empty
-AllowShortIfStatementsOnASingleLine: true
-AllowShortLoopsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
 
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: true
@@ -33,14 +34,29 @@ AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: false
 BinPackParameters: false
 
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterStruct: true
+  AfterEnum: true
+  AfterNamespace: false
+  AfterUnion: false
+  AfterExternBlock: true
+  AfterControlStatement: true
+  AfterFunction: false
+  BeforeCatch: true
+  BeforeElse: true
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
 BreakBeforeBinaryOperators: All
 BreakBeforeTernaryOperators: false
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
 BreakStringLiterals: true
 
-ColumnLimit: 90
+ColumnLimit: 100
 CommentPragmas: '^[NOTE] '
 CompactNamespaces: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: false

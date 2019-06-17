@@ -22,21 +22,17 @@ namespace djinn {
     }  // namespace input
 
     namespace graphics {
-        class SwapChain;
+        class Swapchain;
 
-        class Window {
+        class Window
+        {
         public:
             friend class Context;
 
             using Mouse    = input::Mouse;
             using Keyboard = input::Keyboard;
 
-            Window(
-                int       width,
-                int       height,
-                bool      windowed,
-                int       displayDevice,
-                Graphics* owner);
+            Window(int width, int height, bool windowed, int displayDevice, Graphics* owner);
             ~Window();
 
             // no-copy, no-move
@@ -58,7 +54,9 @@ namespace djinn {
             uint32_t getHeight() const;
 
             vk::SurfaceKHR getSurface() const;
-            SwapChain*     getSwapChain() const;
+            Swapchain*     getSwapchain() const;
+
+            void initSwapchain();
 
         private:
             // https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_display_devicea
@@ -67,7 +65,6 @@ namespace djinn {
             // https://docs.microsoft.com/en-us/windows/desktop/api/Wingdi/ns-wingdi-_devicemodea
             static DEVMODE getCurrentDisplayMode(DISPLAY_DEVICE dd);
 
-            void initSurface(uint32_t queueFamilyCount);
             void initKeyMapping();
 
             Graphics* m_Owner  = nullptr;  // needed for notifying close events
@@ -84,7 +81,7 @@ namespace djinn {
             std::unique_ptr<Mouse>    m_Mouse;
 
             vk::UniqueSurfaceKHR       m_Surface;
-            std::unique_ptr<SwapChain> m_SwapChain;
+            std::unique_ptr<Swapchain> m_Swapchain;
         };
     }  // namespace graphics
 }  // namespace djinn

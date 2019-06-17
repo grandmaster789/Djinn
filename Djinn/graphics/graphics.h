@@ -18,7 +18,8 @@
 */
 
 namespace djinn {
-    class Graphics: public core::System {
+    class Graphics: public core::System
+    {
     public:
         using Window = graphics::Window;
 
@@ -41,6 +42,10 @@ namespace djinn {
         vk::CommandPool    getCommandPool() const;
         vk::CommandBuffer  getCommandBuffer() const;
 
+        uint32_t             getGraphicsFamilyIdx() const;
+        uint32_t             getPresentFamilyIdx() const;
+        vk::SurfaceFormatKHR getSurfaceFormat() const;
+
     private:
         // WSI integration
         Window* createWindow(
@@ -51,7 +56,8 @@ namespace djinn {
 
         std::vector<WindowPtr> m_Windows;  // first window is the main one
 
-        struct WindowSettings {
+        struct WindowSettings
+        {
             int  m_Width         = 1280;
             int  m_Height        = 720;
             int  m_DisplayDevice = 0;
@@ -61,6 +67,7 @@ namespace djinn {
 
         // vulkan-related items
         void initVulkan();
+        void initLogicalDevice();  // [NOTE] depends on the existance of a window surface
 
         vk::UniqueInstance                 m_Instance;
         vk::UniqueDebugReportCallbackEXT   m_DebugCallback;
@@ -70,7 +77,9 @@ namespace djinn {
 
         static constexpr uint32_t NOT_FOUND = ~0UL;
 
-        uint32_t m_GraphicsFamilyIdx = NOT_FOUND;
+        uint32_t             m_GraphicsFamilyIdx = NOT_FOUND;
+        uint32_t             m_PresentFamilyIdx  = NOT_FOUND;
+        vk::SurfaceFormatKHR m_SurfaceFormat;
 
         vk::UniqueCommandPool   m_CommandPool;
         vk::UniqueCommandBuffer m_CommandBuffer;

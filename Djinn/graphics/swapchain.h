@@ -4,16 +4,26 @@
 #include "window.h"
 
 namespace djinn::graphics {
-    class SwapChain {
+    class Swapchain
+    {
     public:
-        SwapChain(Window* w);
+        Swapchain(
+            vk::Device         device,
+            vk::PhysicalDevice physical,
+            vk::SurfaceKHR     surface,
+            vk::Format         imageFormat,
+            uint32_t           presentFamilyIdx,
+            Swapchain*         oldSwapchain = nullptr);
 
-        SwapChain(const SwapChain&) = delete;
-        SwapChain& operator=(const SwapChain&) = delete;
-        SwapChain(SwapChain&&)                 = delete;
-        SwapChain& operator=(SwapChain&&) = delete;
+        vk::SwapchainKHR getHandle() const;
+        vk::Extent2D     getExtent() const noexcept;
 
     private:
-        Window* m_Window;
+        vk::Extent2D m_Extent;
+
+        vk::UniqueSwapchainKHR m_Handle;
+
+        std::vector<vk::Image>           m_ColorImages;
+        std::vector<vk::UniqueImageView> m_ColorViews;
     };
 }  // namespace djinn::graphics

@@ -26,7 +26,8 @@ namespace {
             return ((djinn::graphics::Window*)ptr)->winProc(window, msg, wp, lp);
     }
 
-    struct WndClass {
+    struct WndClass
+    {
         static WndClass& instance() {
             static WndClass result;
             return result;
@@ -44,8 +45,8 @@ namespace {
             m_WindowClass.style       = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
             m_WindowClass.lpfnWndProc = deferWinProc;
             m_WindowClass.cbClsExtra  = 0;
-            m_WindowClass.cbWndExtra  = sizeof(
-                void*);  // we're going to associate a single pointer to the window object
+            m_WindowClass.cbWndExtra
+                = sizeof(void*);  // we're going to associate a single pointer to the window object
             m_WindowClass.hInstance
                 = GetModuleHandle(NULL);  // could also propagate from program entry point
             m_WindowClass.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
@@ -68,12 +69,7 @@ namespace {
 }  // namespace
 
 namespace djinn::graphics {
-    Window::Window(
-        int       width,
-        int       height,
-        bool      windowed,
-        int       displayDevice,
-        Graphics* owner):
+    Window::Window(int width, int height, bool windowed, int displayDevice, Graphics* owner):
         m_Owner(owner) {
         if (g_KeyMapping.empty()) initKeyMapping();
 
@@ -112,7 +108,8 @@ namespace djinn::graphics {
             style = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
             exStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
-        } else {
+        }
+        else {
             // fill up the entire device space
             int device_x      = deviceMode.dmPosition.x;
             int device_y      = deviceMode.dmPosition.y;
@@ -164,11 +161,20 @@ namespace djinn::graphics {
 
             m_Keyboard = std::make_unique<Keyboard>(inputSystem);
             m_Mouse    = std::make_unique<Mouse>(inputSystem);
-        } else
+        }
+        else
             throw std::runtime_error("Failed to create window");
 
-        initSurface(static_cast<uint32_t>(
-            m_Owner->getPhysicalDevice().getQueueFamilyProperties().size()));
+        // setup vulkan surface
+        // NOTE currently this is platform specific, like the rest of this class
+        {
+            vk::Win32SurfaceCreateInfoKHR info;
+            info.setHinstance(GetModuleHandle(NULL)).setHwnd(m_Handle);
+
+            m_Surface = m_Owner->getInstance().createWin32SurfaceKHRUnique(info);
+
+            if (!m_Surface) throw std::runtime_error("Failed to create vulkan surface");
+        }
     }
 
     Window::~Window() {
@@ -450,30 +456,21 @@ namespace djinn::graphics {
         return m_Height;
     }
 
-    void Window::initSurface(uint32_t queueFamilyCount) {
-        // setup vulkan surface
-        // NOTE currently this is platform specific, like the rest of this class
-
-        vk::Win32SurfaceCreateInfoKHR info;
-        info.setHinstance(GetModuleHandle(NULL)).setHwnd(m_Handle);
-
-        m_Surface = m_Owner->getInstance().createWin32SurfaceKHRUnique(info);
-
-        if (!m_Surface) throw std::runtime_error("Failed to create vulkan surface");
-
-        std::vector<VkBool32> presentable(queueFamilyCount);
-
-        for (uint32_t i = 0; i < queueFamilyCount; ++i) {}
-
-        m_SwapChain = std::make_unique<SwapChain>(this);
+    void Window::initSwapchain() {
+        m_Swapchain = std::make_unique<Swapchain>(
+            m_Owner->getDevice(),
+            m_Owner->getPhysicalDevice(),
+            *m_Surface,
+            m_Owner->getSurfaceFormat().format,
+            m_Owner->getPresentFamilyIdx());
     }
 
     vk::SurfaceKHR Window::getSurface() const {
         return m_Surface.get();
     }
 
-    SwapChain* Window::getSwapChain() const {
-        return m_SwapChain.get();
+    Swapchain* Window::getSwapchain() const {
+        return m_Swapchain.get();
     }
 
     std::vector<DISPLAY_DEVICE> Window::enumerateDisplayDevices() {
