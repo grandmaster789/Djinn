@@ -38,14 +38,12 @@ namespace {
         bool valid = true;
 
         // log all missing layers
-        for (const auto& name : requiredLayerNames)
-        {
+        for (const auto& name : requiredLayerNames) {
             std::string s(name);
 
             if (!contains_if(availableLayers, [s](const vk::LayerProperties& prop) {
                     return (s == prop.layerName);
-                }))
-            {
+                })) {
                 valid = false;
                 gLogError << "Missing required layer: " << name;
             }
@@ -63,14 +61,12 @@ namespace {
         bool valid = true;
 
         // log all missing layers
-        for (const auto& name : requiredExtensions)
-        {
+        for (const auto& name : requiredExtensions) {
             std::string s(name);
 
             if (!contains_if(availableExtensions, [s](const vk::ExtensionProperties& prop) {
                     return (s == prop.extensionName);
-                }))
-            {
+                })) {
                 valid = false;
                 gLogError << "Missing required layer: " << name;
             }
@@ -101,6 +97,7 @@ namespace djinn {
             m_MainWindowSettings.m_DisplayDevice);
 
         initLogicalDevice();  // depends on having an output surface
+        initUniformBuffer();
 
         // [NOTE] this doesn't really belong here, but it's the first time this has come up
 #if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS
@@ -124,8 +121,7 @@ namespace djinn {
     }
 
     void Graphics::update() {
-        if (!m_Windows.empty())
-        {
+        if (!m_Windows.empty()) {
             MSG msg = {};
 
             while (PeekMessage(
@@ -134,8 +130,7 @@ namespace djinn {
                 0,         // msg filter min
                 0,         // msg filter max
                 PM_REMOVE  // remove message
-                ))
-            {
+                )) {
                 if (msg.message == WM_QUIT)
                     m_Engine->stop();
 
@@ -198,6 +193,10 @@ namespace djinn {
 
     vk::SurfaceFormatKHR Graphics::getSurfaceFormat() const {
         return m_SurfaceFormat;
+    }
+
+    vk::Format Graphics::getDepthFormat() const {
+        return m_DepthFormat;
     }
 
     Graphics::Window*
@@ -319,11 +318,9 @@ namespace djinn {
             };
 
             // try to find a graphics queue family that also supports presenting
-            for (uint32_t i = 0; i < queueFamilyProps.size(); ++i)
-            {
+            for (uint32_t i = 0; i < queueFamilyProps.size(); ++i) {
                 if (hasFlags(queueFamilyProps[i], vk::QueueFlagBits::eGraphics)
-                    && supportsPresent(i, getMainWindow()->getSurface()))
-                {
+                    && supportsPresent(i, getMainWindow()->getSurface())) {
                     m_GraphicsFamilyIdx = i;
                     m_PresentFamilyIdx  = i;
                     break;
@@ -338,8 +335,8 @@ namespace djinn {
             float priorities[] = {0.0f};
 
             std::vector<vk::DeviceQueueCreateInfo> queueInfos;
-            std::vector<const char*>               deviceExtensions = {};
-            std::vector<const char*>               deviceLayers     = {};
+            std::vector<const char*> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+            std::vector<const char*> deviceLayers     = {};
 
             queueInfos.emplace_back();
             queueInfos.back()
@@ -362,7 +359,8 @@ namespace djinn {
         // setup primary command pool + buffer
         {
             vk::CommandPoolCreateInfo info;
-            info.setQueueFamilyIndex(m_GraphicsFamilyIdx);
+            info.setQueueFamilyIndex(m_GraphicsFamilyIdx)
+                .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 
             m_CommandPool = m_Device->createCommandPoolUnique(info);
 
@@ -384,12 +382,10 @@ namespace djinn {
                 throw std::runtime_error("No surface formats available");
 
             // special case -- when the driver reports 1 undefined format it actually supports all of them
-            if (allFormats.size() == 1)
-            {
+            if (allFormats.size() == 1) {
                 m_SurfaceFormat = {vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear};
             }
-            else
-            {
+            else {
                 vk::SurfaceFormatKHR preferred
                     = {vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear};
 
@@ -400,5 +396,110 @@ namespace djinn {
                     m_SurfaceFormat = allFormats.front();
             }
         }
+
+        // execute initialization commands
+        {
+            vk::CommandBufferBeginInfo cbbi;
+
+            m_CommandBuffer->begin(cbbi);
+
+            // init device queues
+            m_GraphicsQueue = m_Device->getQueue(m_GraphicsFamilyIdx, 0);
+
+            if (m_PresentFamilyIdx == m_GraphicsFamilyIdx)
+                m_PresentQueue = m_GraphicsQueue;
+            else
+                m_PresentQueue = m_Device->getQueue(m_PresentFamilyIdx, 0);
+
+            getMainWindow()->initSwapchain();
+
+            m_CommandBuffer->end();
+        }
     }
+
+    void Graphics::initUniformBuffer() {
+        // setup common camera matrices
+        {
+            float fov = glm::radians(45.0f);
+            float w   = static_cast<float>(getMainWindow()->getWidth());
+            float h   = static_cast<float>(getMainWindow()->getHeight());
+
+            if (w > h)
+                fov *= h / w;
+
+            m_Projection = glm::perspective(fov, w / h, 0.1f, 100.0f);
+            m_View       = glm::lookAt(
+                glm::vec3(-5, 3, -10),  // camera at (-5, 3, -10) in world space
+                glm::vec3(0, 0, 0),     // look towards the origin
+                glm::vec3(0, 1, 0)      // y-axis is upwards
+            );
+            m_Model = glm::mat4(1.0f);
+
+            // clang-format off
+			// Vulkan clip space has inverted Y and half Z
+			m_Clip = glm::mat4(
+				1,  0,    0, 0,
+				0, -1,    0, 0,
+				0,  0, 0.5f, 0,
+				0,  0, 0.5f, 1
+			);
+            // clang-format on
+
+            m_MVP = m_Clip * m_Projection * m_View * m_Model;
+        }
+
+        {
+            // request a buffer for the MVP matrix
+            vk::BufferCreateInfo bci;
+
+            bci.setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
+                .setSharingMode(vk::SharingMode::eExclusive)
+                .setSize(sizeof(m_MVP));
+
+            m_UniformBuffer = m_Device->createBufferUnique(bci);
+
+            // make sure this is host visible and coherent
+            auto reqs    = m_Device->getBufferMemoryRequirements(*m_UniformBuffer);
+            auto memType = graphics::selectMemoryTypeIndex(
+                m_PhysicalDevice,
+                reqs.memoryTypeBits,
+                vk::MemoryPropertyFlagBits::eHostVisible
+                    | vk::MemoryPropertyFlagBits::eHostCoherent);
+
+            vk::MemoryAllocateInfo mai;
+            mai.setAllocationSize(reqs.size).setMemoryTypeIndex(memType);
+
+            m_UniformMemory = m_Device->allocateMemoryUnique(mai);
+
+            // map the memory, copy the matrix and bind the buffer
+            std::byte* pData;
+            m_Device->mapMemory(
+                *m_UniformMemory, 0, reqs.size, vk::MemoryMapFlags(), (void**)&pData);
+
+            memcpy(pData, &m_MVP, sizeof(m_MVP));
+
+            m_Device->unmapMemory(*m_UniformMemory);
+            m_Device->bindBufferMemory(*m_UniformBuffer, *m_UniformMemory, 0);
+        }
+    }
+
+    namespace graphics {
+        uint32_t selectMemoryTypeIndex(
+            vk::PhysicalDevice      gpu,
+            uint32_t                typeBits,
+            vk::MemoryPropertyFlags properties) {
+            auto props = gpu.getMemoryProperties();
+
+            for (uint32_t i = 0; i < props.memoryTypeCount; ++i) {
+                if ((typeBits & 1) == 1) {
+                    if ((props.memoryTypes[i].propertyFlags & properties) == properties)
+                        return i;
+                }
+
+                typeBits >>= 1;  // NOTE not entirely sure about this
+            }
+
+            return 0;  // no match found
+        }
+    }  // namespace graphics
 }  // namespace djinn

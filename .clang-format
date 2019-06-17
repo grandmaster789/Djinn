@@ -36,13 +36,13 @@ BinPackParameters: false
 
 BreakBeforeBraces: Custom
 BraceWrapping:
-  AfterClass: true
-  AfterStruct: true
+  AfterClass: false
+  AfterStruct: false
   AfterEnum: true
   AfterNamespace: false
   AfterUnion: false
   AfterExternBlock: true
-  AfterControlStatement: true
+  AfterControlStatement: false
   AfterFunction: false
   BeforeCatch: true
   BeforeElse: true
