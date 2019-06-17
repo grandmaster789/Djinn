@@ -23,7 +23,8 @@ namespace djinn::util {
 			if (it->second == ptr)
 				m_Storage.erase(it);
 			else
-				throw std::runtime_error("The supplied pointer does not match the stored pointer");
+				throw std::runtime_error(
+				    "The supplied pointer does not match the stored pointer");
 		}
 	}
 

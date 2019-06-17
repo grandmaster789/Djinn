@@ -7,10 +7,10 @@
 namespace djinn::core::detail {
 	template <typename T>
 	class MediatorQueue {
-	private:
+private:
 		MediatorQueue() = default;
 
-	public:
+public:
 		static MediatorQueue& instance();
 
 		template <typename H>
@@ -24,7 +24,7 @@ namespace djinn::core::detail {
 
 		void broadcast(const T& message);
 
-	private:
+private:
 		using Mutex     = std::mutex;
 		using LockGuard = std::lock_guard<Mutex>;
 		using Handler   = std::function<void(const T&)>;

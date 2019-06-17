@@ -83,10 +83,7 @@ namespace djinn {
 				if (m_Application) {
 					if (m_Application->isInitialized()) m_Application->update();
 				} else {
-					gLog << "No application was set, going into unit test mode";
-					for (auto& system : m_Systems) system->unittest();
-
-					gLog << "Unit test complete";
+					gLog << "No application was set, stopping...";
 					stop();
 				}
 			}
@@ -149,8 +146,8 @@ namespace djinn {
 		for (auto it = m_InitOrder.crbegin(); it != m_InitOrder.crend(); ++it) {
 			auto systemName = *it;
 			auto jt         = util::find_if(m_Systems, [systemName](const SystemPtr& ptr) {
-                return ptr->getName() == systemName;
-            });
+        return ptr->getName() == systemName;
+      });
 
 			// allow the system to clean up
 			(*jt)->shutdown();
@@ -178,7 +175,8 @@ namespace djinn {
 			// save system settings to disk
 			std::ofstream out(g_SystemConfigFilename.c_str());
 			if (!out.good())
-				gLogError << "Failed to open " << g_SystemConfigFilename << ", discarding settings";
+				gLogError << "Failed to open " << g_SystemConfigFilename
+				          << ", discarding settings";
 			else
 				out << m_SystemSettings.dump(4);
 		}

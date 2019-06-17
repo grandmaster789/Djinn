@@ -16,7 +16,7 @@ namespace djinn::input {
 
 namespace djinn {
 	class Input: public core::System {
-	public:
+public:
 		using Keyboard = input::Keyboard;
 		using Mouse    = input::Mouse;
 		using Gamepad  = input::Gamepad;
@@ -27,8 +27,6 @@ namespace djinn {
 		void update() override;
 		void shutdown() override;
 
-		void unittest() override;
-
 		void registerDevice(Keyboard* kbd);
 		void unregisterDevice(Keyboard* kbd);
 
@@ -38,7 +36,7 @@ namespace djinn {
 		const std::vector<Keyboard*>& getKeyboards() const;
 		const std::vector<Mouse*>&    getMice() const;
 
-	private:
+private:
 		std::vector<Keyboard*> m_Keyboards;
 		std::vector<Mouse*>    m_Mice;
 	};

@@ -9,7 +9,7 @@ namespace djinn::util {
 	// could be optimized further
 
 	class DynamicBitset {
-	public:
+public:
 		DynamicBitset(size_t numBits, bool initialValue = false);
 
 		bool   test(size_t index) const noexcept;
@@ -26,7 +26,7 @@ namespace djinn::util {
 
 		friend std::ostream& operator<<(std::ostream&, const DynamicBitset&);
 
-	private:
+private:
 		using Piece                       = uint32_t;
 		static constexpr int bitsPerPiece = static_cast<int>(sizeof(Piece) * CHAR_BIT);
 

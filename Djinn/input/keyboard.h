@@ -7,7 +7,7 @@ namespace djinn {
 
 	namespace input {
 		class Keyboard {
-		public:
+	public:
 			// grouped (groups in random order though)
 			enum class eKey {
 				undefined,
@@ -120,7 +120,7 @@ namespace djinn {
 				eKey      key;
 			};
 
-		private:
+	private:
 			Input* m_Manager = nullptr;
 
 			bool m_Keys[256] = {};

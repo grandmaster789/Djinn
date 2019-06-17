@@ -18,7 +18,7 @@ namespace djinn {
 	// [NOTE] this *can* be used as a base class, but it's not required
 	template <typename T>
 	class MessageHandler {
-	public:
+public:
 		MessageHandler();
 		virtual ~MessageHandler();
 

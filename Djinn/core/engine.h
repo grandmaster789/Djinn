@@ -9,17 +9,17 @@
 
 namespace djinn {
 	class Engine {
-	public:
+public:
 		using ApplicationPtr = std::unique_ptr<app::Application>;
 		using SystemPtr      = std::unique_ptr<core::System>;
 		using SystemList     = std::vector<SystemPtr>;
 
 		static Engine& instance();
 
-	private:
+private:
 		Engine();
 
-	public:
+public:
 		~Engine() = default;
 
 		Engine(const Engine&) = delete;
@@ -44,7 +44,7 @@ namespace djinn {
 		void run();
 		void stop();
 
-	private:
+private:
 		void init_external_libraries();
 		void shutdown_external_libraries();
 

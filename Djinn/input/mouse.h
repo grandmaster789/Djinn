@@ -18,7 +18,7 @@ namespace djinn {
 		// [NOTE] X/Y coordinates are normalized to [-1..1] within the associated window
 
 		class Mouse {
-		public:
+	public:
 			using Window = graphics::Window;
 
 			enum class eButton { left, right, middle };
@@ -90,7 +90,7 @@ namespace djinn {
 				Window* m_Window;
 			};
 
-		private:
+	private:
 			Input* m_Manager;
 
 			bool  m_Buttons[3] = {};

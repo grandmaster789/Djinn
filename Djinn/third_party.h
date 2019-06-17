@@ -8,6 +8,8 @@
 #include <vulkan/spirv.hpp>
 #include <vulkan/vulkan.hpp>  // https://vulkan.lunarg.com/doc/sdk/1.1.92.1/windows/vkspec.html
 
+#include "vk_ostream.h"
+
 #pragma warning(push)
 #define GLM_FORCE_RADIANS
 

@@ -156,6 +156,7 @@
     <ClCompile Include="core\system.cpp" />
     <ClCompile Include="graphics\extensions.cpp" />
     <ClCompile Include="graphics\graphics.cpp" />
+    <ClCompile Include="graphics\swapchain.cpp" />
     <ClCompile Include="graphics\window.cpp" />
     <ClCompile Include="input\mouse.cpp" />
     <ClCompile Include="third_party.cpp" />
@@ -165,6 +166,7 @@
     <ClCompile Include="util\exception_windows.cpp" />
     <ClCompile Include="util\string_util.cpp" />
     <ClCompile Include="util\typemap.cpp" />
+    <ClCompile Include="vk_ostream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="core\engine.inl" />
@@ -193,6 +195,7 @@
     <ClInclude Include="core\system.h" />
     <ClInclude Include="graphics\extensions.h" />
     <ClInclude Include="graphics\graphics.h" />
+    <ClInclude Include="graphics\swapchain.h" />
     <ClInclude Include="graphics\window.h" />
     <ClInclude Include="input\mouse.h" />
     <ClInclude Include="math\math.h" />
@@ -209,6 +212,7 @@
     <ClInclude Include="util\string_util.h" />
     <ClInclude Include="util\typemap.h" />
     <ClInclude Include="util\variant.h" />
+    <ClInclude Include="vk_ostream.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -14,8 +14,6 @@ namespace djinn {
 		System::shutdown();
 	}
 
-	void Input::unittest() {}
-
 	void Input::registerDevice(Keyboard* kbd) {
 		if (!util::contains(m_Keyboards, kbd))
 			m_Keyboards.push_back(kbd);

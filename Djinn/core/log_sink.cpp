@@ -69,7 +69,8 @@ namespace djinn::core {
 			FileSink(FileSink&&) = default;
 			FileSink& operator=(FileSink&&) = default;
 
-			void operator()(const LogMessage::MetaInfo& meta, const std::string& message) const {
+			void
+			    operator()(const LogMessage::MetaInfo& meta, const std::string& message) const {
 				using namespace std::chrono;
 				using std::experimental::filesystem::path;
 

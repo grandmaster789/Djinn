@@ -13,7 +13,7 @@ namespace djinn::core {
 	// and is flushed to the parent Logger object during destruction
 	// This allows automatically adding prefix/postfix strings at each point
 	class LogMessage {
-	private:
+private:
 		friend class Logger;  // only allow Logger objects to construct a LogMessage object
 
 		LogMessage(
@@ -27,7 +27,7 @@ namespace djinn::core {
 		LogMessage(LogMessage&&)                 = default;
 		LogMessage& operator=(LogMessage&&) = default;
 
-	public:
+public:
 		~LogMessage();
 
 		// accumulate values, iostream style
@@ -45,7 +45,7 @@ namespace djinn::core {
 			int          m_SourceLine;
 		};
 
-	private:
+private:
 		std::ostringstream m_Buffer;
 		Logger*            m_Owner;
 		MetaInfo           m_MetaInfo;

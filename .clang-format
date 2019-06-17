@@ -40,7 +40,7 @@ BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
 BreakStringLiterals: true
 
-ColumnLimit: 100
+ColumnLimit: 90
 CommentPragmas: '^[NOTE] '
 CompactNamespaces: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
@@ -85,5 +85,5 @@ SpacesInParentheses: false
 SpacesInSquareBrackets: false
 Standard: Cpp11
 
-TabWidth: 4
-UseTab: ForIndentation
+TabWidth: 2
+UseTab: Never

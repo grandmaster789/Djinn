@@ -58,7 +58,8 @@ namespace djinn::util {
 	}
 
 	template <typename C, typename E, typename P>
-	typename C::const_iterator binary_find(const C& container, const E& value, P&& predicateFn) {
+	typename C::const_iterator
+	    binary_find(const C& container, const E& value, P&& predicateFn) {
 		using std::begin;
 		using std::end;
 		using std::lower_bound;

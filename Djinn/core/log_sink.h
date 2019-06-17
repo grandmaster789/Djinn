@@ -11,7 +11,7 @@ namespace djinn::core {
 	// this will accept any type of backend that has implemented
 	// ::operator()(const LogMessage::MetaInfo&, const std::string)
 	class LogSink {
-	public:
+public:
 		template <typename T>
 		LogSink(T&& impl);
 
@@ -21,12 +21,12 @@ namespace djinn::core {
 		LogSink(LogSink&& sink) noexcept;
 		LogSink& operator=(LogSink&& sink) noexcept;
 
-		bool operator==(
-		    const LogSink& sink) const;  // implemented so that Logger can detect duplicate sinks
+		bool operator==(const LogSink& sink)
+		    const;  // implemented so that Logger can detect duplicate sinks
 
 		void write(const LogMessage::MetaInfo& metaInfo, const std::string& message);
 
-	private:
+private:
 		struct Concept {
 			virtual ~Concept() = default;
 
@@ -38,8 +38,8 @@ namespace djinn::core {
 		struct Model: Concept {
 			Model(T impl);
 
-			virtual void
-			    write(const LogMessage::MetaInfo& metaInfo, const std::string& message) override;
+			virtual void write(const LogMessage::MetaInfo& metaInfo, const std::string& message)
+			    override;
 
 			T m_Impl;
 		};

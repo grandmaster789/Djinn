@@ -14,63 +14,77 @@
 */
 
 namespace djinn {
-	class Graphics;
+    class Graphics;
 
-	namespace input {
-		class Mouse;
-		class Keyboard;
-	}  // namespace input
+    namespace input {
+        class Mouse;
+        class Keyboard;
+    }  // namespace input
 
-	namespace graphics {
-		class Window {
-		public:
-			friend class Context;
+    namespace graphics {
+        class SwapChain;
 
-			using Mouse    = input::Mouse;
-			using Keyboard = input::Keyboard;
+        class Window {
+        public:
+            friend class Context;
 
-			Window(int width, int height, bool windowed, int displayDevice, Graphics* owner);
-			~Window();
+            using Mouse    = input::Mouse;
+            using Keyboard = input::Keyboard;
 
-			// no-copy, no-move
-			Window(const Window&) = delete;
-			Window& operator=(const Window&) = delete;
-			Window(Window&&)                 = delete;
-			Window& operator=(Window&&) = delete;
+            Window(
+                int       width,
+                int       height,
+                bool      windowed,
+                int       displayDevice,
+                Graphics* owner);
+            ~Window();
 
-			HWND getHandle() const;
+            // no-copy, no-move
+            Window(const Window&) = delete;
+            Window& operator=(const Window&) = delete;
+            Window(Window&&)                 = delete;
+            Window& operator=(Window&&) = delete;
 
-			LRESULT winProc(HWND handle, UINT message, WPARAM wp, LPARAM lp);
+            HWND getHandle() const;
 
-			bool isMainWindow() const;
+            LRESULT winProc(HWND handle, UINT message, WPARAM wp, LPARAM lp);
 
-			const Keyboard* getKeyboard() const;
-			const Mouse*    getMouse() const;
+            bool isMainWindow() const;
 
-			uint32_t getWidth() const;
-			uint32_t getHeight() const;
+            const Keyboard* getKeyboard() const;
+            const Mouse*    getMouse() const;
 
-		private:
-			static std::vector<DISPLAY_DEVICE>
-			               enumerateDisplayDevices();  // https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_display_devicea
-			static DEVMODE getCurrentDisplayMode(
-			    DISPLAY_DEVICE
-			        dd);  // https://docs.microsoft.com/en-us/windows/desktop/api/Wingdi/ns-wingdi-_devicemodea
+            uint32_t getWidth() const;
+            uint32_t getHeight() const;
 
-			void initKeyMapping();
+            vk::SurfaceKHR getSurface() const;
+            SwapChain*     getSwapChain() const;
 
-			Graphics* m_Owner  = nullptr;  // needed for notifying close events
-			HWND      m_Handle = nullptr;
+        private:
+            // https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_display_devicea
+            static std::vector<DISPLAY_DEVICE> enumerateDisplayDevices();
 
-			uint32_t m_Width  = 0;
-			uint32_t m_Height = 0;
+            // https://docs.microsoft.com/en-us/windows/desktop/api/Wingdi/ns-wingdi-_devicemodea
+            static DEVMODE getCurrentDisplayMode(DISPLAY_DEVICE dd);
 
-			bool m_CursorTracked = false;
+            void initSurface(uint32_t queueFamilyCount);
+            void initKeyMapping();
 
-			inline static HWND s_MainWindow = nullptr;
+            Graphics* m_Owner  = nullptr;  // needed for notifying close events
+            HWND      m_Handle = nullptr;
 
-			std::unique_ptr<Keyboard> m_Keyboard;
-			std::unique_ptr<Mouse>    m_Mouse;
-		};
-	}  // namespace graphics
+            uint32_t m_Width  = 0;
+            uint32_t m_Height = 0;
+
+            bool m_CursorTracked = false;
+
+            inline static HWND s_MainWindow = nullptr;
+
+            std::unique_ptr<Keyboard> m_Keyboard;
+            std::unique_ptr<Mouse>    m_Mouse;
+
+            vk::UniqueSurfaceKHR       m_Surface;
+            std::unique_ptr<SwapChain> m_SwapChain;
+        };
+    }  // namespace graphics
 }  // namespace djinn

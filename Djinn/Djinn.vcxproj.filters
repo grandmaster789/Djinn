@@ -53,6 +53,10 @@
     <ClCompile Include="graphics\extensions.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="vk_ostream.cpp" />
+    <ClCompile Include="graphics\swapchain.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\engine.inl">
@@ -92,9 +96,6 @@
       <Filter>util</Filter>
     </None>
     <None Include="math\trigonometry.inl">
-      <Filter>math</Filter>
-    </None>
-    <None Include="math\math.inl">
       <Filter>math</Filter>
     </None>
   </ItemGroup>
@@ -201,6 +202,11 @@
     </ClInclude>
     <ClInclude Include="math\trigonometry.h">
       <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="math\math.h" />
+    <ClInclude Include="vk_ostream.h" />
+    <ClInclude Include="graphics\swapchain.h">
+      <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

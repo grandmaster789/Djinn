@@ -29,7 +29,7 @@ namespace djinn::math {
 			return v0;
 	}
 
-	template <typename T, typename...Ts>
+	template <typename T, typename... Ts>
 	constexpr auto max(const T& v0, const Ts&... vs) {
 		return max(v0, max(vs...));
 	}
@@ -42,8 +42,8 @@ namespace djinn::math {
 			return v1;
 	}
 
-	template <typename T, typename...Ts>
+	template <typename T, typename... Ts>
 	constexpr auto min(const T& v0, const Ts&... vs) {
 		return min(v0, min(vs...));
 	}
-}
+}  // namespace djinn::math
