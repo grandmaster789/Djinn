@@ -79,8 +79,7 @@ namespace djinn::graphics {
         if (devices.empty())
             throw std::runtime_error("No display devices are available");
 
-        if (devices.size() < displayDevice)
-        {
+        if (devices.size() < displayDevice) {
             gLogWarning << "Display device number " << displayDevice
                         << " is unavailable, falling back to primary display";
             displayDevice = 0;
@@ -96,8 +95,7 @@ namespace djinn::graphics {
         // https://docs.microsoft.com/en-us/windows/desktop/winmsg/extended-window-styles
         DWORD exStyle = 0;
 
-        if (windowed)
-        {
+        if (windowed) {
             // center the rect
             int device_x      = deviceMode.dmPosition.x;
             int device_y      = deviceMode.dmPosition.y;
@@ -113,8 +111,7 @@ namespace djinn::graphics {
 
             exStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
         }
-        else
-        {
+        else {
             // fill up the entire device space
             int device_x      = deviceMode.dmPosition.x;
             int device_y      = deviceMode.dmPosition.y;
@@ -150,8 +147,7 @@ namespace djinn::graphics {
             nullptr                  // additional parameters
         );
 
-        if (m_Handle)
-        {
+        if (m_Handle) {
             SetWindowLongPtr(m_Handle, 0, (LONG_PTR)this);
 
             if (!s_MainWindow)
@@ -186,8 +182,7 @@ namespace djinn::graphics {
     }
 
     Window::~Window() {
-        if (m_Handle)
-        {
+        if (m_Handle) {
             DestroyWindow(m_Handle);
         }
     }
@@ -325,50 +320,42 @@ namespace djinn::graphics {
             return std::make_pair(x, y);
         };
 
-        switch (message)
-        {
-        case WM_DESTROY:
-        {
+        switch (message) {
+        case WM_DESTROY: {
             if (isMainWindow())
                 PostQuitMessage(0);
             break;
         }
 
-        case WM_CLOSE:
-        {
+        case WM_CLOSE: {
             m_Owner->close(this);
             break;
         }
 
         case WM_KEYDOWN:
-        case WM_SYSKEYDOWN:
-        {
+        case WM_SYSKEYDOWN: {
             auto key = findKeyCode(wp);
             m_Keyboard->setKeyState(key, true);
             break;
         }
 
-        case WM_PAINT:
-        {
+        case WM_PAINT: {
             ValidateRect(m_Handle, nullptr);  // this makes the entire client area redraw
             break;
         }
 
         case WM_KEYUP:
-        case WM_SYSKEYUP:
-        {
+        case WM_SYSKEYUP: {
             auto key = findKeyCode(wp);
             m_Keyboard->setKeyState(key, false);
             break;
         }
 
-        case WM_MOUSEMOVE:
-        {
+        case WM_MOUSEMOVE: {
             auto [x, y] = getMouseCoords();
             m_Mouse->setPosition(x, y);
 
-            if (!m_CursorTracked)
-            {
+            if (!m_CursorTracked) {
                 TRACKMOUSEEVENT tracker = {};
 
                 tracker.cbSize    = sizeof(tracker);
@@ -384,78 +371,66 @@ namespace djinn::graphics {
             break;
         }
 
-        case WM_LBUTTONDOWN:
-        {
+        case WM_LBUTTONDOWN: {
             SetCapture(m_Handle);
             m_Mouse->setButtonState(eMouseButton::left, true);
             break;
         }
-        case WM_RBUTTONDOWN:
-        {
+        case WM_RBUTTONDOWN: {
             SetCapture(m_Handle);
             m_Mouse->setButtonState(eMouseButton::right, true);
             break;
         }
-        case WM_MBUTTONDOWN:
-        {
+        case WM_MBUTTONDOWN: {
             SetCapture(m_Handle);
             m_Mouse->setButtonState(eMouseButton::middle, true);
             break;
         }
 
-        case WM_LBUTTONUP:
-        {
+        case WM_LBUTTONUP: {
             ReleaseCapture();
             m_Mouse->setButtonState(eMouseButton::left, false);
             break;
         }
-        case WM_RBUTTONUP:
-        {
+        case WM_RBUTTONUP: {
             ReleaseCapture();
             m_Mouse->setButtonState(eMouseButton::right, false);
             break;
         }
-        case WM_MBUTTONUP:
-        {
+        case WM_MBUTTONUP: {
             ReleaseCapture();
             m_Mouse->setButtonState(eMouseButton::middle, false);
             break;
         }
 
-        case WM_LBUTTONDBLCLK:
-        {
+        case WM_LBUTTONDBLCLK: {
             SetCapture(m_Handle);
             m_Mouse->doDoubleClick(eMouseButton::left);
             break;
         }
-        case WM_RBUTTONDBLCLK:
-        {
+        case WM_RBUTTONDBLCLK: {
             SetCapture(m_Handle);
             m_Mouse->doDoubleClick(eMouseButton::right);
             break;
         }
-        case WM_MBUTTONDBLCLK:
-        {
+        case WM_MBUTTONDBLCLK: {
             SetCapture(m_Handle);
             m_Mouse->doDoubleClick(eMouseButton::middle);
             break;
         }
 
-        case WM_MOUSEWHEEL:
-        {
+        case WM_MOUSEWHEEL: {
             m_Mouse->doScroll(GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA);
             break;
         }
 
-        case WM_MOUSELEAVE:
-        {
+        case WM_MOUSELEAVE: {
             m_CursorTracked = false;
             m_Mouse->doLeave(this);
             break;
         }
 
-        case WM_SIZE:
-        {
+        case WM_SIZE: {
             // NOTE this is a bit weaksauce
             m_Width  = GET_X_LPARAM(lp);
             m_Height = GET_Y_LPARAM(lp);
@@ -509,8 +484,7 @@ namespace djinn::graphics {
     std::vector<DISPLAY_DEVICE> Window::enumerateDisplayDevices() {
         std::vector<DISPLAY_DEVICE> result;
 
-        for (int i = 0;; i++)
-        {
+        for (int i = 0;; i++) {
             DISPLAY_DEVICE dd = {};
             dd.cb             = sizeof(dd);
 

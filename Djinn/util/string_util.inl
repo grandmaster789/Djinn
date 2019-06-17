@@ -4,12 +4,12 @@
 #include <sstream>
 
 namespace djinn::util {
-	template <typename... tArgs>
-	std::string stringify(tArgs&&... args) {
-		std::stringstream sstr;
+    template <typename... tArgs>
+    std::string stringify(tArgs&&... args) {
+        std::stringstream sstr;
 
-		(sstr << ... << std::forward<tArgs>(args));
+        (sstr << ... << std::forward<tArgs>(args));
 
-		return sstr.str();
-	}
+        return sstr.str();
+    }
 }  // namespace djinn::util
