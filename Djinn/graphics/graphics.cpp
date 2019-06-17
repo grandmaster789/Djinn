@@ -161,8 +161,20 @@ namespace djinn {
         return *m_Instance;
     }
 
+    vk::PhysicalDevice Graphics::getPhysicalDevice() const {
+        return m_PhysicalDevice;
+    }
+
     vk::Device Graphics::getDevice() const {
         return *m_Device;
+    }
+
+    vk::CommandPool Graphics::getCommandPool() const {
+        return *m_CommandPool;
+    }
+
+    vk::CommandBuffer Graphics::getCommandBuffer() const {
+        return *m_CommandBuffer;
     }
 
     Graphics::Window*
@@ -194,11 +206,11 @@ namespace djinn {
             vk::InstanceCreateInfo        instInfo;
             vk::Win32SurfaceCreateInfoKHR surfaceInfo;
 
-            appInfo.setPApplicationName("Vulkan program")
+            appInfo.setPApplicationName("Bazaar")
                 .setApplicationVersion(1)
-                .setPEngineName(nullptr)
+                .setPEngineName("Djinn")
                 .setEngineVersion(1)
-                .setApiVersion(VK_API_VERSION_1_0);
+                .setApiVersion(VK_API_VERSION_1_1);
 
             instInfo.setFlags(vk::InstanceCreateFlags())
                 .setPApplicationInfo(&appInfo)
@@ -310,6 +322,22 @@ namespace djinn {
                 .setPpEnabledLayerNames(deviceLayers.data());
 
             m_Device = m_PhysicalDevice.createDeviceUnique(deviceInfo);
+        }
+
+        // setup primary command pool + buffer
+        {
+            vk::CommandPoolCreateInfo info;
+            info.setQueueFamilyIndex(m_GraphicsFamilyIdx);
+
+            m_CommandPool = m_Device->createCommandPoolUnique(info);
+
+            vk::CommandBufferAllocateInfo cbai;
+            cbai.setCommandBufferCount(1)
+                .setCommandPool(*m_CommandPool)
+                .setLevel(vk::CommandBufferLevel::ePrimary);
+
+            // [NOTE] allocateCommandBuffersUnique yields a vector...
+            m_CommandBuffer = std::move(m_Device->allocateCommandBuffersUnique(cbai)[0]);
         }
     }
 }  // namespace djinn

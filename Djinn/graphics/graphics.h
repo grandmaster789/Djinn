@@ -35,8 +35,11 @@ namespace djinn {
 
         void close(Window* w);
 
-        vk::Instance getInstance() const;
-        vk::Device   getDevice() const;
+        vk::Instance       getInstance() const;
+        vk::PhysicalDevice getPhysicalDevice() const;
+        vk::Device         getDevice() const;
+        vk::CommandPool    getCommandPool() const;
+        vk::CommandBuffer  getCommandBuffer() const;
 
     private:
         // WSI integration
@@ -68,5 +71,8 @@ namespace djinn {
         static constexpr uint32_t NOT_FOUND = ~0UL;
 
         uint32_t m_GraphicsFamilyIdx = NOT_FOUND;
+
+        vk::UniqueCommandPool   m_CommandPool;
+        vk::UniqueCommandBuffer m_CommandBuffer;
     };
 }  // namespace djinn

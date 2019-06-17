@@ -54,6 +54,9 @@
       <Filter>graphics</Filter>
     </ClCompile>
     <ClCompile Include="vk_ostream.cpp" />
+    <ClCompile Include="graphics\swapchain.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\engine.inl">
@@ -202,5 +205,8 @@
     </ClInclude>
     <ClInclude Include="math\math.h" />
     <ClInclude Include="vk_ostream.h" />
+    <ClInclude Include="graphics\swapchain.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
