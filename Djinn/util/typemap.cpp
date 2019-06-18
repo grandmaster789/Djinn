@@ -1,7 +1,7 @@
 #include "typemap.h"
 
 namespace djinn::util {
-	void TypeMap::clear() {
-		m_Storage.clear();
-	}
+    void TypeMap::clear() {
+        m_Storage.clear();
+    }
 }  // namespace djinn::util

@@ -24,8 +24,7 @@ namespace djinn {
     namespace graphics {
         class Swapchain;
 
-        class Window
-        {
+        class Window {
         public:
             friend class Context;
 
