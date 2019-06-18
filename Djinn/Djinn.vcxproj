@@ -79,6 +79,10 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
+    <PostBuildEvent>
+      <Command>call "$(SolutionDir)copyShaders.bat" $(PlatformTarget) $(Configuration) "$(SolutionDir)" "$(TargetDir)"
+call "$(SolutionDir)copyAssets.bat" $(PlatformTarget) $(Configuration) "$(SolutionDir)" "$(TargetDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -103,6 +107,10 @@
       </AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)/shaderc/build/install/lib;$(VULKAN_SDK)</AdditionalLibraryDirectories>
     </Lib>
+    <PostBuildEvent>
+      <Command>call "$(SolutionDir)copyShaders.bat" $(PlatformTarget) $(Configuration) "$(SolutionDir)" "$(TargetDir)"
+call "$(SolutionDir)copyAssets.bat" $(PlatformTarget) $(Configuration) "$(SolutionDir)" "$(TargetDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -117,6 +125,10 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <PostBuildEvent>
+      <Command>call "$(SolutionDir)copyShaders.bat" $(PlatformTarget) $(Configuration) "$(SolutionDir)" "$(TargetDir)"
+call "$(SolutionDir)copyAssets.bat" $(PlatformTarget) $(Configuration) "$(SolutionDir)" "$(TargetDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -145,6 +157,10 @@
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
+    <PostBuildEvent>
+      <Command>call "$(SolutionDir)copyShaders.bat" $(PlatformTarget) $(Configuration) "$(SolutionDir)" "$(TargetDir)"
+call "$(SolutionDir)copyAssets.bat" $(PlatformTarget) $(Configuration) "$(SolutionDir)" "$(TargetDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="app\application.cpp" />
@@ -164,6 +180,7 @@
     <ClCompile Include="input\keyboard.cpp" />
     <ClCompile Include="util\dynamic_bitset.cpp" />
     <ClCompile Include="util\exception_windows.cpp" />
+    <ClCompile Include="util\filesystem.cpp" />
     <ClCompile Include="util\string_util.cpp" />
     <ClCompile Include="util\typemap.cpp" />
     <ClCompile Include="vk_ostream.cpp" />
@@ -176,6 +193,8 @@
     <None Include="core\mediator_queue.inl" />
     <None Include="core\system.inl" />
     <None Include="math\trigonometry.inl" />
+    <None Include="shaders\basic.glsl.frag" />
+    <None Include="shaders\basic.glsl.vert" />
     <None Include="util\algorithm.inl" />
     <None Include="util\flat_map.inl" />
     <None Include="util\reflect.inl" />
@@ -207,6 +226,7 @@
     <ClInclude Include="util\algorithm.h" />
     <ClInclude Include="util\dynamic_bitset.h" />
     <ClInclude Include="util\exception_windows.h" />
+    <ClInclude Include="util\filesystem.h" />
     <ClInclude Include="util\flat_map.h" />
     <ClInclude Include="util\reflect.h" />
     <ClInclude Include="util\string_util.h" />

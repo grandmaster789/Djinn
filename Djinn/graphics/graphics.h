@@ -64,11 +64,13 @@ namespace djinn {
             bool m_Windowed      = true;  // only supporting borderless fullscreen windows right now
         } m_MainWindowSettings;
 
-        // vulkan-related items
+        // vulkan-related items, mostly based on the official API samples
         void initVulkan();
         void initLogicalDevice();  // [NOTE] depends on the existance of a window surface
         void initUniformBuffer();
         void initPipelineLayouts();
+        void initRenderPass();
+        void initShaders(const std::string& vtxSrc, const std::string& fragSrc);
 
         vk::UniqueInstance                 m_Instance;
         vk::UniqueDebugReportCallbackEXT   m_DebugCallback;
@@ -102,6 +104,7 @@ namespace djinn {
 
         vk::UniqueDescriptorSetLayout m_DescriptorSetLayout;
         vk::UniquePipelineLayout      m_PipelineLayout;
+        vk::UniqueRenderPass          m_RenderPass;
     };
 
     namespace graphics {

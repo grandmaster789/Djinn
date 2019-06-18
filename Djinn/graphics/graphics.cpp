@@ -3,6 +3,7 @@
 #include "extensions.h"
 #include "math/trigonometry.h"
 #include "util/algorithm.h"
+#include "util/filesystem.h"
 #include "util/flat_map.h"
 
 #include <fstream>
@@ -99,6 +100,7 @@ namespace djinn {
         initLogicalDevice();  // depends on having an output surface
         initUniformBuffer();
         initPipelineLayouts();
+        initRenderPass();
 
         // [NOTE] this doesn't really belong here, but it's the first time this has come up
 #if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS
@@ -119,6 +121,10 @@ namespace djinn {
 #else
 #error Unsupported platform
 #endif
+
+        initShaders(
+            util::loadTextFile("shaders/basic.glsl.vert"),
+            util::loadTextFile("shaders/basic.glsl.frag"));
     }
 
     void Graphics::update() {
@@ -512,6 +518,65 @@ namespace djinn {
             .setPSetLayouts(&*m_DescriptorSetLayout);  // seems sketchy
 
         m_PipelineLayout = m_Device->createPipelineLayoutUnique(pli);
+    }
+
+    void Graphics::initRenderPass() {
+        // depends on swapchain and its depth buffer
+
+        // create attachments for color and depth rendertargets
+        vk::AttachmentDescription attachments[2];
+
+        attachments[0]
+            .setFormat(m_SurfaceFormat.format)
+            .setSamples(vk::SampleCountFlagBits::e1)
+            .setLoadOp(vk::AttachmentLoadOp::eClear)
+            .setStoreOp(vk::AttachmentStoreOp::eStore)
+            .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+            .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+            .setInitialLayout(vk::ImageLayout::eUndefined)
+            .setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+
+        attachments[1]
+            .setFormat(m_DepthFormat)
+            .setSamples(vk::SampleCountFlagBits::e1)
+            .setLoadOp(vk::AttachmentLoadOp::eClear)
+            .setStoreOp(vk::AttachmentStoreOp::eStore)
+            .setStencilLoadOp(vk::AttachmentLoadOp::eLoad)
+            .setStencilStoreOp(vk::AttachmentStoreOp::eStore)
+            .setInitialLayout(vk::ImageLayout::eUndefined)
+            .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+        vk::AttachmentReference color;
+        color.setAttachment(0).setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+
+        vk::AttachmentReference depth;
+        depth.setAttachment(1).setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+        vk::SubpassDescription subpass;
+        subpass.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+            .setInputAttachmentCount(0)
+            .setPInputAttachments(nullptr)
+            .setColorAttachmentCount(1)
+            .setPColorAttachments(&color)
+            .setPResolveAttachments(nullptr)
+            .setPDepthStencilAttachment(&depth)
+            .setPreserveAttachmentCount(0)
+            .setPPreserveAttachments(nullptr);
+
+        vk::RenderPassCreateInfo info;
+        info.setAttachmentCount(2)
+            .setPAttachments(attachments)
+            .setSubpassCount(1)
+            .setPSubpasses(&subpass)
+            .setDependencyCount(0)
+            .setPDependencies(nullptr);
+
+        m_RenderPass = m_Device->createRenderPassUnique(info);
+    }
+
+    void Graphics::initShaders(const std::string& vtxSrc, const std::string& fragSrc) {
+        gLog << "vtx: " << vtxSrc;
+        gLog << "frag: " << fragSrc;
     }
 
     namespace graphics {

@@ -57,6 +57,9 @@
     <ClCompile Include="graphics\swapchain.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="util\filesystem.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\engine.inl">
@@ -97,6 +100,12 @@
     </None>
     <None Include="math\trigonometry.inl">
       <Filter>math</Filter>
+    </None>
+    <None Include="shaders\basic.glsl.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\basic.glsl.vert">
+      <Filter>shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -207,6 +216,9 @@
     <ClInclude Include="vk_ostream.h" />
     <ClInclude Include="graphics\swapchain.h">
       <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="util\filesystem.h">
+      <Filter>util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
