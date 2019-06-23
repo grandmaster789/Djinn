@@ -161,4 +161,15 @@ namespace djinn::graphics {
         return m_Extent;
     }
 
+    vk::ImageView Swapchain::getDepthView() const {
+        return *m_DepthView;
+    }
+
+    vk::ImageView Swapchain::getColorView(size_t idx) const {
+        return *m_ColorViews[idx];
+    }
+
+    size_t Swapchain::getNumColorViews() const {
+        return m_ColorViews.size();
+    }
 }  // namespace djinn::graphics

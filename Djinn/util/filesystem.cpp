@@ -1,5 +1,6 @@
 #include "filesystem.h"
 #include <fstream>
+#include <sstream>
 
 namespace djinn::util {
     std::string loadTextFile(const std::filesystem::path& p) {
@@ -16,14 +17,16 @@ namespace djinn::util {
         if (!in.good())
             throw std::runtime_error("Failed to open file");
 
-        in.seekg(0, std::ios::end);
-        size_t filesize = in.tellg();
-        in.seekg(0);
+        /*
+        // this works, but is slow for large files
+        return std::string(
+            (std::istreambuf_iterator<char>(in)),
+            (std::istreambuf_iterator<char>()));
+            */
 
-        std::string result;
-        result.resize(filesize);
-        in.read(result.data(), filesize);
+        std::stringstream buffer;
+        buffer << in.rdbuf();
 
-        return result;
+        return buffer.str();
     }
 }  // namespace djinn::util

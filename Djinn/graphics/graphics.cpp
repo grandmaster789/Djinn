@@ -2,6 +2,7 @@
 #include "core/engine.h"
 #include "extensions.h"
 #include "math/trigonometry.h"
+#include "swapchain.h"
 #include "util/algorithm.h"
 #include "util/filesystem.h"
 #include "util/flat_map.h"
@@ -79,7 +80,8 @@ namespace {
 }  // namespace
 
 namespace djinn {
-    Graphics::Graphics(): System("Graphics") {
+    Graphics::Graphics():
+        System("Graphics") {
         registerSetting("Width", &m_MainWindowSettings.m_Width);
         registerSetting("Height", &m_MainWindowSettings.m_Height);
         registerSetting("Windowed", &m_MainWindowSettings.m_Windowed);
@@ -125,6 +127,7 @@ namespace djinn {
         initShaders(
             util::loadTextFile("shaders/basic.glsl.vert"),
             util::loadTextFile("shaders/basic.glsl.frag"));
+        initFrameBuffers();
     }
 
     void Graphics::update() {
@@ -342,8 +345,8 @@ namespace djinn {
             float priorities[] = {0.0f};
 
             std::vector<vk::DeviceQueueCreateInfo> queueInfos;
-            std::vector<const char*> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-            std::vector<const char*> deviceLayers     = {};
+            std::vector<const char*>               deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+            std::vector<const char*>               deviceLayers     = {};
 
             queueInfos.emplace_back();
             queueInfos.back()
@@ -459,7 +462,8 @@ namespace djinn {
             // request a buffer for the MVP matrix
             vk::BufferCreateInfo bci;
 
-            bci.setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
+            bci
+                .setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
                 .setSharingMode(vk::SharingMode::eExclusive)
                 .setSize(sizeof(m_MVP));
 
@@ -506,13 +510,16 @@ namespace djinn {
             .setStageFlags(vk::ShaderStageFlagBits::eFragment);
 
         vk::DescriptorSetLayoutCreateInfo dsli;
-        dsli.setBindingCount(2).setPBindings(bindings);
+        dsli
+            .setBindingCount(2)
+            .setPBindings(bindings);
 
         // [NOTE] not sure how to do this with multiple descriptor set layouts
         m_DescriptorSetLayout = m_Device->createDescriptorSetLayoutUnique(dsli);
 
         vk::PipelineLayoutCreateInfo pli;
-        pli.setPushConstantRangeCount(0)
+        pli
+            .setPushConstantRangeCount(0)
             .setPPushConstantRanges(nullptr)
             .setSetLayoutCount(1)
             .setPSetLayouts(&*m_DescriptorSetLayout);  // seems sketchy
@@ -547,13 +554,18 @@ namespace djinn {
             .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
         vk::AttachmentReference color;
-        color.setAttachment(0).setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+        color
+            .setAttachment(0)
+            .setLayout(vk::ImageLayout::eColorAttachmentOptimal);
 
         vk::AttachmentReference depth;
-        depth.setAttachment(1).setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+        depth
+            .setAttachment(1)
+            .setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
         vk::SubpassDescription subpass;
-        subpass.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+        subpass
+            .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
             .setInputAttachmentCount(0)
             .setPInputAttachments(nullptr)
             .setColorAttachmentCount(1)
@@ -574,9 +586,110 @@ namespace djinn {
         m_RenderPass = m_Device->createRenderPassUnique(info);
     }
 
-    void Graphics::initShaders(const std::string& vtxSrc, const std::string& fragSrc) {
-        gLog << "vtx: " << vtxSrc;
-        gLog << "frag: " << fragSrc;
+    void Graphics::initShaders(
+        const std::string& vtxSrc,
+        const std::string& fragSrc) {
+        if (!vtxSrc.empty()) {
+            auto vtxSpirv = GLSL_to_SPV(vk::ShaderStageFlagBits::eVertex, vtxSrc);
+
+            m_ShaderStages[0]
+                .setStage(vk::ShaderStageFlagBits::eVertex)
+                .setPName("main");
+
+            vk::ShaderModuleCreateInfo smci;
+            smci
+                .setCodeSize(vtxSpirv.size() * sizeof(uint32_t))
+                .setPCode(vtxSpirv.data());
+
+            m_VertexShader = m_Device->createShaderModuleUnique(smci);
+        }
+
+        if (!fragSrc.empty()) {
+            auto fragSpirv = GLSL_to_SPV(vk::ShaderStageFlagBits::eFragment, fragSrc);
+
+            m_ShaderStages[1]
+                .setStage(vk::ShaderStageFlagBits::eFragment)
+                .setPName("main");
+
+            vk::ShaderModuleCreateInfo smci;
+            smci
+                .setCodeSize(fragSpirv.size() * sizeof(uint32_t))
+                .setPCode(fragSpirv.data());
+
+            m_FragShader = m_Device->createShaderModuleUnique(smci);
+        }
+    }
+
+    void Graphics::initFrameBuffers() {
+        vk::ImageView attachments[2];
+
+        auto chain = getMainWindow()->getSwapchain();
+
+        attachments[1] = chain->getDepthView();  // all of the framebuffers have the same depth view
+
+        vk::FramebufferCreateInfo fci;
+
+        fci
+            .setRenderPass(*m_RenderPass)
+            .setAttachmentCount(2)
+            .setPAttachments(attachments)
+            .setWidth(getMainWindow()->getWidth())
+            .setHeight(getMainWindow()->getHeight())
+            .setLayers(1);
+
+        size_t numViews = chain->getNumColorViews();
+        for (size_t i = 0; i < numViews; ++i) {
+            attachments[0] = chain->getColorView(i);
+
+            m_FrameBuffers.push_back(m_Device->createFramebufferUnique(fci));
+        }
+    }
+
+    std::vector<uint32_t> Graphics::GLSL_to_SPV(
+        const vk::ShaderStageFlagBits shaderType,
+        const std::string&            shaderSrc) {
+        shaderc::Compiler       compiler;
+        shaderc::CompileOptions options;
+
+        options.SetSourceLanguage(shaderc_source_language::shaderc_source_language_glsl);
+        options.SetWarningsAsErrors();
+        options.SetTargetEnvironment(shaderc_target_env::shaderc_target_env_vulkan, 0);
+        options.SetOptimizationLevel(shaderc_optimization_level::shaderc_optimization_level_zero);
+
+        // [TODO] we could set include resolving callbacks here
+        // [TODO] we could add macro definitions here
+
+        shaderc_shader_kind kind;
+
+        switch (shaderType) {
+        case vk::ShaderStageFlagBits::eVertex: kind = shaderc_shader_kind::shaderc_vertex_shader; break;
+        case vk::ShaderStageFlagBits::eFragment: kind = shaderc_shader_kind::shaderc_fragment_shader; break;
+
+        default:
+            throw std::runtime_error("Unsupported shader type");
+        }
+
+        auto        prep = compiler.PreprocessGlsl(shaderSrc, kind, "in-memory", options);
+        std::string processed;
+
+        if (prep.GetCompilationStatus() == shaderc_compilation_status::shaderc_compilation_status_success) {
+            processed = std::string(prep.cbegin(), prep.cend());
+        }
+        else {
+            gLogError << prep.GetErrorMessage();
+
+            throw std::runtime_error("Failed to preprocess shader");
+        }
+
+        auto result = compiler.CompileGlslToSpv(processed, kind, "in-memory", options);
+
+        if (result.GetCompilationStatus() == shaderc_compilation_status::shaderc_compilation_status_success)
+            return std::vector<uint32_t>(result.cbegin(), result.cend());
+        else {
+            gLogError << result.GetErrorMessage();
+
+            throw std::runtime_error("Failed to compile shader");
+        }
     }
 
     namespace graphics {

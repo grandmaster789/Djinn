@@ -56,7 +56,8 @@ BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
 BreakStringLiterals: true
 
-ColumnLimit: 100
+# setting the column limit to 0 will keep the manually placed newlines
+ColumnLimit: 0
 CommentPragmas: '^[NOTE] '
 CompactNamespaces: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: false

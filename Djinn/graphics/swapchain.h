@@ -18,6 +18,10 @@ namespace djinn::graphics {
         vk::SwapchainKHR getHandle() const;
         vk::Extent2D     getExtent() const noexcept;
 
+        vk::ImageView getDepthView() const;
+        vk::ImageView getColorView(size_t idx) const;
+        size_t        getNumColorViews() const;
+
     private:
         vk::Extent2D m_Extent;
         vk::Format   m_ImageFormat;

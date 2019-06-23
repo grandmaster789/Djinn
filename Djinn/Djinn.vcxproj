@@ -78,6 +78,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);ITERATOR_DEBUG_LEVEL=0</PreprocessorDefinitions>
     </ClCompile>
     <PostBuildEvent>
       <Command>call "$(SolutionDir)copyShaders.bat" $(PlatformTarget) $(Configuration) "$(SolutionDir)" "$(TargetDir)"
@@ -94,6 +95,7 @@ call "$(SolutionDir)copyAssets.bat" $(PlatformTarget) $(Configuration) "$(Soluti
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);ITERATOR_DEBUG_LEVEL=0</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(VULKAN_SDK)\Third-Party\Bin</AdditionalLibraryDirectories>
@@ -120,6 +122,7 @@ call "$(SolutionDir)copyAssets.bat" $(PlatformTarget) $(Configuration) "$(Soluti
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);ITERATOR_DEBUG_LEVEL=0</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -142,6 +145,7 @@ call "$(SolutionDir)copyAssets.bat" $(PlatformTarget) $(Configuration) "$(Soluti
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);ITERATOR_DEBUG_LEVEL=0</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

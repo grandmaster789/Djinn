@@ -71,6 +71,11 @@ namespace djinn {
         void initPipelineLayouts();
         void initRenderPass();
         void initShaders(const std::string& vtxSrc, const std::string& fragSrc);
+        void initFrameBuffers();  // this doesn't belong here! it's also sensitive to window size changes...
+
+        std::vector<uint32_t> GLSL_to_SPV(
+            const vk::ShaderStageFlagBits shaderType,
+            const std::string&            shaderSrc);
 
         vk::UniqueInstance                 m_Instance;
         vk::UniqueDebugReportCallbackEXT   m_DebugCallback;
@@ -105,6 +110,12 @@ namespace djinn {
         vk::UniqueDescriptorSetLayout m_DescriptorSetLayout;
         vk::UniquePipelineLayout      m_PipelineLayout;
         vk::UniqueRenderPass          m_RenderPass;
+
+        vk::UniqueShaderModule            m_VertexShader;
+        vk::UniqueShaderModule            m_FragShader;
+        vk::PipelineShaderStageCreateInfo m_ShaderStages[2];
+
+        std::vector<vk::UniqueFramebuffer> m_FrameBuffers;  // TODO these are per-swapchain, not global
     };
 
     namespace graphics {

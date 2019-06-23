@@ -29,12 +29,15 @@
 // shaderc library builds
 
 #if DJINN_PLATFORM == DJINN_PLATFORM_WINDOWS
-
 // this #pragma is really more MSVC specific, but close enough
 #pragma comment(lib, "vulkan-1.lib")
 
 // use the shaderc toolchain for integrated spirv compilation of shaders
+#ifdef DJINN_DEBUG
+#pragma comment(lib, "shaderc_combinedd.lib")  // manually build the shaderc library, gave it another name
+#else
 #pragma comment(lib, "shaderc_combined.lib")
+#endif
 #endif
 
 // JSON interoperability
